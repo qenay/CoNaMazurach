@@ -34,7 +34,7 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
     const controller = new AbortController();
     const timer = setTimeout(() => {
       fetch(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=pl&limit=6&bbox=14.07,49.00,24.15,54.90`,
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=pl&limit=6`,
         { signal: controller.signal }
       )
         .then(r => r.json())
@@ -79,7 +79,7 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
     // Geocode directly from typed text
     setSearching(true);
     try {
-      const res  = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query.trim())}&lang=pl&limit=1&bbox=14.07,49.00,24.15,54.90`);
+      const res  = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query.trim())}&lang=pl&limit=1`);
       const data = await res.json();
       if (!data.features?.length) { setLocalErr('Nie znaleziono miejscowości. Sprawdź pisownię.'); return; }
       const f    = data.features[0];
