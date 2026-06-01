@@ -3,29 +3,20 @@ import { useState } from 'react';
 const FUEL_L_PER_100 = 7;
 const FUEL_PRICE_PLN = 6.5;
 
-async function geocodeCity(name) {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&countrycodes=pl&format=json&limit=1`;
-  const res  = await fetch(url, { headers: { 'Accept-Language': 'pl' } });
-  const data = await res.json();
-  if (!data.length) throw new Error('Nie znaleziono miasta. Spróbuj innej nazwy.');
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0] };
-}
-
 export function useDistance() {
   const [loading,  setLoading]  = useState(false);
   const [result,   setResult]   = useState(null);
   const [error,    setError]    = useState(null);
   const [routeGeo, setRouteGeo] = useState(null);
 
-  async function calculate(fromName, toLat, toLng) {
+  async function calculate(fromLat, fromLng, fromName, toLat, toLng) {
     setLoading(true);
     setError(null);
     setResult(null);
     setRouteGeo(null);
 
     try {
-      const city = await geocodeCity(fromName);
-      const url  = `https://router.project-osrm.org/route/v1/driving/${city.lng},${city.lat};${toLng},${toLat}?overview=full&geometries=geojson`;
+      const url  = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
       const res  = await fetch(url);
       const data = await res.json();
       if (data.code !== 'Ok') throw new Error('Nie udało się wyznaczyć trasy.');
@@ -37,7 +28,7 @@ export function useDistance() {
       const mins     = minutes % 60;
       const fuelCost = Math.round((km / 100) * FUEL_L_PER_100 * FUEL_PRICE_PLN);
 
-      setResult({ km, hours, mins, fuelCost, fromName: city.name });
+      setResult({ km, hours, mins, fuelCost, fromName });
       setRouteGeo(route.geometry);
     } catch (e) {
       setError(e.message || 'Błąd połączenia z serwisem tras.');
