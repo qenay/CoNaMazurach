@@ -34,14 +34,14 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
     const controller = new AbortController();
     const timer = setTimeout(() => {
       fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=pl&format=json&limit=6`,
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=pl&limit=6&bbox=14.07,49.00,24.15,54.90`,
         { signal: controller.signal }
       )
         .then(r => r.json())
-        .then(data => setSugg(data.map(d => ({
-          name: d.display_name.split(',')[0].trim(),
-          lat:  parseFloat(d.lat),
-          lng:  parseFloat(d.lon),
+        .then(data => setSugg((data.features || []).map(f => ({
+          name: [f.properties.name, f.properties.city, f.properties.county].filter(Boolean).join(', '),
+          lat:  f.geometry.coordinates[1],
+          lng:  f.geometry.coordinates[0],
         }))))
         .catch(() => {});
     }, 300);
@@ -79,10 +79,15 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
     // Geocode directly from typed text
     setSearching(true);
     try {
-      const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query.trim())}&countrycodes=pl&format=json&limit=1`);
+      const res  = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query.trim())}&lang=pl&limit=1&bbox=14.07,49.00,24.15,54.90`);
       const data = await res.json();
-      if (!data.length) { setLocalErr('Nie znaleziono miejscowości. Sprawdź pisownię.'); return; }
-      const city = { name: data[0].display_name.split(',')[0].trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      if (!data.features?.length) { setLocalErr('Nie znaleziono miejscowości. Sprawdź pisownię.'); return; }
+      const f    = data.features[0];
+      const city = {
+        name: [f.properties.name, f.properties.city].filter(Boolean)[0] || query.trim(),
+        lat:  f.geometry.coordinates[1],
+        lng:  f.geometry.coordinates[0],
+      };
       setSelected(city);
       setQuery(city.name);
       calculate(city.lat, city.lng, city.name, toLat, toLng);
