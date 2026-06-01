@@ -118,7 +118,7 @@ export default function ListingDetailPage() {
                   {cat.icon} {cat.label}
                 </span>
               )}
-              <h1 className="text-3xl font-black text-[#1C2B3A] leading-tight mb-3">
+              <h1 className="text-2xl md:text-3xl font-black text-[#1C2B3A] dark:text-white leading-tight mb-3">
                 {listing.title}
               </h1>
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
@@ -155,7 +155,7 @@ export default function ListingDetailPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-28 space-y-5">
               {/* Booking card */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
                 <div className="text-3xl font-black text-[#1B4F8A] mb-1">{listing.priceLabel}</div>
                 {listing.date && (
                   <p className="text-sm text-gray-500 mb-4">
@@ -195,7 +195,7 @@ export default function ListingDetailPage() {
 
         {/* Related listings */}
         <section className="mt-16">
-          <h2 className="text-2xl font-black text-[#1C2B3A] mb-6">
+          <h2 className="text-2xl font-black text-[#1C2B3A] dark:text-white mb-6">
             Podobne oferty na Mazurach
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -203,7 +203,7 @@ export default function ListingDetailPage() {
               .filter(l => l.id !== listing.id && l.category === listing.category)
               .slice(0, 3)
               .map(l => (
-                <Link key={l.id} to={`/events/${l.id}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all hover:scale-[1.01] flex gap-3 p-3">
+                <Link key={l.id} to={`/events/${l.id}`} className="group bg-white dark:bg-[#1e293b] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all hover:scale-[1.01] flex gap-3 p-3">
                   <img src={l.image} alt={l.title} loading="lazy" className="w-20 h-16 rounded-xl object-cover flex-shrink-0" />
                   <div className="flex flex-col justify-center">
                     <p className="font-bold text-sm text-[#1C2B3A] line-clamp-2 leading-tight">{l.title}</p>

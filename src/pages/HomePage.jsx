@@ -38,7 +38,7 @@ export default function HomePage({ listings, allListings, city, setCity, selDay,
       </Helmet>
 
       {/* Hero */}
-      <section className="relative min-h-[520px] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[380px] md:min-h-[520px] flex items-center justify-center overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: 'url(https://picsum.photos/seed/mazury-hero/1600/600)' }}
@@ -46,7 +46,7 @@ export default function HomePage({ listings, allListings, city, setCity, selDay,
         <div className="absolute inset-0 bg-gradient-to-b from-[#1B4F8A]/70 via-[#1B4F8A]/50 to-[#1C2B3A]/80" />
 
         <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight mb-4">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black leading-tight mb-4">
             Odkryj Mazury<br />
             <span className="text-[#F4A825]">jeziora, lasy i niezapomniane przeżycia</span>
           </h1>

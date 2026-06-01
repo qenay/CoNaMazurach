@@ -4,6 +4,40 @@ import ThemeToggle from './ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 import GlassCategoryTabs from './ui/glass-category-tabs';
 
+const LogoContent = ({ theme, size = 48, showSubtitle = true }) => (
+  <Link to="/" className="flex items-center gap-2 flex-shrink-0 z-10">
+    <div style={{
+      backgroundColor: theme === 'dark' ? '#1e293b' : 'transparent',
+      borderRadius: '50%', overflow: 'hidden',
+      height: size, width: size,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      <img
+        src="/logo1.png"
+        alt="Co na Mazurach?"
+        style={{
+          height: size, width: 'auto',
+          mixBlendMode: theme === 'dark' ? 'multiply' : 'normal',
+          filter: theme === 'dark' ? 'brightness(2)' : 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))',
+        }}
+      />
+    </div>
+    <div className="flex flex-col leading-tight">
+      <span
+        className="font-black text-[#1B4F8A] dark:text-white tracking-tight"
+        style={{ fontFamily: 'Nunito, sans-serif', fontSize: showSubtitle ? '1.25rem' : '1rem' }}
+      >
+        Co na Mazurach?
+      </span>
+      {showSubtitle && (
+        <span className="text-[10px] font-semibold text-[#2E9E6E] uppercase tracking-widest">
+          Kraina Wielkich Jezior
+        </span>
+      )}
+    </div>
+  </Link>
+);
+
 export default function Navbar({ onSearch, onCategoryChange, activeCategory }) {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
@@ -17,43 +51,46 @@ export default function Navbar({ onSearch, onCategoryChange, activeCategory }) {
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-[#1e293b] shadow-md dark:shadow-black/30 transition-colors duration-300">
-      {/* Top bar — logo lewo, form absolutnie wyśrodkowany, przyciski prawo */}
-      <div className="relative w-full px-4 py-3 flex items-center justify-between">
 
-        <Link to="/" className="flex items-center gap-2 flex-shrink-0 z-10">
-          <div style={{
-            backgroundColor: theme === 'dark' ? '#1e293b' : 'transparent',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            height: '48px',
-            width: '48px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}>
-            <img
-              src="/logo1.png"
-              alt="Co na Mazurach?"
-              style={{
-                height: '48px',
-                width: 'auto',
-                mixBlendMode: theme === 'dark' ? 'multiply' : 'normal',
-                filter: theme === 'dark' ? 'brightness(2)' : 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))',
-              }}
+      {/* ── MOBILE ── */}
+      <div className="md:hidden">
+        {/* Row 1: logo + actions */}
+        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+          <LogoContent theme={theme} size={40} showSubtitle={false} />
+          <div className="flex items-center gap-2">
+            <Link
+              to="/dodaj"
+              className="bg-[#F4A825] text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-[#d99020] transition-colors whitespace-nowrap"
+            >
+              + Dodaj
+            </Link>
+            <ThemeToggle />
+          </div>
+        </div>
+        {/* Row 2: search */}
+        <div className="px-4 pb-3">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Szukaj na Mazurach..."
+              className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-4 py-2 text-sm bg-white dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#1B4F8A] focus:ring-2 focus:ring-[#1B4F8A]/20 transition-colors"
             />
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-xl font-black text-[#1B4F8A] dark:text-white tracking-tight" style={{ fontFamily: 'Nunito, sans-serif' }}>
-              Co na Mazurach?
-            </span>
-            <span className="text-[10px] font-semibold text-[#2E9E6E] uppercase tracking-widest">
-              Kraina Wielkich Jezior
-            </span>
-          </div>
-        </Link>
+            <button
+              type="submit"
+              className="bg-[#1B4F8A] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#163f70] transition-colors"
+            >
+              🔍
+            </button>
+          </form>
+        </div>
+      </div>
 
-        {/* Absolutnie wyśrodkowana wyszukiwarka */}
+      {/* ── DESKTOP ── */}
+      <div className="hidden md:flex relative w-full px-4 py-3 items-center justify-between">
+        <LogoContent theme={theme} size={48} showSubtitle />
+
         <form
           onSubmit={handleSearch}
           className="absolute left-1/2 -translate-x-1/2 flex gap-2 w-full max-w-xl"
@@ -84,10 +121,12 @@ export default function Navbar({ onSearch, onCategoryChange, activeCategory }) {
         </div>
       </div>
 
-      {/* Category tabs */}
+      {/* Category tabs — both breakpoints */}
       <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-[#162032] transition-colors">
-        <div className="w-full px-4 py-2 flex justify-center overflow-x-auto">
-          <GlassCategoryTabs activeCategory={activeCategory} onCategoryChange={onCategoryChange} />
+        <div className="w-full px-4 py-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex md:justify-center">
+            <GlassCategoryTabs activeCategory={activeCategory} onCategoryChange={onCategoryChange} />
+          </div>
         </div>
       </div>
     </header>
