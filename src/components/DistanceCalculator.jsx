@@ -25,6 +25,7 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
   const [showSugg,    setShowSugg] = useState(false);
   const [selected,    setSelected] = useState(null);
   const [localError,  setLocalErr] = useState('');
+  const [searching,   setSearching] = useState(false);
   const { calculate, loading, result, error, routeGeo } = useDistance();
   const wrapRef = useRef(null);
 
@@ -64,8 +65,9 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
     calculate(city.lat, city.lng, city.name, toLat, toLng);
   }
 
-  function handleGo() {
+  async function handleGo() {
     setLocalErr('');
+    setShowSugg(false);
     if (selected) {
       calculate(selected.lat, selected.lng, selected.name, toLat, toLng);
       return;
@@ -74,7 +76,21 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
       pick(suggestions[0]);
       return;
     }
-    setLocalErr('Wpisz miasto i poczekaj na podpowiedzi, następnie wybierz z listy.');
+    // Geocode directly from typed text
+    setSearching(true);
+    try {
+      const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query.trim())}&countrycodes=pl&format=json&limit=1`);
+      const data = await res.json();
+      if (!data.length) { setLocalErr('Nie znaleziono miejscowości. Sprawdź pisownię.'); return; }
+      const city = { name: data[0].display_name.split(',')[0].trim(), lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      setSelected(city);
+      setQuery(city.name);
+      calculate(city.lat, city.lng, city.name, toLat, toLng);
+    } catch {
+      setLocalErr('Błąd połączenia. Spróbuj ponownie.');
+    } finally {
+      setSearching(false);
+    }
   }
 
   const routePositions = routeGeo
@@ -117,10 +133,10 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
         <button
           type="button"
           onClick={handleGo}
-          disabled={loading || !query.trim()}
+          disabled={loading || searching || !query.trim()}
           className="bg-[#1B4F8A] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#163f70] disabled:opacity-50 transition-colors flex-shrink-0"
         >
-          {loading ? '⏳' : 'Oblicz trasę'}
+          {loading || searching ? '⏳' : 'Oblicz trasę'}
         </button>
       </div>
 
