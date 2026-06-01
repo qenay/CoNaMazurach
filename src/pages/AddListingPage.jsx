@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CATEGORIES } from '../data/mockListings';
+import DatePickerInput from '../components/ui/DatePickerInput';
 
 const CONTACT_EMAIL = 'conamazurach@gmail.com';
 
@@ -211,10 +212,22 @@ export default function AddListingPage() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <Field label="Data rozpoczęcia">
-                <input {...form1.register('dateStart')} type="date" className={inputCls} />
+                <Controller
+                  name="dateStart"
+                  control={form1.control}
+                  render={({ field }) => (
+                    <DatePickerInput value={field.value || ''} onChange={field.onChange} placeholder="Wybierz datę" />
+                  )}
+                />
               </Field>
               <Field label="Data zakończenia">
-                <input {...form1.register('dateEnd')} type="date" className={inputCls} />
+                <Controller
+                  name="dateEnd"
+                  control={form1.control}
+                  render={({ field }) => (
+                    <DatePickerInput value={field.value || ''} onChange={field.onChange} placeholder="Wybierz datę" />
+                  )}
+                />
               </Field>
               <Field label="Godzina">
                 <input {...form1.register('time')} type="time" className={inputCls} />
