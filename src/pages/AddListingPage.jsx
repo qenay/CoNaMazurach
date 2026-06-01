@@ -4,14 +4,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CATEGORIES } from '../data/mockListings';
-import { MAZURY_CITIES } from '../data/cities';
 
 const CONTACT_EMAIL = 'conamazurach@gmail.com';
 
 const step1Schema = z.object({
   title:     z.string().min(10, 'Tytuł musi mieć minimum 10 znaków'),
   category:  z.string().min(1, 'Wybierz kategorię'),
-  city:      z.string().min(1, 'Wybierz miasto'),
+  city:      z.string().min(2, 'Wpisz nazwę miasta'),
   address:   z.string().min(5, 'Podaj adres'),
   dateStart: z.string().optional(),
   dateEnd:   z.string().optional(),
@@ -204,10 +203,7 @@ export default function AddListingPage() {
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Miasto *" error={form1.formState.errors.city?.message}>
-                <select {...form1.register('city')} className={inputCls}>
-                  <option value="">Wybierz miasto...</option>
-                  {MAZURY_CITIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
-                </select>
+                <input {...form1.register('city')} placeholder="np. Giżycko, Ryn..." className={inputCls} />
               </Field>
               <Field label="Adres *" error={form1.formState.errors.address?.message}>
                 <input {...form1.register('address')} placeholder="ul. Przykładowa 1" className={inputCls} />
