@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import ListingCard from '../components/ListingCard';
 import MapView from '../components/MapView';
 import EventCalendar from '../components/EventCalendar';
+import SearchBar from '../components/SearchBar';
 
 export default function HomePage({ listings, allListings, city, setCity, selDay, setSelDay, category }) {
   const cardsRef = useRef(null);
@@ -52,6 +53,24 @@ export default function HomePage({ listings, allListings, city, setCity, selDay,
           <p className="text-lg text-white/80 mb-8">
             Największy portal wydarzeń, noclegów i atrakcji w Krainie Wielkich Jezior
           </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <SearchBar onCitySelect={(val) => setCity(val)} />
+            {city && (
+              <button
+                onClick={() => setCity(null)}
+                className="text-white/70 text-sm hover:text-white underline transition-colors"
+              >
+                Pokaż wszystkie
+              </button>
+            )}
+          </div>
+
+          {city && (
+            <p className="mt-4 text-[#F4A825] font-bold text-lg">
+              📍 Pokazuję wyniki dla: {city}
+            </p>
+          )}
 
         </div>
       </section>
