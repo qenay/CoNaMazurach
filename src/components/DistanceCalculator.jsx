@@ -65,7 +65,7 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
     if (!query.trim()) return;
     if (selected) {
       calculate(selected.lat, selected.lng, selected.name.split(',')[0], toLat, toLng);
@@ -92,13 +92,14 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
         🚗 Kalkulator dojazdu
       </h3>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 mb-4" ref={wrapRef}>
+      <div className="flex gap-2 mb-4" ref={wrapRef}>
         <div className="relative flex-1">
           <input
             type="text"
             value={query}
             onChange={e => { setQuery(e.target.value); setSelected(null); setShowSugg(true); }}
             onFocus={() => setShowSugg(true)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSubmit(); } }}
             placeholder="Skąd jedziesz? (np. Warszawa)"
             className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#1B4F8A] focus:ring-2 focus:ring-[#1B4F8A]/20"
           />
@@ -107,7 +108,7 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
               {suggestions.map((c, i) => (
                 <li
                   key={i}
-                  onClick={() => handleSelect(c)}
+                  onMouseDown={e => { e.preventDefault(); handleSelect(c); }}
                   className="px-4 py-2 text-sm hover:bg-[#1B4F8A] hover:text-white cursor-pointer transition-colors"
                 >
                   📍 {c.name}
@@ -117,13 +118,14 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
           )}
         </div>
         <button
-          type="submit"
+          type="button"
+          onMouseDown={() => { setShowSugg(false); handleSubmit(); }}
           disabled={loading || !query.trim()}
-          className="bg-[#1B4F8A] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#163f70] disabled:opacity-50 transition-colors"
+          className="bg-[#1B4F8A] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#163f70] disabled:opacity-50 transition-colors flex-shrink-0 relative z-10"
         >
           {loading ? '⏳' : 'Oblicz trasę'}
         </button>
-      </form>
+      </div>
 
       {error && (
         <p className="text-red-500 text-sm mb-4 bg-red-50 rounded-xl p-3">{error}</p>
