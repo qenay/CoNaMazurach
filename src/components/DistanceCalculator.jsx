@@ -64,13 +64,22 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
     calculate(city.lat, city.lng, city.name.split(',')[0], toLat, toLng);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    if (!query.trim()) return;
     if (selected) {
       calculate(selected.lat, selected.lng, selected.name.split(',')[0], toLat, toLng);
-    } else if (suggestions.length > 0) {
-      handleSelect(suggestions[0]);
+      return;
     }
+    // Geocode on submit if user didn't pick from dropdown
+    try {
+      const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=pl&format=json&limit=1`);
+      const data = await res.json();
+      if (!data.length) { return; }
+      const city = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0] };
+      setSelected(city);
+      calculate(city.lat, city.lng, city.name, toLat, toLng);
+    } catch {}
   }
 
   const routePositions = routeGeo
@@ -109,7 +118,7 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
         </div>
         <button
           type="submit"
-          disabled={loading || (!selected && suggestions.length === 0 && query.length > 1)}
+          disabled={loading || !query.trim()}
           className="bg-[#1B4F8A] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#163f70] disabled:opacity-50 transition-colors"
         >
           {loading ? '⏳' : 'Oblicz trasę'}
