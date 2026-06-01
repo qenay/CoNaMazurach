@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useDistance } from '../hooks/useDistance';
-import { POLISH_CITIES } from '../data/cities';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -31,8 +30,15 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
 
   useEffect(() => {
     if (query.length < 2) { setSugg([]); return; }
-    const q = query.toLowerCase();
-    setSugg(POLISH_CITIES.filter(c => c.name.toLowerCase().startsWith(q)).slice(0, 6));
+    const controller = new AbortController();
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=pl&format=json&limit=6&addressdetails=1`, {
+      signal: controller.signal,
+      headers: { 'Accept-Language': 'pl' },
+    })
+      .then(r => r.json())
+      .then(data => setSugg(data.map(d => ({ name: d.display_name.split(',')[0] }))))
+      .catch(() => {});
+    return () => controller.abort();
   }, [query]);
 
   // Close suggestions on outside click

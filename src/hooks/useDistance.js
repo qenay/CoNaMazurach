@@ -1,29 +1,34 @@
 import { useState } from 'react';
-import { POLISH_CITIES } from '../data/cities';
 
 const FUEL_L_PER_100 = 7;
 const FUEL_PRICE_PLN = 6.5;
 
+async function geocodeCity(name) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&countrycodes=pl&format=json&limit=1`;
+  const res  = await fetch(url, { headers: { 'Accept-Language': 'pl' } });
+  const data = await res.json();
+  if (!data.length) throw new Error('Nie znaleziono miasta. Spróbuj innej nazwy.');
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0] };
+}
+
 export function useDistance() {
-  const [loading, setLoading]   = useState(false);
-  const [result,  setResult]    = useState(null);
-  const [error,   setError]     = useState(null);
+  const [loading,  setLoading]  = useState(false);
+  const [result,   setResult]   = useState(null);
+  const [error,    setError]    = useState(null);
   const [routeGeo, setRouteGeo] = useState(null);
 
   async function calculate(fromName, toLat, toLng) {
-    const city = POLISH_CITIES.find(c => c.name.toLowerCase() === fromName.toLowerCase());
-    if (!city) { setError('Nie znaleziono miasta. Spróbuj innej nazwy.'); return; }
-
     setLoading(true);
     setError(null);
     setResult(null);
     setRouteGeo(null);
 
     try {
-      const url = `https://router.project-osrm.org/route/v1/driving/${city.lng},${city.lat};${toLng},${toLat}?overview=full&geometries=geojson`;
+      const city = await geocodeCity(fromName);
+      const url  = `https://router.project-osrm.org/route/v1/driving/${city.lng},${city.lat};${toLng},${toLat}?overview=full&geometries=geojson`;
       const res  = await fetch(url);
       const data = await res.json();
-      if (data.code !== 'Ok') throw new Error('Nie udało się wyznaczyć trasy');
+      if (data.code !== 'Ok') throw new Error('Nie udało się wyznaczyć trasy.');
 
       const route    = data.routes[0];
       const km       = Math.round(route.distance / 1000);
