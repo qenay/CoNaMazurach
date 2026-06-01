@@ -28,7 +28,7 @@ const step2Schema = z.object({
   senderName:    z.string().min(2, 'Podaj imię i nazwisko'),
 });
 
-const STEPS = ['Podstawowe info', 'Szczegóły i kontakt', 'Gotowe — wyślij'];
+const STEPS = ['Podstawowe informacje', 'Szczegóły i kontakt', 'Gotowe — wyślij'];
 
 function Field({ label, error, children, hint }) {
   return (
