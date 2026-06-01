@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* Dark mode via .dark class on <html> */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-lake:   #1B4F8A;
+  --color-forest: #2E9E6E;
+  --color-amber:  #F4A825;
+  --color-cream:  #F7F4EE;
+  --color-dark:   #1C2B3A;
+  --font-heading: 'Nunito', sans-serif;
+  --font-body:    'Inter', sans-serif;
+
+  /* Shadcn-compatible CSS vars */
+  --background:   #F7F4EE;
+  --foreground:   #1C2B3A;
+  --input:        #d1d5db;
+  --ring:         #1B4F8A;
+  --primary:      #1B4F8A;
+  --primary-foreground: #ffffff;
+  --muted-foreground: #6b7280;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #F7F4EE;
+  color: #1C2B3A;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body, body.dark {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Nunito', sans-serif;
+}
+
+/* Leaflet fix */
+.leaflet-container {
+  z-index: 1;
+}
+
+/* Ukryj flagę w atrybuacji Leaflet */
+.leaflet-attribution-flag {
+  display: none !important;
+}
