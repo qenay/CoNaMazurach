@@ -105,7 +105,7 @@ export default function EventCalendar({ listings, onDaySelect, selectedDay }) {
                     : isToday
                     ? 'bg-[#F4A825] text-white font-black shadow-sm'
                     : hasEvent
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-[#1B4F8A] dark:text-blue-300 hover:bg-[#1B4F8A] hover:text-white'
+                    ? 'bg-[#1B4F8A]/15 dark:bg-blue-900/40 text-[#1B4F8A] dark:text-blue-300 font-bold ring-2 ring-[#1B4F8A]/40 hover:bg-[#1B4F8A] hover:text-white hover:ring-0'
                     : isWeekend
                     ? 'text-[#2E9E6E] dark:text-emerald-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -114,7 +114,7 @@ export default function EventCalendar({ listings, onDaySelect, selectedDay }) {
               >
                 {day}
                 {hasEvent && !isSelected && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#F4A825]" />
+                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#F4A825]" />
                 )}
               </button>
             );
