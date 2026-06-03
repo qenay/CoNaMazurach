@@ -62,6 +62,7 @@ function buildListing(form, existing) {
     icon:        form.icon,
     status:      form.status,
     image:       form.images?.[0] || existing?.image || '',
+    createdAt:   existing?.createdAt || Date.now(),
   };
 }
 
@@ -138,6 +139,8 @@ function AdminPanel({ onLogout }) {
   const [loading,      setLoading]     = useState(true);
   const [saving,       setSaving]      = useState(false);
   const [saveStatus,   setSaveStatus]  = useState('');
+  const [sortOrder,    setSortOrder]   = useState('newest');
+  const [daysFilter,   setDaysFilter]  = useState(0);
   const [editId,       setEditId]      = useState(null);
   const [form,         setForm]        = useState(emptyForm);
   const [featureInput, setFeatInput]   = useState('');
@@ -350,62 +353,100 @@ function AdminPanel({ onLogout }) {
           )}
 
           {/* ── LIST ── */}
-          {!loading && view === 'list' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                <p className="font-black text-[#12192b]">Lista ogłoszeń</p>
-                <span className="text-xs text-gray-400">{listings.length} ogłoszeń</span>
-              </div>
-              {listings.length === 0 ? (
-                <div className="p-12 text-center text-gray-400">
-                  <p className="text-4xl mb-2">📭</p>
-                  <p className="font-semibold">Brak ogłoszeń</p>
-                  <button onClick={openNew} className="mt-4 text-[#1a6fa8] text-sm font-bold hover:underline">+ Dodaj pierwsze</button>
+          {!loading && view === 'list' && (() => {
+            const now = Date.now();
+            const DAY = 86400000;
+            function daysAgo(ts) { return ts ? Math.floor((now - ts) / DAY) : null; }
+
+            let filtered = [...listings];
+            if (daysFilter > 0) filtered = filtered.filter(l => l.createdAt && daysAgo(l.createdAt) <= daysFilter);
+            filtered.sort((a, b) => {
+              const ta = a.createdAt || 0;
+              const tb = b.createdAt || 0;
+              return sortOrder === 'newest' ? tb - ta : ta - tb;
+            });
+
+            return (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Toolbar */}
+                <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                  <p className="font-black text-[#12192b]">Lista ogłoszeń <span className="text-gray-400 font-normal text-sm">({filtered.length}/{listings.length})</span></p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}
+                      className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 font-semibold focus:outline-none focus:border-[#1a6fa8]">
+                      <option value="newest">Najnowsze najpierw</option>
+                      <option value="oldest">Najstarsze najpierw</option>
+                    </select>
+                    <select value={daysFilter} onChange={e => setDaysFilter(Number(e.target.value))}
+                      className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 font-semibold focus:outline-none focus:border-[#1a6fa8]">
+                      <option value={0}>Wszystkie daty</option>
+                      <option value={7}>Ostatnie 7 dni</option>
+                      <option value={14}>Ostatnie 14 dni</option>
+                      <option value={30}>Ostatnie 30 dni</option>
+                      <option value={90}>Ostatnie 90 dni</option>
+                    </select>
+                  </div>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-gray-50 text-left">
-                        {['Tytuł','Kategoria','Miasto','Status','Akcje'].map(h => (
-                          <th key={h} className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {listings.map(l => (
-                        <tr key={l.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">{l.icon || catMap[l.category]?.icon}</span>
-                              <span className="font-semibold text-[#12192b] truncate max-w-[180px]">{l.title}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-gray-500">{catMap[l.category]?.label || '—'}</td>
-                          <td className="px-4 py-3 text-gray-500">{l.city || '—'}</td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${l.status === 'aktywne' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                              {l.status === 'aktywne' ? 'Aktywne' : 'Szkic'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex gap-2">
-                              <button onClick={() => openEdit(l.id)} className="text-xs border border-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors font-semibold">
-                                Edytuj
-                              </button>
-                              <button onClick={() => deleteListing(l.id)} className="text-xs border border-red-200 text-red-500 px-2.5 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
-                                🗑️
-                              </button>
-                            </div>
-                          </td>
+                {filtered.length === 0 ? (
+                  <div className="p-12 text-center text-gray-400">
+                    <p className="text-4xl mb-2">📭</p>
+                    <p className="font-semibold">{daysFilter > 0 ? 'Brak ogłoszeń w tym okresie' : 'Brak ogłoszeń'}</p>
+                    {!daysFilter && <button onClick={openNew} className="mt-4 text-[#1a6fa8] text-sm font-bold hover:underline">+ Dodaj pierwsze</button>}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 text-left">
+                          {['Tytuł','Kategoria','Miasto','Dodano','Status','Akcje'].map(h => (
+                            <th key={h} className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">{h}</th>
+                          ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
+                      </thead>
+                      <tbody>
+                        {filtered.map(l => {
+                          const days = daysAgo(l.createdAt);
+                          return (
+                            <tr key={l.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{l.icon || catMap[l.category]?.icon}</span>
+                                  <span className="font-semibold text-[#12192b] truncate max-w-[180px]">{l.title}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-gray-500">{catMap[l.category]?.label || '—'}</td>
+                              <td className="px-4 py-3 text-gray-500">{l.city || '—'}</td>
+                              <td className="px-4 py-3">
+                                {days === null ? <span className="text-gray-300 text-xs">—</span>
+                                  : days === 0 ? <span className="text-green-600 text-xs font-bold">Dziś</span>
+                                  : days === 1 ? <span className="text-blue-500 text-xs font-semibold">Wczoraj</span>
+                                  : <span className="text-gray-500 text-xs">{days} dni temu</span>}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${l.status === 'aktywne' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {l.status === 'aktywne' ? 'Aktywne' : 'Szkic'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                  <button onClick={() => openEdit(l.id)} className="text-xs border border-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors font-semibold">
+                                    Edytuj
+                                  </button>
+                                  <button onClick={() => deleteListing(l.id)} className="text-xs border border-red-200 text-red-500 px-2.5 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                                    🗑️
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ── FORM ── */}
           {view === 'form' && (
