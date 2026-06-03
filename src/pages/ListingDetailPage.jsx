@@ -42,7 +42,7 @@ export default function ListingDetailPage() {
   const [loaded,      setLoaded]      = useState(false);
 
   useEffect(() => {
-    fetch('/listings.json?t=' + Date.now())
+    fetch('/api/listings')
       .then(r => r.json())
       .then(data => { setAllListings(Array.isArray(data) ? data : []); setLoaded(true); })
       .catch(() => setLoaded(true));

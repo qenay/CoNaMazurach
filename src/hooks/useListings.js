@@ -8,7 +8,7 @@ export function useListings() {
   const [selDay,   setSelDay]   = useState(null);
 
   useEffect(() => {
-    fetch('/listings.json?t=' + Date.now())
+    fetch('/api/listings')
       .then(r => r.json())
       .then(data => setAllData(Array.isArray(data) ? data : []))
       .catch(() => {});
