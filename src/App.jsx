@@ -3,14 +3,20 @@ import { lazy, Suspense, useState, Component } from 'react';
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(e) { return { error: e }; }
+  componentDidCatch(e) {
+    if (e?.message?.includes('preload') || e?.message?.includes('chunk') || e?.name === 'ChunkLoadError') {
+      window.location.reload();
+    }
+  }
   render() {
     if (this.state.error) {
+      const isChunkError = this.state.error?.message?.includes('preload') || this.state.error?.message?.includes('chunk');
+      if (isChunkError) return null;
       return (
         <div className="min-h-screen flex items-center justify-center p-8">
           <div className="max-w-lg bg-red-50 border border-red-200 rounded-2xl p-6">
             <p className="text-2xl mb-2">⚠️</p>
-            <p className="font-bold text-red-700 mb-2">Błąd renderowania</p>
-            <pre className="text-xs text-red-600 bg-red-100 rounded p-3 overflow-auto whitespace-pre-wrap">{this.state.error?.message}</pre>
+            <p className="font-bold text-red-700 mb-2">Coś poszło nie tak</p>
             <a href="/" className="mt-4 block text-center text-[#1B4F8A] font-bold">← Wróć na stronę główną</a>
           </div>
         </div>
