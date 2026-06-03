@@ -1,18 +1,25 @@
-import { useState, useMemo } from 'react';
-import { mockListings } from '../data/mockListings';
+import { useState, useMemo, useEffect } from 'react';
 
 export function useListings() {
+  const [allData,  setAllData]  = useState([]);
   const [search,   setSearch]   = useState('');
   const [category, setCategory] = useState(null);
   const [city,     setCity]     = useState(null);
   const [selDay,   setSelDay]   = useState(null);
 
+  useEffect(() => {
+    fetch('/listings.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(data => setAllData(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
   const filtered = useMemo(() => {
-    let list = mockListings;
+    let list = allData;
 
     if (category) list = list.filter(l => l.category === category);
 
-    if (city) list = list.filter(l => l.city.toLowerCase() === city.toLowerCase());
+    if (city) list = list.filter(l => l.city?.toLowerCase() === city.toLowerCase());
 
     if (selDay) {
       list = list.filter(l => {
@@ -25,15 +32,15 @@ export function useListings() {
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(l =>
-        l.title.toLowerCase().includes(q) ||
-        l.city.toLowerCase().includes(q) ||
-        l.description.toLowerCase().includes(q) ||
+        l.title?.toLowerCase().includes(q) ||
+        l.city?.toLowerCase().includes(q) ||
+        l.description?.toLowerCase().includes(q) ||
         (l.tags || []).some(t => t.toLowerCase().includes(q))
       );
     }
 
     return list;
-  }, [search, category, city, selDay]);
+  }, [allData, search, category, city, selDay]);
 
-  return { listings: filtered, allListings: mockListings, search, setSearch, category, setCategory, city, setCity, selDay, setSelDay };
+  return { listings: filtered, allListings: allData, search, setSearch, category, setCategory, city, setCity, selDay, setSelDay };
 }

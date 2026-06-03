@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { mockListings } from '../data/mockListings';
 
 const CATS = [
   { id: 'wydarzenia',  label: 'Wydarzenie',  icon: '🎉' },
@@ -10,11 +9,9 @@ const CATS = [
   { id: 'atrakcje',    label: 'Atrakcja',     icon: '🎯' },
 ];
 
-const ICONS = ['🏡', '⛺', '🎸', '🎉', '🍽️', '🌊', '🏄', '🎪', '🏕️', '🚣', '🎯', '🎭'];
-const STORAGE_KEY  = 'cnm_admin_listings';
-const SEEDED_KEY   = 'cnm_admin_seeded';
-const PASS_KEY     = 'cnm_admin_pass';
-const SESSION_KEY  = 'cnm_admin_session';
+const ICONS      = ['🏡', '⛺', '🎸', '🎉', '🍽️', '🌊', '🏄', '🎪', '🏕️', '🚣', '🎯', '🎭'];
+const PASS_KEY   = 'cnm_admin_pass';
+const SESSION_KEY = 'cnm_admin_session';
 const DEFAULT_PASS = 'admin';
 
 const emptyForm = {
@@ -22,37 +19,57 @@ const emptyForm = {
   price: '', rating: '', features: [], hashtags: [], images: [], icon: '🎉', status: 'aktywne',
 };
 
-function seedFromMock() {
-  return mockListings.map(l => ({
-    id:          l.id,
-    category:    l.category,
-    title:       l.title,
-    description: l.description?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '',
-    city:        l.city,
-    address:     l.address,
-    price:       l.priceLabel || '',
-    rating:      l.rating?.toString() || '',
-    features:    [],
-    hashtags:    l.tags || [],
-    icon:        CATS.find(c => c.id === l.category)?.icon || '📌',
-    status:      'aktywne',
-  }));
-}
-
-function loadListings() {
-  try {
-    if (!localStorage.getItem(SEEDED_KEY)) {
-      const seeded = seedFromMock();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-      localStorage.setItem(SEEDED_KEY, '1');
-      return seeded;
-    }
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  } catch { return seedFromMock(); }
-}
-
 function getAdminPass() {
   return localStorage.getItem(PASS_KEY) || DEFAULT_PASS;
+}
+
+function listingToForm(l) {
+  return {
+    category:    l.category || '',
+    title:       l.title || '',
+    description: l.description?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '',
+    city:        l.city || '',
+    address:     l.address || '',
+    price:       l.priceLabel || l.price?.toString() || '',
+    rating:      l.rating?.toString() || '',
+    features:    l.features || [],
+    hashtags:    l.tags || l.hashtags || [],
+    images:      l.image ? [l.image] : (l.images || []),
+    icon:        l.icon || CATS.find(c => c.id === l.category)?.icon || '🎉',
+    status:      l.status || 'aktywne',
+  };
+}
+
+function buildListing(form, existing) {
+  return {
+    ...existing,
+    id:          existing?.id || Date.now(),
+    title:       form.title,
+    category:    form.category,
+    city:        form.city,
+    address:     form.address,
+    description: form.description,
+    priceLabel:  form.price,
+    price:       parseFloat(form.price) ?? (existing?.price ?? 0),
+    rating:      parseFloat(form.rating) || (existing?.rating ?? 0),
+    tags:        form.hashtags,
+    features:    form.features,
+    icon:        form.icon,
+    status:      form.status,
+    image:       form.images?.[0] || existing?.image || '',
+  };
+}
+
+async function saveToGitHub(listings) {
+  const r = await fetch('/api/listings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ listings }),
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${r.status}`);
+  }
 }
 
 // ─── Login screen ──────────────────────────────────────────────────────────
@@ -112,7 +129,10 @@ export default function AdminPage() {
 
 function AdminPanel({ onLogout }) {
   const [view,         setView]        = useState('dashboard');
-  const [listings,     setListings]    = useState(loadListings);
+  const [listings,     setListings]    = useState([]);
+  const [loading,      setLoading]     = useState(true);
+  const [saving,       setSaving]      = useState(false);
+  const [saveStatus,   setSaveStatus]  = useState('');
   const [editId,       setEditId]      = useState(null);
   const [form,         setForm]        = useState(emptyForm);
   const [featureInput, setFeatInput]   = useState('');
@@ -122,10 +142,27 @@ function AdminPanel({ onLogout }) {
   const [passSaved,    setPassSaved]   = useState(false);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
-  }, [listings]);
+    fetch('/listings.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(data => { setListings(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   const catMap = Object.fromEntries(CATS.map(c => [c.id, c]));
+
+  async function pushToGitHub(newListings) {
+    setSaving(true);
+    setSaveStatus('saving');
+    try {
+      await saveToGitHub(newListings);
+      setSaveStatus('ok');
+      setTimeout(() => setSaveStatus(''), 5000);
+    } catch (e) {
+      setSaveStatus('err:' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   function openNew() {
     setForm(emptyForm); setEditId(null); setView('form'); setSidebar(false);
@@ -133,17 +170,22 @@ function AdminPanel({ onLogout }) {
   function openEdit(id) {
     const l = listings.find(x => x.id === id);
     if (!l) return;
-    setForm({ ...emptyForm, ...l, features: l.features || [], hashtags: l.hashtags || [] });
+    setForm(listingToForm(l));
     setEditId(id); setView('form');
   }
-  function deleteListing(id) {
-    if (window.confirm('Usunąć to ogłoszenie?'))
-      setListings(p => p.filter(x => x.id !== id));
+  async function deleteListing(id) {
+    if (!window.confirm('Usunąć to ogłoszenie?')) return;
+    const next = listings.filter(x => x.id !== id);
+    setListings(next);
+    await pushToGitHub(next);
   }
-  function save(status) {
-    const data = { ...form, status, id: editId || Date.now() };
-    setListings(p => editId ? p.map(x => x.id === editId ? data : x) : [...p, data]);
+  async function save(status) {
+    const existing = editId ? listings.find(x => x.id === editId) : null;
+    const data = buildListing({ ...form, status }, existing);
+    const next = editId ? listings.map(x => x.id === editId ? data : x) : [...listings, data];
+    setListings(next);
     setView('list'); setEditId(null); setForm(emptyForm);
+    await pushToGitHub(next);
   }
   function addFeature() {
     const v = featureInput.trim();
@@ -212,6 +254,21 @@ function AdminPanel({ onLogout }) {
 
       {/* Content */}
       <div className="flex-1 md:ml-56 flex flex-col min-h-screen">
+        {saveStatus === 'saving' && (
+          <div className="bg-blue-50 border-b border-blue-200 px-6 py-2 text-sm text-blue-700 font-semibold flex items-center gap-2">
+            <span className="animate-spin">⏳</span> Zapisywanie do GitHuba… strona zaktualizuje się za ~1 minutę.
+          </div>
+        )}
+        {saveStatus === 'ok' && (
+          <div className="bg-green-50 border-b border-green-200 px-6 py-2 text-sm text-green-700 font-semibold">
+            ✓ Zapisano! Vercel wdraża zmiany (~1 min).
+          </div>
+        )}
+        {saveStatus.startsWith('err:') && (
+          <div className="bg-red-50 border-b border-red-200 px-6 py-2 text-sm text-red-700 font-semibold">
+            ✗ Błąd zapisu: {saveStatus.slice(4)} — sprawdź GITHUB_TOKEN w Vercel.
+          </div>
+        )}
         <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button className="md:hidden text-gray-500 text-xl" onClick={() => setSidebar(true)}>☰</button>
@@ -231,8 +288,15 @@ function AdminPanel({ onLogout }) {
 
         <main className="flex-1 p-6">
 
+          {loading && (
+            <div className="flex items-center justify-center py-20 text-gray-400">
+              <p className="text-4xl animate-bounce mr-3">🌊</p>
+              <p className="font-semibold">Ładowanie ogłoszeń…</p>
+            </div>
+          )}
+
           {/* ── DASHBOARD ── */}
-          {view === 'dashboard' && (
+          {!loading && view === 'dashboard' && (
             <div className="space-y-5">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-[#12192b] text-white rounded-2xl p-5 col-span-2 md:col-span-1">
@@ -275,7 +339,7 @@ function AdminPanel({ onLogout }) {
           )}
 
           {/* ── LIST ── */}
-          {view === 'list' && (
+          {!loading && view === 'list' && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <p className="font-black text-[#12192b]">Lista ogłoszeń</p>
