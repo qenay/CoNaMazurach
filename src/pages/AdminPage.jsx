@@ -147,7 +147,7 @@ function AdminPanel({ onLogout }) {
   const [passSaved,    setPassSaved]   = useState(false);
 
   useEffect(() => {
-    fetch('/listings.json?t=' + Date.now())
+    fetch('/api/listings')
       .then(r => r.json())
       .then(data => { setListings(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
