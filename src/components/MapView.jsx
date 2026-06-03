@@ -68,7 +68,7 @@ export default function MapView({ listings, height = '500px', flyTo = null, show
           maxZoom={19}
         />
         {flyTo && <FlyTo center={flyTo} />}
-        {listings.map(l => (
+        {listings.filter(l => l.lat && l.lng).map(l => (
           <Marker key={l.id} position={[l.lat, l.lng]} icon={categoryIcon(l.category)}>
             <Popup maxWidth={220}>
               <div className="text-sm">

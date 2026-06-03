@@ -42,6 +42,11 @@ function listingToForm(l) {
 
 function buildListing(form, existing) {
   return {
+    lat:    53.8,
+    lng:    21.5,
+    date:   null,
+    time:   null,
+    isNew:  true,
     ...existing,
     id:          existing?.id || Date.now(),
     title:       form.title,
