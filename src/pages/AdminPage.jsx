@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { mockListings } from '../data/mockListings';
 
 const CATS = [
   { id: 'wydarzenia',  label: 'Wydarzenie',  icon: '🎉' },
@@ -20,9 +21,31 @@ const emptyForm = {
   price: '', rating: '', features: [], hashtags: [], icon: '🎉', status: 'aktywne',
 };
 
+function seedFromMock() {
+  return mockListings.map(l => ({
+    id:          l.id,
+    category:    l.category,
+    title:       l.title,
+    description: l.description?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '',
+    city:        l.city,
+    address:     l.address,
+    price:       l.priceLabel || '',
+    rating:      l.rating?.toString() || '',
+    features:    [],
+    hashtags:    l.tags || [],
+    icon:        CATS.find(c => c.id === l.category)?.icon || '📌',
+    status:      'aktywne',
+  }));
+}
+
 function loadListings() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+    const seeded = seedFromMock();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+    return seeded;
+  } catch { return seedFromMock(); }
 }
 
 function getAdminPass() {
