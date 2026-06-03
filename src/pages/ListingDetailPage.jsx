@@ -44,8 +44,11 @@ export default function ListingDetailPage() {
   useEffect(() => {
     fetch('/api/listings')
       .then(r => r.json())
-      .then(data => { setAllListings(Array.isArray(data) ? data : []); setLoaded(true); })
-      .catch(() => setLoaded(true));
+      .then(data => {
+        if (Array.isArray(data)) { setAllListings(data); setLoaded(true); return; }
+        return fetch('/listings.json').then(r => r.json()).then(d => { setAllListings(Array.isArray(d) ? d : []); setLoaded(true); });
+      })
+      .catch(() => fetch('/listings.json').then(r => r.json()).then(d => { setAllListings(Array.isArray(d) ? d : []); setLoaded(true); }).catch(() => setLoaded(true)));
   }, []);
 
   const listing = allListings.find(l => String(l.id) === id);

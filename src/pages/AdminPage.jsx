@@ -149,8 +149,14 @@ function AdminPanel({ onLogout }) {
   useEffect(() => {
     fetch('/api/listings')
       .then(r => r.json())
-      .then(data => { setListings(Array.isArray(data) ? data : []); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(data => {
+        if (Array.isArray(data)) { setListings(data); setLoading(false); return; }
+        // API returned error — fallback to static file
+        return fetch('/listings.json').then(r => r.json()).then(d => { setListings(Array.isArray(d) ? d : []); setLoading(false); });
+      })
+      .catch(() => {
+        fetch('/listings.json').then(r => r.json()).then(d => { setListings(Array.isArray(d) ? d : []); setLoading(false); }).catch(() => setLoading(false));
+      });
   }, []);
 
   const catMap = Object.fromEntries(CATS.map(c => [c.id, c]));

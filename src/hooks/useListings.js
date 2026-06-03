@@ -10,8 +10,11 @@ export function useListings() {
   useEffect(() => {
     fetch('/api/listings')
       .then(r => r.json())
-      .then(data => setAllData(Array.isArray(data) ? data : []))
-      .catch(() => {});
+      .then(data => {
+        if (Array.isArray(data)) { setAllData(data); return; }
+        return fetch('/listings.json').then(r => r.json()).then(d => setAllData(Array.isArray(d) ? d : []));
+      })
+      .catch(() => fetch('/listings.json').then(r => r.json()).then(d => setAllData(Array.isArray(d) ? d : [])).catch(() => {}));
   }, []);
 
   const filtered = useMemo(() => {
