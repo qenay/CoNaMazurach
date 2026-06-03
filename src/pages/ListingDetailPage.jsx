@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { mockListings, CATEGORIES } from '../data/mockListings';
+import { CATEGORIES } from '../data/mockListings';
 import DistanceCalculator from '../components/DistanceCalculator';
 import MapView from '../components/MapView';
 
@@ -35,9 +36,28 @@ function ShareButtons({ title, url }) {
 }
 
 export default function ListingDetailPage() {
-  const { id }     = useParams();
-  const navigate   = useNavigate();
-  const listing    = mockListings.find(l => l.id === parseInt(id));
+  const { id }       = useParams();
+  const navigate     = useNavigate();
+  const [allListings, setAllListings] = useState([]);
+  const [loaded,      setLoaded]      = useState(false);
+
+  useEffect(() => {
+    fetch('/listings.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(data => { setAllListings(Array.isArray(data) ? data : []); setLoaded(true); })
+      .catch(() => setLoaded(true));
+  }, []);
+
+  const listing = allListings.find(l => String(l.id) === id);
+
+  if (!loaded) {
+    return (
+      <div className="text-center py-32">
+        <p className="text-4xl animate-bounce">🌊</p>
+        <p className="text-gray-500 mt-2">Ładowanie...</p>
+      </div>
+    );
+  }
 
   if (!listing) {
     return (
@@ -199,7 +219,7 @@ export default function ListingDetailPage() {
             Podobne oferty na Mazurach
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {mockListings
+            {allListings
               .filter(l => l.id !== listing.id && l.category === listing.category)
               .slice(0, 3)
               .map(l => (
