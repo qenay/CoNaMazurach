@@ -12,6 +12,7 @@ const CATS = [
 
 const ICONS = ['🏡', '⛺', '🎸', '🎉', '🍽️', '🌊', '🏄', '🎪', '🏕️', '🚣', '🎯', '🎭'];
 const STORAGE_KEY  = 'cnm_admin_listings';
+const SEEDED_KEY   = 'cnm_admin_seeded';
 const PASS_KEY     = 'cnm_admin_pass';
 const SESSION_KEY  = 'cnm_admin_session';
 const DEFAULT_PASS = 'admin';
@@ -40,11 +41,13 @@ function seedFromMock() {
 
 function loadListings() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
-    const seeded = seedFromMock();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-    return seeded;
+    if (!localStorage.getItem(SEEDED_KEY)) {
+      const seeded = seedFromMock();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+      localStorage.setItem(SEEDED_KEY, '1');
+      return seeded;
+    }
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
   } catch { return seedFromMock(); }
 }
 
