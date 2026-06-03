@@ -63,6 +63,7 @@ const AboutPage         = lazy(() => import('./pages/AboutPage'));
 const ContactPage       = lazy(() => import('./pages/ContactPage'));
 const RegulaminPage     = lazy(() => import('./pages/RegulaminPage'));
 const NotFoundPage      = lazy(() => import('./pages/NotFoundPage'));
+const AdminPage         = lazy(() => import('./pages/AdminPage'));
 
 function LoadingSpinner() {
   return (
@@ -95,6 +96,7 @@ function AppLayout() {
             <Route path="/o-nas"       element={<AboutPage />} />
             <Route path="/kontakt"     element={<ContactPage />} />
             <Route path="/regulamin"   element={<RegulaminPage />} />
+            <Route path="/paneladmina" element={<AdminPage />} />
             <Route path="*"            element={<NotFoundPage />} />
           </Routes>
         </Suspense>
@@ -106,8 +108,20 @@ function AppLayout() {
 }
 
 export default function App() {
-  if (sessionStorage.getItem(SESSION_KEY) !== '1') {
+  const isAdmin = window.location.pathname.startsWith('/paneladmina');
+
+  if (!isAdmin && sessionStorage.getItem(SESSION_KEY) !== '1') {
     return <ComingSoon />;
+  }
+
+  if (isAdmin) {
+    return (
+      <HelmetProvider>
+        <Suspense fallback={null}>
+          <AdminPage />
+        </Suspense>
+      </HelmetProvider>
+    );
   }
 
   return (
