@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -107,30 +107,34 @@ function AppLayout() {
   );
 }
 
-export default function App() {
-  const isAdmin = window.location.pathname.startsWith('/paneladmina');
+function AppRouter() {
+  const { pathname } = useLocation();
 
-  if (!isAdmin && sessionStorage.getItem(SESSION_KEY) !== '1') {
-    return <ComingSoon />;
-  }
-
-  if (isAdmin) {
+  if (pathname.startsWith('/paneladmina')) {
     return (
-      <HelmetProvider>
-        <Suspense fallback={null}>
-          <AdminPage />
-        </Suspense>
-      </HelmetProvider>
+      <Suspense fallback={null}>
+        <AdminPage />
+      </Suspense>
     );
   }
 
+  if (sessionStorage.getItem(SESSION_KEY) !== '1') {
+    return <ComingSoon />;
+  }
+
+  return (
+    <ThemeProvider>
+      <AppLayout />
+    </ThemeProvider>
+  );
+}
+
+export default function App() {
   return (
     <HelmetProvider>
-      <ThemeProvider>
-        <BrowserRouter>
-          <AppLayout />
-        </BrowserRouter>
-      </ThemeProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
     </HelmetProvider>
   );
 }
