@@ -1,10 +1,58 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { useListings } from './hooks/useListings';
 import { ThemeProvider } from './context/ThemeContext';
+
+const PASSWORD = 'fado';
+const SESSION_KEY = 'cnm_unlocked';
+
+function ComingSoon() {
+  const [input, setInput] = useState('');
+  const [error, setError] = useState(false);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (input === PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      window.location.reload();
+    } else {
+      setError(true);
+      setInput('');
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0f2744] via-[#1B4F8A] to-[#2563EB] px-4">
+      <div className="text-center mb-10">
+        <p className="text-5xl mb-4">🌊</p>
+        <h1 className="text-4xl md:text-5xl font-black text-white mb-3">Co na Mazurach?</h1>
+        <p className="text-blue-200 text-lg font-medium">Strona już wkrótce dostępna</p>
+        <p className="text-blue-300 text-sm mt-2">Pracujemy nad czymś wyjątkowym dla miłośników Mazur</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-sm border border-white/20">
+        <p className="text-white text-sm font-semibold mb-3 text-center">Masz dostęp wcześniej? Wpisz hasło:</p>
+        <input
+          type="password"
+          value={input}
+          onChange={e => { setInput(e.target.value); setError(false); }}
+          placeholder="Hasło..."
+          className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-white placeholder-blue-200 text-sm focus:outline-none focus:border-white mb-3"
+        />
+        {error && <p className="text-red-300 text-xs mb-3 text-center">Nieprawidłowe hasło</p>}
+        <button
+          type="submit"
+          className="w-full bg-white text-[#1B4F8A] py-2.5 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors"
+        >
+          Wejdź →
+        </button>
+      </form>
+    </div>
+  );
+}
 
 const HomePage          = lazy(() => import('./pages/HomePage'));
 const ListingDetailPage = lazy(() => import('./pages/ListingDetailPage'));
@@ -58,6 +106,10 @@ function AppLayout() {
 }
 
 export default function App() {
+  if (sessionStorage.getItem(SESSION_KEY) !== '1') {
+    return <ComingSoon />;
+  }
+
   return (
     <HelmetProvider>
       <ThemeProvider>
