@@ -19,7 +19,7 @@ const DEFAULT_PASS = 'admin';
 
 const emptyForm = {
   category: '', title: '', description: '', city: '', address: '',
-  price: '', rating: '', features: [], hashtags: [], icon: '🎉', status: 'aktywne',
+  price: '', rating: '', features: [], hashtags: [], images: [], icon: '🎉', status: 'aktywne',
 };
 
 function seedFromMock() {
@@ -440,11 +440,40 @@ function AdminPanel({ onLogout }) {
               {/* Icon / photo */}
               <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">🖼 Zdjęcia</p>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center text-gray-400 mb-4 cursor-pointer hover:border-gray-300 transition-colors">
+                <label className="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center text-gray-400 mb-4 cursor-pointer hover:border-[#1a6fa8] hover:text-[#1a6fa8] transition-colors">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    className="hidden"
+                    onChange={e => {
+                      const files = Array.from(e.target.files);
+                      files.forEach(file => {
+                        if (file.size > 10 * 1024 * 1024) return;
+                        const reader = new FileReader();
+                        reader.onload = ev => setForm(f => ({ ...f, images: [...(f.images || []), ev.target.result] }));
+                        reader.readAsDataURL(file);
+                      });
+                      e.target.value = '';
+                    }}
+                  />
                   <p className="text-3xl mb-2">☁️</p>
                   <p className="text-sm font-semibold">Kliknij aby dodać zdjęcia lub przeciągnij pliki</p>
                   <p className="text-xs mt-1">JPG, PNG — maks. 10 MB każde</p>
-                </div>
+                </label>
+                {form.images?.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {form.images.map((src, i) => (
+                      <div key={i} className="relative group">
+                        <img src={src} alt="" className="w-full h-24 object-cover rounded-xl border border-gray-200" />
+                        <button
+                          onClick={() => setForm(f => ({ ...f, images: f.images.filter((_, j) => j !== i) }))}
+                          className="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-bold"
+                        >×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <p className="text-xs font-bold text-gray-500 mb-2">Ikona zastępcza (do podglądu):</p>
                 <div className="grid grid-cols-6 gap-2">
                   {ICONS.map(icon => (
