@@ -1,4 +1,24 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, Component } from 'react';
+
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(e) { return { error: e }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-8">
+          <div className="max-w-lg bg-red-50 border border-red-200 rounded-2xl p-6">
+            <p className="text-2xl mb-2">⚠️</p>
+            <p className="font-bold text-red-700 mb-2">Błąd renderowania</p>
+            <pre className="text-xs text-red-600 bg-red-100 rounded p-3 overflow-auto whitespace-pre-wrap">{this.state.error?.message}</pre>
+            <a href="/" className="mt-4 block text-center text-[#1B4F8A] font-bold">← Wróć na stronę główną</a>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Navbar from './components/Navbar';
@@ -133,7 +153,9 @@ export default function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
-        <AppRouter />
+        <ErrorBoundary>
+          <AppRouter />
+        </ErrorBoundary>
       </BrowserRouter>
     </HelmetProvider>
   );
