@@ -93,12 +93,12 @@ function hasImg(l) { return l.image && l.image.length > 10; }
 function Splash({ onDone }) {
   const [go, setGo] = useState(false);
   useEffect(() => {
-    const t1 = setTimeout(() => setGo(true), 1500);
-    const t2 = setTimeout(() => onDone(), 2200);
+    const t1 = setTimeout(() => setGo(true), 1500); // po 1.5s zacznij animację
+    const t2 = setTimeout(() => onDone(), 2700);     // po 1.5s + 1.1s animacji + 0.1s margines
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onDone]);
 
-  const tr = go ? 'transform 0.85s cubic-bezier(0.77,0,0.175,1)' : 'none';
+  const tr = go ? 'transform 1.1s cubic-bezier(0.77,0,0.175,1)' : 'none';
   const bg = 'url(/splash-bg.jpg)';
 
   return (
@@ -530,40 +530,32 @@ function AddListingScreen({ T }) {
     setPhotos(p => [...p, compressed]);
   }
 
-  async function submit() {
+  function submit() {
     setSending(true);
     setSendErr('');
-    try {
-      const payload = {
-        ...form,
-        images: photos,
-        image: photos[0] || '',
-        tags: [],
-        status: 'pending',
-      };
-      const ctrl = new AbortController();
-      const tid = setTimeout(() => ctrl.abort(), 20000);
-      // text/plain unika preflight CORS — serwer parsuje ręcznie
-      const r = await fetch(`${API}/api/pending`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ pending: payload }),
-        signal: ctrl.signal,
-      });
-      clearTimeout(tid);
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.error || `HTTP ${r.status}`);
-      }
-      setDone(true);
-    } catch (e) {
-      if (e.name === 'AbortError') {
-        setSendErr('Przekroczono czas oczekiwania. Sprawdź internet i spróbuj ponownie.');
+    const payload = {
+      ...form,
+      images: photos,
+      image: photos[0] || '',
+      tags: [],
+      status: 'pending',
+    };
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API}/api/pending`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 20000;
+    xhr.onload = () => {
+      setSending(false);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        setDone(true);
       } else {
-        setSendErr(`${e.message}`);
+        try { setSendErr(JSON.parse(xhr.responseText).error || `Błąd ${xhr.status}`); }
+        catch { setSendErr(`Błąd serwera ${xhr.status}`); }
       }
-    }
-    setSending(false);
+    };
+    xhr.onerror   = () => { setSending(false); setSendErr('Brak połączenia z internetem.'); };
+    xhr.ontimeout = () => { setSending(false); setSendErr('Przekroczono czas oczekiwania.'); };
+    xhr.send(JSON.stringify({ pending: payload }));
   }
 
   if (done) {
