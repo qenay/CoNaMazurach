@@ -25,6 +25,32 @@
 
 * { box-sizing: border-box; }
 
+/* ─── Mobile performance ──────────────────────────────────────────────────── */
+
+/* Removes 300ms tap delay on all interactive elements */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* No flash on tap for the whole app */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent accidental text selection during swipe gestures */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Re-enable text selection in form inputs */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;

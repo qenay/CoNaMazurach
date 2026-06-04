@@ -253,7 +253,7 @@ const Card = memo(function Card({ listing, onClick, favs, toggleFav, T }) {
   const c = cat(listing.category);
   const isFav = favs?.has(String(listing.id));
   return (
-    <div onClick={() => onClick(listing)} style={{ background: T.card, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', cursor: 'pointer', position: 'relative' }}>
+    <div onClick={() => onClick(listing)} style={{ background: T.card, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', cursor: 'pointer', position: 'relative', contain: 'layout style paint' }}>
       <div style={{ position: 'relative', aspectRatio: '16/9', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {hasImg(listing)
           ? <img src={listing.image} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
@@ -261,7 +261,7 @@ const Card = memo(function Card({ listing, onClick, favs, toggleFav, T }) {
         <div style={{ position: 'absolute', top: 10, left: 10, background: c.color, color: '#fff', padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>{c.icon} {c.label}</div>
         <button
           onClick={e => { e.stopPropagation(); toggleFav && toggleFav(String(listing.id)); }}
-          style={{ position: 'absolute', top: 8, right: 8, width: 34, height: 34, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', transition: 'transform 0.15s', backdropFilter: 'blur(4px)' }}
+          style={{ position: 'absolute', top: 8, right: 8, width: 34, height: 34, borderRadius: 999, background: 'rgba(255,255,255,0.95)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, boxShadow: '0 1px 6px rgba(0,0,0,0.15)', transition: 'transform 0.15s' }}
           aria-label={isFav ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
         >{isFav ? '❤️' : '🤍'}</button>
       </div>
@@ -302,7 +302,7 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
   const mailto = `mailto:conamazurach@gmail.com?subject=${encodeURIComponent(`Zapytanie: ${listing.title}`)}&body=${encodeURIComponent(`Dzień dobry,\n\nChciałbym się dowiedzieć więcej o "${listing.title}" w ${listing.city}.\n\nPozdrawiam`)}`;
 
   return (
-    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ position: 'relative', aspectRatio: '4/3', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {hasImg(listing)
           ? <img src={listing.image} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -680,7 +680,7 @@ function AddListingScreen({ T }) {
 
   if (done) {
     return (
-      <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg }}>
+      <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
         <div style={{ padding: 20, paddingBottom: 80 }}>
           <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', borderRadius: 24, padding: 28, marginBottom: 20, textAlign: 'center' }}>
             <p style={{ fontSize: 52, margin: '0 0 10px' }}>🎉</p>
@@ -705,7 +705,7 @@ function AddListingScreen({ T }) {
   }
 
   return (
-    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ padding: '16px 16px 0' }}>
         <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>Dodaj ogłoszenie</p>
         <p style={{ margin: '2px 0 16px', fontSize: 13, color: T.muted }}>Krok {step + 1} z 3</p>
@@ -950,6 +950,7 @@ export default function AppMobile() {
   const [showFavs,  setShowFavs]  = useState(false);
   const [themeName, setThemeName] = useState(loadTheme);
   const mainContentRef = useRef(null);
+  const [mountedTabs, setMountedTabs] = useState(() => new Set(['odkryj']));
 
   const isDark = themeName === 'dark';
   const T = THEMES[themeName];
@@ -959,6 +960,11 @@ export default function AppMobile() {
     setThemeName(next);
     localStorage.setItem(THEME_KEY, next);
   }
+
+  const handleTabChange = useCallback((id) => {
+    setTab(id);
+    setMountedTabs(prev => prev.has(id) ? prev : new Set([...prev, id]));
+  }, []);
 
   const toggleFav = useCallback((id) => {
     setFavs(prev => {
@@ -1007,13 +1013,31 @@ export default function AppMobile() {
       {!loading && (
         <>
           <div ref={mainContentRef} style={{ position: 'absolute', top: 'env(safe-area-inset-top)', left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', overflowY: 'hidden' }}>
-            {tab === 'odkryj'    && <DiscoverScreen  listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
-            {tab === 'mapa'      && <MapScreen        listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
-            {tab === 'dodaj'     && <AddListingScreen T={T} />}
-            {tab === 'kalendarz' && <CalendarScreen   listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
-            {tab === 'profil'    && <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />}
+            <div style={{ height: '100%', display: tab === 'odkryj' ? 'block' : 'none' }}>
+              <DiscoverScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
+            </div>
+            {mountedTabs.has('mapa') && (
+              <div style={{ height: '100%', display: tab === 'mapa' ? 'block' : 'none' }}>
+                <MapScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
+              </div>
+            )}
+            {mountedTabs.has('dodaj') && (
+              <div style={{ height: '100%', display: tab === 'dodaj' ? 'block' : 'none' }}>
+                <AddListingScreen T={T} />
+              </div>
+            )}
+            {mountedTabs.has('kalendarz') && (
+              <div style={{ height: '100%', display: tab === 'kalendarz' ? 'block' : 'none' }}>
+                <CalendarScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
+              </div>
+            )}
+            {mountedTabs.has('profil') && (
+              <div style={{ height: '100%', display: tab === 'profil' ? 'block' : 'none' }}>
+                <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
+              </div>
+            )}
           </div>
-          <BottomNav active={tab} onChange={setTab} T={T} />
+          <BottomNav active={tab} onChange={handleTabChange} T={T} />
         </>
       )}
 
