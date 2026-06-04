@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, memo, lazy, Suspense } from 'react';
 import { mockListings } from './data/mockListings';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -249,7 +249,7 @@ function CategoryChips({ active, onChange, T }) {
 }
 
 // ─── Listing card (full width) ────────────────────────────────────────────────
-function Card({ listing, onClick, favs, toggleFav, T }) {
+const Card = memo(function Card({ listing, onClick, favs, toggleFav, T }) {
   const c = cat(listing.category);
   const isFav = favs?.has(String(listing.id));
   return (
@@ -283,13 +283,13 @@ function Card({ listing, onClick, favs, toggleFav, T }) {
       </div>
     </div>
   );
-}
+});
 
 // ─── Swipe-back overlay wrapper ───────────────────────────────────────────────
 function SwipeBackWrapper({ onBack, zIndex, bgRef, children }) {
   const ref = useSwipeBack(onBack, bgRef);
   return (
-    <div ref={ref} style={{ position: 'absolute', inset: 0, zIndex }}>
+    <div ref={ref} style={{ position: 'absolute', inset: 0, zIndex, willChange: 'transform' }}>
       {children}
     </div>
   );
@@ -393,15 +393,16 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
-  const filtered = listings.filter(l => {
-    const matchCat = cat === 'all' || l.category === cat;
+  const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    const matchSearch = !q || l.title?.toLowerCase().includes(q) || l.city?.toLowerCase().includes(q) || (l.tags||[]).some(t => t.toLowerCase().includes(q));
-    return matchCat && matchSearch;
-  });
+    return listings.filter(l => {
+      if (cat !== 'all' && l.category !== cat) return false;
+      return !q || l.title?.toLowerCase().includes(q) || l.city?.toLowerCase().includes(q) || (l.tags||[]).some(t => t.toLowerCase().includes(q));
+    });
+  }, [listings, cat, search]);
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ padding: '16px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>Cześć! 👋</p>
@@ -520,20 +521,27 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
   const daysInMonth  = new Date(year, month + 1, 0).getDate();
   const firstWeekday = (() => { const d = new Date(year, month, 1).getDay(); return d === 0 ? 6 : d - 1; })();
 
-  const eventDays = new Set(
+  const eventDays = useMemo(() => new Set(
     listings.filter(l => l.date).filter(l => { const d = new Date(l.date); return d.getFullYear() === year && d.getMonth() === month; }).map(l => new Date(l.date).getDate())
-  );
+  ), [listings, year, month]);
 
-  const dayListings = selDay
+  const dayListings = useMemo(() => selDay
     ? listings.filter(l => { if (!l.date) return false; const d = new Date(l.date); return d.getDate() === selDay && d.getMonth() === month && d.getFullYear() === year; })
-    : [];
+    : [], [listings, selDay, month, year]);
 
-  const cells = [];
-  for (let i = 0; i < firstWeekday; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  const upcomingListings = useMemo(() =>
+    listings.filter(l => l.date && new Date(l.date) >= today).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5)
+  , [listings]);
+
+  const cells = useMemo(() => {
+    const c = [];
+    for (let i = 0; i < firstWeekday; i++) c.push(null);
+    for (let d = 1; d <= daysInMonth; d++) c.push(d);
+    return c;
+  }, [firstWeekday, daysInMonth]);
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       {/* Calendar header */}
       <div style={{ margin: 16, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.1)' }}>
         <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', padding: '16px 20px' }}>
@@ -588,10 +596,10 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
         ) : (
           <>
             <p style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#64748b' }}>Najbliższe wydarzenia</p>
-            {listings.filter(l => l.date && new Date(l.date) >= today).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5).map(l => (
+            {upcomingListings.map(l => (
               <div key={l.id} style={{ marginBottom: 12 }}><Card listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} /></div>
             ))}
-            {listings.filter(l => l.date && new Date(l.date) >= today).length === 0 && (
+            {upcomingListings.length === 0 && (
               <div style={{ background: T.card, borderRadius: 16, padding: 20, textAlign: 'center', color: T.subtle }}>
                 <p style={{ fontSize: 32 }}>📅</p>
                 <p style={{ fontWeight: 600 }}>Brak nadchodzących wydarzeń</p>
@@ -802,9 +810,9 @@ function AddListingScreen({ T }) {
 
 // ─── Favorites screen ─────────────────────────────────────────────────────────
 function FavoritesScreen({ listings, favs, onSelect, toggleFav, onBack, T }) {
-  const favListings = listings.filter(l => favs.has(String(l.id)));
+  const favListings = useMemo(() => listings.filter(l => favs.has(String(l.id))), [listings, favs]);
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>←</button>
         <div>
@@ -952,14 +960,14 @@ export default function AppMobile() {
     localStorage.setItem(THEME_KEY, next);
   }
 
-  function toggleFav(id) {
+  const toggleFav = useCallback((id) => {
     setFavs(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       saveFavs(next);
       return next;
     });
-  }
+  }, []);
 
   useEffect(() => {
     const tryLocal = () =>
