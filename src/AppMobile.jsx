@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, memo, lazy, Suspense } from 'react';
 import { mockListings } from './data/mockListings';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -29,6 +29,109 @@ const THEME_KEY = 'cnm_theme';
 function loadFavs()  { try { return new Set(JSON.parse(localStorage.getItem(FAV_KEY) || '[]')); } catch { return new Set(); } }
 function saveFavs(s) { try { localStorage.setItem(FAV_KEY, JSON.stringify([...s])); } catch {} }
 function loadTheme() { return localStorage.getItem(THEME_KEY) || 'light'; }
+
+function useSwipeBack(onBack, bgRef) {
+  const elRef = useRef(null);
+  const onBackRef = useRef(onBack);
+  const state = useRef({ startX: null, startY: null, startTime: null, dragging: false });
+  useEffect(() => { onBackRef.current = onBack; }, [onBack]);
+
+  useEffect(() => {
+    const el = elRef.current;
+    if (!el) return;
+
+    function setBg(dx) {
+      const bg = bgRef?.current;
+      if (!bg) return;
+      // parallax: bg slides from -30% toward 0 as overlay moves right
+      const offset = -window.innerWidth * 0.3 + dx * 0.3;
+      bg.style.transform = `translateX(${offset}px)`;
+    }
+
+    function resetBg(animate) {
+      const bg = bgRef?.current;
+      if (!bg) return;
+      if (animate) bg.style.transition = 'transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      bg.style.transform = '';
+      setTimeout(() => { if (bg) { bg.style.transition = ''; } }, 350);
+    }
+
+    function onTouchStart(e) {
+      const t = e.touches[0];
+      if (t.clientX < 40)
+        state.current = { startX: t.clientX, startY: t.clientY, startTime: Date.now(), dragging: false };
+    }
+
+    function onTouchMove(e) {
+      const s = state.current;
+      if (s.startX === null) return;
+      const t = e.touches[0];
+      const dx = t.clientX - s.startX;
+      const dy = Math.abs(t.clientY - s.startY);
+      if (!s.dragging) {
+        if (dx > 8 && dy < dx * 0.8) s.dragging = true;
+        else if (dy > 15) { s.startX = null; return; }
+      }
+      if (s.dragging && dx > 0) {
+        e.preventDefault();
+        el.style.transition = 'none';
+        el.style.transform = `translateX(${dx}px)`;
+        el.style.boxShadow = `-${Math.min(dx * 0.15, 20)}px 0 30px rgba(0,0,0,${Math.max(0.15 - dx * 0.0005, 0).toFixed(3)})`;
+        if (bgRef?.current) { bgRef.current.style.transition = 'none'; setBg(dx); }
+      }
+    }
+
+    function onTouchEnd(e) {
+      const s = state.current;
+      if (s.startX === null) return;
+      const endX = e.changedTouches[0].clientX;
+      const dx = endX - s.startX;
+      const velocity = dx / Math.max(Date.now() - s.startTime, 1); // px/ms
+      const dragging = s.dragging;
+      state.current = { startX: null, startY: null, startTime: null, dragging: false };
+      if (!dragging) return;
+
+      const shouldBack = dx > window.innerWidth * 0.35 || (velocity > 0.4 && dx > 40);
+
+      if (shouldBack) {
+        el.style.transition = 'transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.28s';
+        el.style.transform = `translateX(${window.innerWidth}px)`;
+        el.style.boxShadow = 'none';
+        resetBg(true);
+        setTimeout(() => { el.style.transition = ''; el.style.transform = ''; el.style.boxShadow = ''; onBackRef.current(); }, 280);
+      } else {
+        el.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s';
+        el.style.transform = 'translateX(0)';
+        el.style.boxShadow = '';
+        resetBg(true);
+        setTimeout(() => { el.style.transition = ''; }, 350);
+      }
+    }
+
+    function onTouchCancel() {
+      if (!state.current.dragging) return;
+      state.current = { startX: null, startY: null, startTime: null, dragging: false };
+      el.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      el.style.transform = 'translateX(0)';
+      el.style.boxShadow = '';
+      resetBg(true);
+      setTimeout(() => { el.style.transition = ''; }, 350);
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchCancel, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchCancel);
+    };
+  }, []);
+
+  return elRef;
+}
 
 const THEMES = {
   light: {
@@ -94,11 +197,11 @@ function Splash({ onDone }) {
   const [go, setGo] = useState(false);
   useEffect(() => {
     const t1 = setTimeout(() => setGo(true), 1500); // po 1.5s zacznij animację
-    const t2 = setTimeout(() => onDone(), 2400);     // łącznie 2.4 sek
+    const t2 = setTimeout(() => onDone(), 2700);     // po 1.5s + 1.1s animacji + 0.1s margines
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onDone]);
 
-  const tr = go ? 'transform 0.85s cubic-bezier(0.77,0,0.175,1)' : 'none';
+  const tr = go ? 'transform 1.1s cubic-bezier(0.77,0,0.175,1)' : 'none';
   const bg = 'url(/splash-bg.jpg)';
 
   return (
@@ -146,11 +249,11 @@ function CategoryChips({ active, onChange, T }) {
 }
 
 // ─── Listing card (full width) ────────────────────────────────────────────────
-function Card({ listing, onClick, favs, toggleFav, T }) {
+const Card = memo(function Card({ listing, onClick, favs, toggleFav, T }) {
   const c = cat(listing.category);
   const isFav = favs?.has(String(listing.id));
   return (
-    <div onClick={() => onClick(listing)} style={{ background: T.card, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', cursor: 'pointer', position: 'relative' }}>
+    <div onClick={() => onClick(listing)} style={{ background: T.card, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', cursor: 'pointer', position: 'relative', contain: 'layout style paint' }}>
       <div style={{ position: 'relative', aspectRatio: '16/9', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {hasImg(listing)
           ? <img src={listing.image} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
@@ -158,7 +261,7 @@ function Card({ listing, onClick, favs, toggleFav, T }) {
         <div style={{ position: 'absolute', top: 10, left: 10, background: c.color, color: '#fff', padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>{c.icon} {c.label}</div>
         <button
           onClick={e => { e.stopPropagation(); toggleFav && toggleFav(String(listing.id)); }}
-          style={{ position: 'absolute', top: 8, right: 8, width: 34, height: 34, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', transition: 'transform 0.15s', backdropFilter: 'blur(4px)' }}
+          style={{ position: 'absolute', top: 8, right: 8, width: 34, height: 34, borderRadius: 999, background: 'rgba(255,255,255,0.95)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, boxShadow: '0 1px 6px rgba(0,0,0,0.15)', transition: 'transform 0.15s' }}
           aria-label={isFav ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
         >{isFav ? '❤️' : '🤍'}</button>
       </div>
@@ -180,6 +283,16 @@ function Card({ listing, onClick, favs, toggleFav, T }) {
       </div>
     </div>
   );
+});
+
+// ─── Swipe-back overlay wrapper ───────────────────────────────────────────────
+function SwipeBackWrapper({ onBack, zIndex, bgRef, children }) {
+  const ref = useSwipeBack(onBack, bgRef);
+  return (
+    <div ref={ref} style={{ position: 'absolute', inset: 0, zIndex, willChange: 'transform' }}>
+      {children}
+    </div>
+  );
 }
 
 // ─── Detail screen ────────────────────────────────────────────────────────────
@@ -189,13 +302,13 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
   const mailto = `mailto:conamazurach@gmail.com?subject=${encodeURIComponent(`Zapytanie: ${listing.title}`)}&body=${encodeURIComponent(`Dzień dobry,\n\nChciałbym się dowiedzieć więcej o "${listing.title}" w ${listing.city}.\n\nPozdrawiam`)}`;
 
   return (
-    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ position: 'relative', aspectRatio: '4/3', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {hasImg(listing)
           ? <img src={listing.image} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <span style={{ fontSize: 80 }}>{c.icon}</span>}
-        <button onClick={onBack} style={{ position: 'absolute', top: 16, left: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>←</button>
-        <button onClick={() => toggleFav && toggleFav(String(listing.id))} style={{ position: 'absolute', top: 16, right: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>{isFav ? '❤️' : '🤍'}</button>
+        <button onClick={onBack} style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', left: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>←</button>
+        <button onClick={() => toggleFav && toggleFav(String(listing.id))} style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', right: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>{isFav ? '❤️' : '🤍'}</button>
       </div>
 
       <div style={{ padding: 20, paddingBottom: 100 }}>
@@ -280,15 +393,16 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
-  const filtered = listings.filter(l => {
-    const matchCat = cat === 'all' || l.category === cat;
+  const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    const matchSearch = !q || l.title?.toLowerCase().includes(q) || l.city?.toLowerCase().includes(q) || (l.tags||[]).some(t => t.toLowerCase().includes(q));
-    return matchCat && matchSearch;
-  });
+    return listings.filter(l => {
+      if (cat !== 'all' && l.category !== cat) return false;
+      return !q || l.title?.toLowerCase().includes(q) || l.city?.toLowerCase().includes(q) || (l.tags||[]).some(t => t.toLowerCase().includes(q));
+    });
+  }, [listings, cat, search]);
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ padding: '16px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>Cześć! 👋</p>
@@ -407,20 +521,27 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
   const daysInMonth  = new Date(year, month + 1, 0).getDate();
   const firstWeekday = (() => { const d = new Date(year, month, 1).getDay(); return d === 0 ? 6 : d - 1; })();
 
-  const eventDays = new Set(
+  const eventDays = useMemo(() => new Set(
     listings.filter(l => l.date).filter(l => { const d = new Date(l.date); return d.getFullYear() === year && d.getMonth() === month; }).map(l => new Date(l.date).getDate())
-  );
+  ), [listings, year, month]);
 
-  const dayListings = selDay
+  const dayListings = useMemo(() => selDay
     ? listings.filter(l => { if (!l.date) return false; const d = new Date(l.date); return d.getDate() === selDay && d.getMonth() === month && d.getFullYear() === year; })
-    : [];
+    : [], [listings, selDay, month, year]);
 
-  const cells = [];
-  for (let i = 0; i < firstWeekday; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  const upcomingListings = useMemo(() =>
+    listings.filter(l => l.date && new Date(l.date) >= today).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5)
+  , [listings]);
+
+  const cells = useMemo(() => {
+    const c = [];
+    for (let i = 0; i < firstWeekday; i++) c.push(null);
+    for (let d = 1; d <= daysInMonth; d++) c.push(d);
+    return c;
+  }, [firstWeekday, daysInMonth]);
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       {/* Calendar header */}
       <div style={{ margin: 16, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.1)' }}>
         <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', padding: '16px 20px' }}>
@@ -475,10 +596,10 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
         ) : (
           <>
             <p style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#64748b' }}>Najbliższe wydarzenia</p>
-            {listings.filter(l => l.date && new Date(l.date) >= today).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5).map(l => (
+            {upcomingListings.map(l => (
               <div key={l.id} style={{ marginBottom: 12 }}><Card listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} /></div>
             ))}
-            {listings.filter(l => l.date && new Date(l.date) >= today).length === 0 && (
+            {upcomingListings.length === 0 && (
               <div style={{ background: T.card, borderRadius: 16, padding: 20, textAlign: 'center', color: T.subtle }}>
                 <p style={{ fontSize: 32 }}>📅</p>
                 <p style={{ fontWeight: 600 }}>Brak nadchodzących wydarzeń</p>
@@ -513,73 +634,69 @@ function compressImage(file, maxW = 900) {
 
 // ─── Add listing screen ────────────────────────────────────────────────────────
 function AddListingScreen({ T }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep]       = useState(0);
   const EMPTY_FORM = { category: '', title: '', city: '', address: '', description: '', price: '', website: '', name: '', email: '', phone: '' };
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [done, setDone] = useState(false);
+  const [form, setForm]       = useState(EMPTY_FORM);
+  const [photos, setPhotos]   = useState([]); // max 3, photos[0] = okładka
+  const [sending, setSending] = useState(false);
+  const [done, setDone]       = useState(false);
+  const [sendErr, setSendErr] = useState('');
 
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const inputStyle = { width: '100%', padding: '13px 16px', borderRadius: 14, border: `1.5px solid ${T.inputBorder}`, fontSize: 14, ...FONT, boxSizing: 'border-box', outline: 'none', background: T.input, color: T.text };
 
-  const CONTACT_EMAIL = 'conamazurach@gmail.com';
+  async function addPhoto(file) {
+    if (photos.length >= 3) return;
+    const compressed = await compressImage(file);
+    setPhotos(p => [...p, compressed]);
+  }
 
-  function buildMsg() {
-    return [
-      `NOWE OGŁOSZENIE — Co na Mazurach?`,
-      ``,
-      `📌 TYTUŁ: ${form.title}`,
-      `📂 KATEGORIA: ${form.category}`,
-      `📍 MIASTO: ${form.city}`,
-      `🏠 ADRES: ${form.address || 'Nie podano'}`,
-      ``,
-      `📝 OPIS:`,
-      form.description,
-      ``,
-      `💰 CENA: ${form.price || 'Nie podano'}`,
-      form.website ? `🌐 STRONA / FACEBOOK: ${form.website}` : null,
-      `📞 TELEFON: ${form.phone || 'Nie podano'}`,
-      ``,
-      `Zgłaszający: ${form.name}${form.email ? ` <${form.email}>` : ''}`,
-      `Data: ${new Date().toLocaleString('pl-PL')}`,
-    ].filter(Boolean).join('\n');
+  async function submit() {
+    setSending(true);
+    setSendErr('');
+    try {
+      const payload = {
+        ...form,
+        images: photos,
+        image: photos[0] || '',
+        tags: [],
+        status: 'pending',
+      };
+      const r = await fetch(`${API}/api/pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pending: payload }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || `Błąd serwera ${r.status}`);
+      }
+      setDone(true);
+    } catch (e) {
+      setSendErr(e.message || 'Nieznany błąd. Spróbuj ponownie.');
+    }
+    setSending(false);
   }
 
   if (done) {
-    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Nowe ogłoszenie: ${form.title}`)}&body=${encodeURIComponent(buildMsg())}`;
-    const cat = CATS.find(c => c.id === form.category);
     return (
-      <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg }}>
+      <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
         <div style={{ padding: 20, paddingBottom: 80 }}>
           <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', borderRadius: 24, padding: 28, marginBottom: 20, textAlign: 'center' }}>
             <p style={{ fontSize: 52, margin: '0 0 10px' }}>🎉</p>
-            <p style={{ margin: 0, fontWeight: 800, fontSize: 20, color: '#fff' }}>Gotowe!</p>
+            <p style={{ margin: 0, fontWeight: 800, fontSize: 20, color: '#fff' }}>Zgłoszenie wysłane!</p>
             <p style={{ margin: '8px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
-              Formularz wypełniony. Otwórz pocztę, sprawdź treść i kliknij Wyślij.
+              Twoje ogłoszenie trafiło do panelu admina. Po weryfikacji pojawi się na portalu automatycznie.
             </p>
           </div>
-          <div style={{ background: T.card, borderRadius: 20, padding: 18, marginBottom: 16 }}>
-            <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: 14, color: T.text }}>📋 Podsumowanie zgłoszenia</p>
-            {[
-              { label: 'Kategoria', val: cat ? `${cat.icon} ${cat.label}` : form.category },
-              { label: 'Tytuł',    val: form.title },
-              { label: 'Miasto',   val: form.city },
-              form.address ? { label: 'Adres',   val: form.address } : null,
-              { label: 'Cena',     val: form.price || 'Nie podano' },
-              form.website ? { label: 'Strona',  val: form.website } : null,
-              form.phone   ? { label: 'Telefon', val: form.phone }   : null,
-              { label: 'Kontakt',  val: form.name + (form.email ? ` · ${form.email}` : '') },
-            ].filter(Boolean).map((row, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
-                <p style={{ margin: 0, fontSize: 12, color: T.subtle, width: 68, flexShrink: 0, fontWeight: 600 }}>{row.label}</p>
-                <p style={{ margin: 0, fontSize: 13, color: T.text, fontWeight: 500, wordBreak: 'break-all' }}>{row.val}</p>
-              </div>
-            ))}
+          <div style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 16, display: 'flex', gap: 12 }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>✅</span>
+            <p style={{ margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 }}>
+              <strong style={{ color: T.text }}>Co dalej?</strong><br/>
+              Administrator przeglądnie Twoje zgłoszenie i opublikuje je na stronie i w aplikacji.
+            </p>
           </div>
-          <a href={mailto} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '17px', borderRadius: 18, background: '#1B4F8A', color: '#fff', textAlign: 'center', fontWeight: 800, fontSize: 17, textDecoration: 'none', marginBottom: 10, boxShadow: '0 4px 16px rgba(27,79,138,0.35)' }}>
-            <span style={{ fontSize: 22 }}>📧</span> Otwórz pocztę i wyślij
-          </a>
-          <p style={{ textAlign: 'center', fontSize: 11, color: T.subtle, margin: '0 0 16px' }}>Wyślij na: {CONTACT_EMAIL}</p>
-          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); }} style={{ width: '100%', padding: '14px', borderRadius: 16, border: `2px solid ${T.border}`, background: T.card, color: T.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...FONT }}>
+          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); setPhotos([]); }} style={{ width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
             + Dodaj kolejne ogłoszenie
           </button>
         </div>
@@ -588,7 +705,7 @@ function AddListingScreen({ T }) {
   }
 
   return (
-    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg }}>
+    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ padding: '16px 16px 0' }}>
         <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>Dodaj ogłoszenie</p>
         <p style={{ margin: '2px 0 16px', fontSize: 13, color: T.muted }}>Krok {step + 1} z 3</p>
@@ -636,7 +753,32 @@ function AddListingScreen({ T }) {
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>
               🌐 Strona / Facebook <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>(opcjonalne)</span>
             </p>
-            <input value={form.website} onChange={e => f('website', e.target.value)} placeholder="https://facebook.com/..." type="url" style={{ ...inputStyle, marginBottom: 20 }} />
+            <input value={form.website} onChange={e => f('website', e.target.value)} placeholder="https://facebook.com/..." type="url" style={{ ...inputStyle, marginBottom: 18 }} />
+
+            {/* Zdjęcia */}
+            <p style={{ margin: '0 0 8px', fontWeight: 600, fontSize: 13, color: T.muted }}>
+              📷 Zdjęcia <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>maks. 3 — pierwsze = okładka</span>
+            </p>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ flex: 1, aspectRatio: '1', borderRadius: 14, overflow: 'hidden', position: 'relative', border: `2px dashed ${photos[i] ? '#1B4F8A' : T.border}`, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {photos[i] ? (
+                    <>
+                      <img src={photos[i]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      {i === 0 && <div style={{ position: 'absolute', bottom: 4, left: 0, right: 0, textAlign: 'center', fontSize: 9, fontWeight: 700, color: '#fff', background: 'rgba(27,79,138,0.7)', padding: '2px 0' }}>OKŁADKA</div>}
+                      <button onClick={() => setPhotos(p => p.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 3, right: 3, width: 22, height: 22, borderRadius: 999, background: 'rgba(0,0,0,0.55)', border: 'none', color: '#fff', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>×</button>
+                    </>
+                  ) : (
+                    <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: photos.length > i ? 'default' : 'pointer', gap: 4 }}>
+                      <span style={{ fontSize: 22, opacity: 0.4 }}>📷</span>
+                      <span style={{ fontSize: 10, color: T.subtle }}>{i === 0 ? 'Okładka' : `Zdjęcie ${i+1}`}</span>
+                      {photos.length === i && <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files[0] && addPhoto(e.target.files[0])} />}
+                    </label>
+                  )}
+                </div>
+              ))}
+            </div>
+
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setStep(0)} style={{ flex: 1, padding: '14px', borderRadius: 16, border: `2px solid ${T.border}`, background: T.card, color: T.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...FONT }}>← Wróć</button>
               <button onClick={() => setStep(2)} disabled={!form.description} style={{ flex: 2, padding: '14px', borderRadius: 16, background: !form.description ? T.border : '#1B4F8A', color: !form.description ? T.subtle : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>Dalej →</button>
@@ -651,11 +793,12 @@ function AddListingScreen({ T }) {
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Email</p>
             <input value={form.email} onChange={e => f('email', e.target.value)} placeholder="twoj@email.pl" type="email" style={{ ...inputStyle, marginBottom: 14 }} />
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Telefon</p>
-            <input value={form.phone} onChange={e => f('phone', e.target.value)} placeholder="+48 123 456 789" style={{ ...inputStyle, marginBottom: 20 }} />
+            <input value={form.phone} onChange={e => f('phone', e.target.value)} placeholder="+48 123 456 789" style={{ ...inputStyle, marginBottom: 6 }} />
+            {sendErr ? <p style={{ fontSize: 12, color: '#EF4444', margin: '8px 0 10px' }}>⚠️ {sendErr}</p> : <div style={{ height: 20 }} />}
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setStep(1)} style={{ flex: 1, padding: '14px', borderRadius: 16, border: `2px solid ${T.border}`, background: T.card, color: T.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...FONT }}>← Wróć</button>
-              <button onClick={() => setDone(true)} disabled={!form.name} style={{ flex: 2, padding: '14px', borderRadius: 16, background: !form.name ? T.border : '#2E9E6E', color: !form.name ? T.subtle : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
-                ✓ Generuj wiadomość
+              <button onClick={submit} disabled={!form.name || sending} style={{ flex: 2, padding: '14px', borderRadius: 16, background: !form.name || sending ? T.border : '#2E9E6E', color: !form.name || sending ? T.subtle : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
+                {sending ? '⏳ Wysyłanie...' : '✓ Wyślij zgłoszenie'}
               </button>
             </div>
           </div>
@@ -667,10 +810,10 @@ function AddListingScreen({ T }) {
 
 // ─── Favorites screen ─────────────────────────────────────────────────────────
 function FavoritesScreen({ listings, favs, onSelect, toggleFav, onBack, T }) {
-  const favListings = listings.filter(l => favs.has(String(l.id)));
+  const favListings = useMemo(() => listings.filter(l => favs.has(String(l.id))), [listings, favs]);
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
-      <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
+      <div style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>←</button>
         <div>
           <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>❤️ Ulubione</p>
@@ -705,41 +848,26 @@ function AboutScreen({ onBack, T }) {
   ];
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
-      {/* Header */}
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.bg, padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.border}` }}>
         <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>←</button>
         <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.text }}>O nas</p>
       </div>
-
       <div style={{ padding: '0 16px 40px' }}>
-        {/* Hero */}
         <div style={{ background: 'linear-gradient(135deg, #0e2444 0%, #1B4F8A 60%, #1a6fa8 100%)', borderRadius: 24, padding: '32px 24px', margin: '16px 0', textAlign: 'center' }}>
           <img src="/logo1.png" alt="Co na Mazurach" style={{ width: 80, height: 80, borderRadius: 20, marginBottom: 14, objectFit: 'contain' }} />
           <p style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: -0.5 }}>Co na Mazurach?</p>
           <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>Bezpłatna platforma stworzona<br/>z miłości do Mazur</p>
         </div>
-
-        {/* Opis główny */}
         <div style={{ background: T.card, borderRadius: 20, padding: 20, marginBottom: 12 }}>
           <p style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800, color: T.text }}>Jedno miejsce. Wszystko o Mazurach.</p>
-          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.75 }}>
-            Mazury to kraina 3&nbsp;000 jezior, sosnowych lasów i nieba odbitego w wodzie. Miejsce, które wciąga na całe życie — i zasługuje na przewodnik godny swojej wyjątkowości.
-          </p>
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.75 }}>Mazury to kraina 3&nbsp;000 jezior, sosnowych lasów i nieba odbitego w wodzie. Miejsce, które wciąga na całe życie — i zasługuje na przewodnik godny swojej wyjątkowości.</p>
           <div style={{ height: 1, background: T.border, margin: '14px 0' }} />
-          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.75 }}>
-            Stworzyliśmy <strong style={{ color: T.text }}>Co na Mazurach?</strong> bo byliśmy zmęczeni przeszukiwaniem dziesiątek stron przed każdym wyjazdem. Noclegi tu, koncerty tam, restauracje gdzieś indziej... Teraz wszystko jest w jednym miejscu — wygodnie, szybko i bezpłatnie.
-          </p>
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.75 }}>Stworzyliśmy <strong style={{ color: T.text }}>Co na Mazurach?</strong> bo byliśmy zmęczeni przeszukiwaniem dziesiątek stron przed każdym wyjazdem. Noclegi tu, koncerty tam, restauracje gdzieś indziej... Teraz wszystko jest w jednym miejscu — wygodnie, szybko i bezpłatnie.</p>
         </div>
-
-        {/* Darmowe */}
         <div style={{ background: 'linear-gradient(135deg, rgba(26,111,168,0.12), rgba(46,158,110,0.10))', borderRadius: 20, padding: 20, marginBottom: 12, border: `1.5px solid rgba(26,111,168,0.2)` }}>
           <p style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: '#1a6fa8' }}>💙 100% bezpłatne — dla wszystkich</p>
-          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.7 }}>
-            Ani grosz dla turystów. Ani grosz dla właścicieli miejsc. Zero prowizji, zero ukrytych opłat. Wierzymy, że Mazury są dla wszystkich — i każdy zasługuje na łatwy dostęp do najlepszych miejsc w regionie.
-          </p>
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.7 }}>Ani grosz dla turystów. Ani grosz dla właścicieli miejsc. Zero prowizji, zero ukrytych opłat. Wierzymy, że Mazury są dla wszystkich — i każdy zasługuje na łatwy dostęp do najlepszych miejsc w regionie.</p>
         </div>
-
-        {/* Kategorie */}
         <div style={{ background: T.card, borderRadius: 20, padding: 20, marginBottom: 12 }}>
           <p style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 800, color: T.text }}>Co znajdziesz w aplikacji?</p>
           {categories.map((c, i) => (
@@ -752,27 +880,17 @@ function AboutScreen({ onBack, T }) {
             </div>
           ))}
         </div>
-
-        {/* Dla właścicieli */}
         <div style={{ background: 'linear-gradient(135deg, rgba(46,158,110,0.12), rgba(26,111,168,0.08))', borderRadius: 20, padding: 20, marginBottom: 20, border: `1.5px solid rgba(46,158,110,0.2)` }}>
           <p style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: '#2E9E6E' }}>🏡 Masz miejsce na Mazurach?</p>
-          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.7 }}>
-            Dodaj je za darmo i dotrzyj do tysięcy turystów szukających właśnie czegoś takiego jak Ty oferujesz. Bądź częścią mazurskiej społeczności — razem budujemy coś wyjątkowego.
-          </p>
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.7 }}>Dodaj je za darmo i dotrzyj do tysięcy turystów szukających właśnie czegoś takiego jak Ty oferujesz. Bądź częścią mazurskiej społeczności — razem budujemy coś wyjątkowego.</p>
         </div>
-
-        {/* Przyciski */}
-        <a href="mailto:kontakt@conamazurach.pl?subject=Chcę dodać moje miejsce" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '17px', borderRadius: 18, background: '#1a6fa8', color: '#fff', textAlign: 'center', fontWeight: 800, fontSize: 16, textDecoration: 'none', marginBottom: 10, boxShadow: '0 4px 16px rgba(26,111,168,0.35)', ...FONT }}>
+        <a href="mailto:kontakt@conamazurach.pl?subject=Chcę dodać moje miejsce" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '17px', borderRadius: 18, background: '#1a6fa8', color: '#fff', fontWeight: 800, fontSize: 16, textDecoration: 'none', marginBottom: 10, boxShadow: '0 4px 16px rgba(26,111,168,0.35)', ...FONT }}>
           + Dodaj swoje miejsce — to nic nie kosztuje
         </a>
-        <a href="https://conamazurach.pl" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '15px', borderRadius: 18, background: 'transparent', color: '#1a6fa8', textAlign: 'center', fontWeight: 700, fontSize: 15, textDecoration: 'none', border: `2px solid #1a6fa8`, ...FONT }}>
+        <a href="https://conamazurach.pl" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '15px', borderRadius: 18, background: 'transparent', color: '#1a6fa8', fontWeight: 700, fontSize: 15, textDecoration: 'none', border: `2px solid #1a6fa8`, ...FONT }}>
           🌐 Odwiedź conamazurach.pl
         </a>
-
-        {/* Stopka */}
-        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: T.subtle, lineHeight: 1.6 }}>
-          Zrobione z 💙 dla Mazur<br/>© 2025 Co na Mazurach?
-        </p>
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: T.subtle, lineHeight: 1.6 }}>Zrobione z 💙 dla Mazur<br/>© 2025 Co na Mazurach?</p>
       </div>
     </div>
   );
@@ -893,6 +1011,8 @@ export default function AppMobile() {
   const [showFavs,  setShowFavs]  = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [themeName, setThemeName] = useState(loadTheme);
+  const mainContentRef = useRef(null);
+  const [mountedTabs, setMountedTabs] = useState(() => new Set(['odkryj']));
 
   const isDark = themeName === 'dark';
   const T = THEMES[themeName];
@@ -903,14 +1023,19 @@ export default function AppMobile() {
     localStorage.setItem(THEME_KEY, next);
   }
 
-  function toggleFav(id) {
+  const handleTabChange = useCallback((id) => {
+    setTab(id);
+    setMountedTabs(prev => prev.has(id) ? prev : new Set([...prev, id]));
+  }, []);
+
+  const toggleFav = useCallback((id) => {
     setFavs(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       saveFavs(next);
       return next;
     });
-  }
+  }, []);
 
   useEffect(() => {
     const tryLocal = () =>
@@ -936,30 +1061,6 @@ export default function AppMobile() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
-  if (detail) {
-    return (
-      <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
-        <DetailScreen listing={detail} onBack={() => setDetail(null)} favs={favs} toggleFav={toggleFav} T={T} />
-      </div>
-    );
-  }
-
-  if (showFavs) {
-    return (
-      <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
-        <FavoritesScreen listings={listings} favs={favs} toggleFav={toggleFav} onSelect={l => { setShowFavs(false); setDetail(l); }} onBack={() => setShowFavs(false)} T={T} />
-      </div>
-    );
-  }
-
-  if (showAbout) {
-    return (
-      <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
-        <AboutScreen onBack={() => setShowAbout(false)} T={T} />
-      </div>
-    );
-  }
-
   return (
     <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
       {splash && <Splash onDone={() => setSplash(false)} />}
@@ -973,15 +1074,51 @@ export default function AppMobile() {
 
       {!loading && (
         <>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 65, overflowY: 'hidden' }}>
-            {tab === 'odkryj'    && <DiscoverScreen  listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
-            {tab === 'mapa'      && <MapScreen        listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
-            {tab === 'dodaj'     && <AddListingScreen T={T} />}
-            {tab === 'kalendarz' && <CalendarScreen   listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
-            {tab === 'profil'    && <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />}
+          <div ref={mainContentRef} style={{ position: 'absolute', top: 'env(safe-area-inset-top)', left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', overflowY: 'hidden' }}>
+            <div style={{ height: '100%', display: tab === 'odkryj' ? 'block' : 'none' }}>
+              <DiscoverScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
+            </div>
+            {mountedTabs.has('mapa') && (
+              <div style={{ height: '100%', display: tab === 'mapa' ? 'block' : 'none' }}>
+                <MapScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
+              </div>
+            )}
+            {mountedTabs.has('dodaj') && (
+              <div style={{ height: '100%', display: tab === 'dodaj' ? 'block' : 'none' }}>
+                <AddListingScreen T={T} />
+              </div>
+            )}
+            {mountedTabs.has('kalendarz') && (
+              <div style={{ height: '100%', display: tab === 'kalendarz' ? 'block' : 'none' }}>
+                <CalendarScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
+              </div>
+            )}
+            {mountedTabs.has('profil') && (
+              <div style={{ height: '100%', display: tab === 'profil' ? 'block' : 'none' }}>
+                <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
+              </div>
+            )}
           </div>
-          <BottomNav active={tab} onChange={setTab} T={T} />
+          <BottomNav active={tab} onChange={handleTabChange} T={T} />
         </>
+      )}
+
+      {showFavs && (
+        <SwipeBackWrapper onBack={() => setShowFavs(false)} zIndex={60} bgRef={mainContentRef}>
+          <FavoritesScreen listings={listings} favs={favs} toggleFav={toggleFav} onSelect={l => { setShowFavs(false); setDetail(l); }} onBack={() => setShowFavs(false)} T={T} />
+        </SwipeBackWrapper>
+      )}
+
+      {showAbout && (
+        <SwipeBackWrapper onBack={() => setShowAbout(false)} zIndex={60} bgRef={mainContentRef}>
+          <AboutScreen onBack={() => setShowAbout(false)} T={T} />
+        </SwipeBackWrapper>
+      )}
+
+      {detail && (
+        <SwipeBackWrapper onBack={() => setDetail(null)} zIndex={70} bgRef={mainContentRef}>
+          <DetailScreen listing={detail} onBack={() => setDetail(null)} favs={favs} toggleFav={toggleFav} T={T} />
+        </SwipeBackWrapper>
       )}
     </div>
   );
