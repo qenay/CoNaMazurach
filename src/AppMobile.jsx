@@ -108,13 +108,25 @@ function useSwipeBack(onBack, bgRef) {
       }
     }
 
+    function onTouchCancel() {
+      if (!state.current.dragging) return;
+      state.current = { startX: null, startY: null, startTime: null, dragging: false };
+      el.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      el.style.transform = 'translateX(0)';
+      el.style.boxShadow = '';
+      resetBg(true);
+      setTimeout(() => { el.style.transition = ''; }, 350);
+    }
+
     el.addEventListener('touchstart', onTouchStart, { passive: true });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchCancel, { passive: true });
     return () => {
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchCancel);
     };
   }, []);
 
