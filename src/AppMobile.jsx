@@ -530,32 +530,31 @@ function AddListingScreen({ T }) {
     setPhotos(p => [...p, compressed]);
   }
 
-  function submit() {
+  async function submit() {
     setSending(true);
     setSendErr('');
-    const payload = {
-      ...form,
-      images: photos,
-      image: photos[0] || '',
-      tags: [],
-      status: 'pending',
-    };
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${API}/api/pending`, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.timeout = 20000;
-    xhr.onload = () => {
-      setSending(false);
-      if (xhr.status >= 200 && xhr.status < 300) {
-        setDone(true);
-      } else {
-        try { setSendErr(JSON.parse(xhr.responseText).error || `Błąd ${xhr.status}`); }
-        catch { setSendErr(`Błąd serwera ${xhr.status}`); }
+    try {
+      const payload = {
+        ...form,
+        images: photos,
+        image: photos[0] || '',
+        tags: [],
+        status: 'pending',
+      };
+      const r = await fetch(`${API}/api/pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pending: payload }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || `Błąd serwera ${r.status}`);
       }
-    };
-    xhr.onerror   = () => { setSending(false); setSendErr('Brak połączenia z internetem.'); };
-    xhr.ontimeout = () => { setSending(false); setSendErr('Przekroczono czas oczekiwania.'); };
-    xhr.send(JSON.stringify({ pending: payload }));
+      setDone(true);
+    } catch (e) {
+      setSendErr(e.message || 'Nieznany błąd. Spróbuj ponownie.');
+    }
+    setSending(false);
   }
 
   if (done) {

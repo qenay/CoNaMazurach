@@ -1,5 +1,10 @@
 {
   "appId": "pl.conamazurach.app",
   "appName": "Co na Mazurach",
-  "webDir": "dist"
+  "webDir": "dist",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
 }
