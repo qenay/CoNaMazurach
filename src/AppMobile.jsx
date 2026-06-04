@@ -30,6 +30,97 @@ function loadFavs()  { try { return new Set(JSON.parse(localStorage.getItem(FAV_
 function saveFavs(s) { try { localStorage.setItem(FAV_KEY, JSON.stringify([...s])); } catch {} }
 function loadTheme() { return localStorage.getItem(THEME_KEY) || 'light'; }
 
+function useSwipeBack(onBack, bgRef) {
+  const elRef = useRef(null);
+  const onBackRef = useRef(onBack);
+  const state = useRef({ startX: null, startY: null, startTime: null, dragging: false });
+  useEffect(() => { onBackRef.current = onBack; }, [onBack]);
+
+  useEffect(() => {
+    const el = elRef.current;
+    if (!el) return;
+
+    function setBg(dx) {
+      const bg = bgRef?.current;
+      if (!bg) return;
+      // parallax: bg slides from -30% toward 0 as overlay moves right
+      const offset = -window.innerWidth * 0.3 + dx * 0.3;
+      bg.style.transform = `translateX(${offset}px)`;
+    }
+
+    function resetBg(animate) {
+      const bg = bgRef?.current;
+      if (!bg) return;
+      if (animate) bg.style.transition = 'transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      bg.style.transform = '';
+      setTimeout(() => { if (bg) { bg.style.transition = ''; } }, 350);
+    }
+
+    function onTouchStart(e) {
+      const t = e.touches[0];
+      if (t.clientX < 40)
+        state.current = { startX: t.clientX, startY: t.clientY, startTime: Date.now(), dragging: false };
+    }
+
+    function onTouchMove(e) {
+      const s = state.current;
+      if (s.startX === null) return;
+      const t = e.touches[0];
+      const dx = t.clientX - s.startX;
+      const dy = Math.abs(t.clientY - s.startY);
+      if (!s.dragging) {
+        if (dx > 8 && dy < dx * 0.8) s.dragging = true;
+        else if (dy > 15) { s.startX = null; return; }
+      }
+      if (s.dragging && dx > 0) {
+        e.preventDefault();
+        el.style.transition = 'none';
+        el.style.transform = `translateX(${dx}px)`;
+        el.style.boxShadow = `-${Math.min(dx * 0.15, 20)}px 0 30px rgba(0,0,0,${Math.max(0.15 - dx * 0.0005, 0).toFixed(3)})`;
+        if (bgRef?.current) { bgRef.current.style.transition = 'none'; setBg(dx); }
+      }
+    }
+
+    function onTouchEnd(e) {
+      const s = state.current;
+      if (s.startX === null) return;
+      const endX = e.changedTouches[0].clientX;
+      const dx = endX - s.startX;
+      const velocity = dx / Math.max(Date.now() - s.startTime, 1); // px/ms
+      const dragging = s.dragging;
+      state.current = { startX: null, startY: null, startTime: null, dragging: false };
+      if (!dragging) return;
+
+      const shouldBack = dx > window.innerWidth * 0.35 || (velocity > 0.4 && dx > 40);
+
+      if (shouldBack) {
+        el.style.transition = 'transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.28s';
+        el.style.transform = `translateX(${window.innerWidth}px)`;
+        el.style.boxShadow = 'none';
+        resetBg(true);
+        setTimeout(() => { el.style.transition = ''; el.style.transform = ''; el.style.boxShadow = ''; onBackRef.current(); }, 280);
+      } else {
+        el.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s';
+        el.style.transform = 'translateX(0)';
+        el.style.boxShadow = '';
+        resetBg(true);
+        setTimeout(() => { el.style.transition = ''; }, 350);
+      }
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
+
+  return elRef;
+}
+
 const THEMES = {
   light: {
     bg:      '#F7F4EE',
@@ -182,6 +273,16 @@ function Card({ listing, onClick, favs, toggleFav, T }) {
   );
 }
 
+// ─── Swipe-back overlay wrapper ───────────────────────────────────────────────
+function SwipeBackWrapper({ onBack, zIndex, bgRef, children }) {
+  const ref = useSwipeBack(onBack, bgRef);
+  return (
+    <div ref={ref} style={{ position: 'absolute', inset: 0, zIndex }}>
+      {children}
+    </div>
+  );
+}
+
 // ─── Detail screen ────────────────────────────────────────────────────────────
 function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
   const c = cat(listing.category);
@@ -194,8 +295,8 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
         {hasImg(listing)
           ? <img src={listing.image} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <span style={{ fontSize: 80 }}>{c.icon}</span>}
-        <button onClick={onBack} style={{ position: 'absolute', top: 16, left: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>←</button>
-        <button onClick={() => toggleFav && toggleFav(String(listing.id))} style={{ position: 'absolute', top: 16, right: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>{isFav ? '❤️' : '🤍'}</button>
+        <button onClick={onBack} style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', left: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>←</button>
+        <button onClick={() => toggleFav && toggleFav(String(listing.id))} style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', right: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>{isFav ? '❤️' : '🤍'}</button>
       </div>
 
       <div style={{ padding: 20, paddingBottom: 100 }}>
@@ -692,7 +793,7 @@ function FavoritesScreen({ listings, favs, onSelect, toggleFav, onBack, T }) {
   const favListings = listings.filter(l => favs.has(String(l.id)));
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
-      <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>←</button>
         <div>
           <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>❤️ Ulubione</p>
@@ -828,6 +929,7 @@ export default function AppMobile() {
   const [favs,      setFavs]      = useState(loadFavs);
   const [showFavs,  setShowFavs]  = useState(false);
   const [themeName, setThemeName] = useState(loadTheme);
+  const mainContentRef = useRef(null);
 
   const isDark = themeName === 'dark';
   const T = THEMES[themeName];
@@ -871,22 +973,6 @@ export default function AppMobile() {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
-  if (detail) {
-    return (
-      <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
-        <DetailScreen listing={detail} onBack={() => setDetail(null)} favs={favs} toggleFav={toggleFav} T={T} />
-      </div>
-    );
-  }
-
-  if (showFavs) {
-    return (
-      <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
-        <FavoritesScreen listings={listings} favs={favs} toggleFav={toggleFav} onSelect={l => { setShowFavs(false); setDetail(l); }} onBack={() => setShowFavs(false)} T={T} />
-      </div>
-    );
-  }
-
   return (
     <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
       {splash && <Splash onDone={() => setSplash(false)} />}
@@ -900,7 +986,7 @@ export default function AppMobile() {
 
       {!loading && (
         <>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 65, overflowY: 'hidden' }}>
+          <div ref={mainContentRef} style={{ position: 'absolute', top: 'env(safe-area-inset-top)', left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', overflowY: 'hidden' }}>
             {tab === 'odkryj'    && <DiscoverScreen  listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
             {tab === 'mapa'      && <MapScreen        listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
             {tab === 'dodaj'     && <AddListingScreen T={T} />}
@@ -909,6 +995,18 @@ export default function AppMobile() {
           </div>
           <BottomNav active={tab} onChange={setTab} T={T} />
         </>
+      )}
+
+      {showFavs && (
+        <SwipeBackWrapper onBack={() => setShowFavs(false)} zIndex={60} bgRef={mainContentRef}>
+          <FavoritesScreen listings={listings} favs={favs} toggleFav={toggleFav} onSelect={l => { setShowFavs(false); setDetail(l); }} onBack={() => setShowFavs(false)} T={T} />
+        </SwipeBackWrapper>
+      )}
+
+      {detail && (
+        <SwipeBackWrapper onBack={() => setDetail(null)} zIndex={70} bgRef={mainContentRef}>
+          <DetailScreen listing={detail} onBack={() => setDetail(null)} favs={favs} toggleFav={toggleFav} T={T} />
+        </SwipeBackWrapper>
       )}
     </div>
   );
