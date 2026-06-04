@@ -45,7 +45,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { pending } = req.body;
+      // Obsługuj zarówno application/json jak i text/plain (Capacitor unika preflightu)
+      let body = req.body;
+      if (typeof body === 'string') { try { body = JSON.parse(body); } catch { return res.status(400).json({ error: 'invalid JSON' }); } }
+      const { pending } = body || {};
       if (!pending) return res.status(400).json({ error: 'missing pending' });
       const { items, sha } = await read();
       const item = { ...pending, id: Date.now(), submittedAt: new Date().toISOString() };

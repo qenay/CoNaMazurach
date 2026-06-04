@@ -541,15 +541,27 @@ function AddListingScreen({ T }) {
         tags: [],
         status: 'pending',
       };
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 20000);
+      // text/plain unika preflight CORS — serwer parsuje ręcznie
       const r = await fetch(`${API}/api/pending`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ pending: payload }),
+        signal: ctrl.signal,
       });
-      if (!r.ok) throw new Error((await r.json()).error || `HTTP ${r.status}`);
+      clearTimeout(tid);
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${r.status}`);
+      }
       setDone(true);
     } catch (e) {
-      setSendErr('Błąd wysyłania: ' + e.message);
+      if (e.name === 'AbortError') {
+        setSendErr('Przekroczono czas oczekiwania. Sprawdź internet i spróbuj ponownie.');
+      } else {
+        setSendErr(`${e.message}`);
+      }
     }
     setSending(false);
   }
