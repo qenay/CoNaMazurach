@@ -1,4 +1,6 @@
 import { lazy, Suspense, useState, Component } from 'react';
+import AppMobile from './AppMobile';
+const IS_APP = !!(window?.Capacitor?.isNativePlatform?.());
 
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
@@ -156,6 +158,8 @@ function AppRouter() {
 }
 
 export default function App() {
+  if (IS_APP) return <AppMobile />;
+
   return (
     <HelmetProvider>
       <BrowserRouter>

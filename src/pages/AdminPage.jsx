@@ -17,6 +17,7 @@ const DEFAULT_PASS = 'admin';
 const emptyForm = {
   category: '', title: '', description: '', city: '', address: '',
   price: '', rating: '', features: [], hashtags: [], images: [], icon: '🎉', status: 'aktywne',
+  lat: null, lng: null,
 };
 
 function getAdminPass() {
@@ -37,22 +38,24 @@ function listingToForm(l) {
     images:      l.image ? [l.image] : (l.images || []),
     icon:        l.icon || CATS.find(c => c.id === l.category)?.icon || '🎉',
     status:      l.status || 'aktywne',
+    lat:         l.lat || null,
+    lng:         l.lng || null,
   };
 }
 
 function buildListing(form, existing) {
   return {
-    lat:    53.8,
-    lng:    21.5,
-    date:   null,
-    time:   null,
-    isNew:  true,
+    date:      null,
+    time:      null,
+    isNew:     true,
     ...existing,
     id:          existing?.id || Date.now(),
     title:       form.title,
     category:    form.category,
     city:        form.city,
     address:     form.address,
+    lat:         form.lat  ?? existing?.lat  ?? 53.8,
+    lng:         form.lng  ?? existing?.lng  ?? 21.5,
     description: form.description,
     priceLabel:  form.price,
     price:       parseFloat(form.price) ?? (existing?.price ?? 0),
@@ -148,6 +151,29 @@ function AdminPanel({ onLogout }) {
   const [sidebarOpen,  setSidebar]     = useState(false);
   const [newPass,      setNewPass]     = useState('');
   const [passSaved,    setPassSaved]   = useState(false);
+  const [geocoding,    setGeocoding]   = useState(false);
+  const [geoStatus,    setGeoStatus]   = useState(''); // 'ok' | 'err' | ''
+
+  async function geocodeAddress() {
+    const q = [form.address, form.city, 'Polska'].filter(Boolean).join(', ');
+    if (!q.trim()) return;
+    setGeocoding(true);
+    setGeoStatus('');
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=pl&limit=1`;
+      const res = await fetch(url, { headers: { 'User-Agent': 'CoNaMazurach-Admin/1.0' } });
+      const data = await res.json();
+      if (data.length > 0) {
+        setForm(f => ({ ...f, lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }));
+        setGeoStatus('ok');
+      } else {
+        setGeoStatus('err');
+      }
+    } catch {
+      setGeoStatus('err');
+    }
+    setGeocoding(false);
+  }
 
   useEffect(() => {
     fetch('/api/listings')
@@ -485,14 +511,40 @@ function AdminPanel({ onLogout }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5">Miasto *</label>
-                    <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                      placeholder="np. Giżycko" className={inputCls} />
+                    <input value={form.city}
+                      onChange={e => { setForm(f => ({ ...f, city: e.target.value, lat: null, lng: null })); setGeoStatus(''); }}
+                      placeholder="np. Kozłowo" className={inputCls} />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5">Adres</label>
-                    <input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                      placeholder="np. ul. Wodna 12" className={inputCls} />
+                    <input value={form.address}
+                      onChange={e => { setForm(f => ({ ...f, address: e.target.value, lat: null, lng: null })); setGeoStatus(''); }}
+                      placeholder="np. Kownatki 19A" className={inputCls} />
                   </div>
+                </div>
+
+                {/* Geocoding */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={geocodeAddress}
+                    disabled={geocoding || (!form.city && !form.address)}
+                    className="flex items-center gap-2 bg-[#1a2232] border border-gray-600 hover:border-[#1a6fa8] text-gray-300 hover:text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-40"
+                  >
+                    {geocoding ? <span className="animate-spin">⏳</span> : '📍'}
+                    {geocoding ? 'Szukam...' : 'Znajdź lokalizację na mapie'}
+                  </button>
+                  {geoStatus === 'ok' && form.lat && (
+                    <span className="text-green-400 text-xs font-semibold flex items-center gap-1">
+                      ✓ Znaleziono: {form.lat.toFixed(5)}, {form.lng.toFixed(5)}
+                    </span>
+                  )}
+                  {geoStatus === 'err' && (
+                    <span className="text-red-400 text-xs font-semibold">✗ Nie znaleziono — sprawdź miasto i adres</span>
+                  )}
+                  {!geoStatus && form.lat && (
+                    <span className="text-gray-500 text-xs">📍 {form.lat.toFixed(5)}, {form.lng.toFixed(5)}</span>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
