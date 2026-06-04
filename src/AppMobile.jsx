@@ -94,11 +94,11 @@ function Splash({ onDone }) {
   const [go, setGo] = useState(false);
   useEffect(() => {
     const t1 = setTimeout(() => setGo(true), 1500); // po 1.5s zacznij animację
-    const t2 = setTimeout(() => onDone(), 2700);     // po 1.5s + 1.1s animacji + 0.1s margines
+    const t2 = setTimeout(() => onDone(), 2400);     // łącznie 2.4 sek
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onDone]);
 
-  const tr = go ? 'transform 1.1s cubic-bezier(0.77,0,0.175,1)' : 'none';
+  const tr = go ? 'transform 0.85s cubic-bezier(0.77,0,0.175,1)' : 'none';
   const bg = 'url(/splash-bg.jpg)';
 
   return (
@@ -513,69 +513,73 @@ function compressImage(file, maxW = 900) {
 
 // ─── Add listing screen ────────────────────────────────────────────────────────
 function AddListingScreen({ T }) {
-  const [step, setStep]       = useState(0);
+  const [step, setStep] = useState(0);
   const EMPTY_FORM = { category: '', title: '', city: '', address: '', description: '', price: '', website: '', name: '', email: '', phone: '' };
-  const [form, setForm]       = useState(EMPTY_FORM);
-  const [photos, setPhotos]   = useState([]); // max 3, photos[0] = okładka
-  const [sending, setSending] = useState(false);
-  const [done, setDone]       = useState(false);
-  const [sendErr, setSendErr] = useState('');
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [done, setDone] = useState(false);
 
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const inputStyle = { width: '100%', padding: '13px 16px', borderRadius: 14, border: `1.5px solid ${T.inputBorder}`, fontSize: 14, ...FONT, boxSizing: 'border-box', outline: 'none', background: T.input, color: T.text };
 
-  async function addPhoto(file) {
-    if (photos.length >= 3) return;
-    const compressed = await compressImage(file);
-    setPhotos(p => [...p, compressed]);
-  }
+  const CONTACT_EMAIL = 'conamazurach@gmail.com';
 
-  async function submit() {
-    setSending(true);
-    setSendErr('');
-    try {
-      const payload = {
-        ...form,
-        images: photos,
-        image: photos[0] || '',
-        tags: [],
-        status: 'pending',
-      };
-      const r = await fetch(`${API}/api/pending`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pending: payload }),
-      });
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        throw new Error(err.error || `Błąd serwera ${r.status}`);
-      }
-      setDone(true);
-    } catch (e) {
-      setSendErr(e.message || 'Nieznany błąd. Spróbuj ponownie.');
-    }
-    setSending(false);
+  function buildMsg() {
+    return [
+      `NOWE OGŁOSZENIE — Co na Mazurach?`,
+      ``,
+      `📌 TYTUŁ: ${form.title}`,
+      `📂 KATEGORIA: ${form.category}`,
+      `📍 MIASTO: ${form.city}`,
+      `🏠 ADRES: ${form.address || 'Nie podano'}`,
+      ``,
+      `📝 OPIS:`,
+      form.description,
+      ``,
+      `💰 CENA: ${form.price || 'Nie podano'}`,
+      form.website ? `🌐 STRONA / FACEBOOK: ${form.website}` : null,
+      `📞 TELEFON: ${form.phone || 'Nie podano'}`,
+      ``,
+      `Zgłaszający: ${form.name}${form.email ? ` <${form.email}>` : ''}`,
+      `Data: ${new Date().toLocaleString('pl-PL')}`,
+    ].filter(Boolean).join('\n');
   }
 
   if (done) {
+    const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Nowe ogłoszenie: ${form.title}`)}&body=${encodeURIComponent(buildMsg())}`;
+    const cat = CATS.find(c => c.id === form.category);
     return (
       <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg }}>
         <div style={{ padding: 20, paddingBottom: 80 }}>
           <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', borderRadius: 24, padding: 28, marginBottom: 20, textAlign: 'center' }}>
             <p style={{ fontSize: 52, margin: '0 0 10px' }}>🎉</p>
-            <p style={{ margin: 0, fontWeight: 800, fontSize: 20, color: '#fff' }}>Zgłoszenie wysłane!</p>
+            <p style={{ margin: 0, fontWeight: 800, fontSize: 20, color: '#fff' }}>Gotowe!</p>
             <p style={{ margin: '8px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
-              Twoje ogłoszenie trafiło do panelu admina. Po weryfikacji pojawi się na portalu automatycznie.
+              Formularz wypełniony. Otwórz pocztę, sprawdź treść i kliknij Wyślij.
             </p>
           </div>
-          <div style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 16, display: 'flex', gap: 12 }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>✅</span>
-            <p style={{ margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 }}>
-              <strong style={{ color: T.text }}>Co dalej?</strong><br/>
-              Administrator przeglądnie Twoje zgłoszenie i opublikuje je na stronie i w aplikacji.
-            </p>
+          <div style={{ background: T.card, borderRadius: 20, padding: 18, marginBottom: 16 }}>
+            <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: 14, color: T.text }}>📋 Podsumowanie zgłoszenia</p>
+            {[
+              { label: 'Kategoria', val: cat ? `${cat.icon} ${cat.label}` : form.category },
+              { label: 'Tytuł',    val: form.title },
+              { label: 'Miasto',   val: form.city },
+              form.address ? { label: 'Adres',   val: form.address } : null,
+              { label: 'Cena',     val: form.price || 'Nie podano' },
+              form.website ? { label: 'Strona',  val: form.website } : null,
+              form.phone   ? { label: 'Telefon', val: form.phone }   : null,
+              { label: 'Kontakt',  val: form.name + (form.email ? ` · ${form.email}` : '') },
+            ].filter(Boolean).map((row, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                <p style={{ margin: 0, fontSize: 12, color: T.subtle, width: 68, flexShrink: 0, fontWeight: 600 }}>{row.label}</p>
+                <p style={{ margin: 0, fontSize: 13, color: T.text, fontWeight: 500, wordBreak: 'break-all' }}>{row.val}</p>
+              </div>
+            ))}
           </div>
-          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); setPhotos([]); }} style={{ width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
+          <a href={mailto} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '17px', borderRadius: 18, background: '#1B4F8A', color: '#fff', textAlign: 'center', fontWeight: 800, fontSize: 17, textDecoration: 'none', marginBottom: 10, boxShadow: '0 4px 16px rgba(27,79,138,0.35)' }}>
+            <span style={{ fontSize: 22 }}>📧</span> Otwórz pocztę i wyślij
+          </a>
+          <p style={{ textAlign: 'center', fontSize: 11, color: T.subtle, margin: '0 0 16px' }}>Wyślij na: {CONTACT_EMAIL}</p>
+          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); }} style={{ width: '100%', padding: '14px', borderRadius: 16, border: `2px solid ${T.border}`, background: T.card, color: T.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...FONT }}>
             + Dodaj kolejne ogłoszenie
           </button>
         </div>
@@ -632,32 +636,7 @@ function AddListingScreen({ T }) {
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>
               🌐 Strona / Facebook <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>(opcjonalne)</span>
             </p>
-            <input value={form.website} onChange={e => f('website', e.target.value)} placeholder="https://facebook.com/..." type="url" style={{ ...inputStyle, marginBottom: 18 }} />
-
-            {/* Zdjęcia */}
-            <p style={{ margin: '0 0 8px', fontWeight: 600, fontSize: 13, color: T.muted }}>
-              📷 Zdjęcia <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>maks. 3 — pierwsze = okładka</span>
-            </p>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ flex: 1, aspectRatio: '1', borderRadius: 14, overflow: 'hidden', position: 'relative', border: `2px dashed ${photos[i] ? '#1B4F8A' : T.border}`, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {photos[i] ? (
-                    <>
-                      <img src={photos[i]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      {i === 0 && <div style={{ position: 'absolute', bottom: 4, left: 0, right: 0, textAlign: 'center', fontSize: 9, fontWeight: 700, color: '#fff', background: 'rgba(27,79,138,0.7)', padding: '2px 0' }}>OKŁADKA</div>}
-                      <button onClick={() => setPhotos(p => p.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 3, right: 3, width: 22, height: 22, borderRadius: 999, background: 'rgba(0,0,0,0.55)', border: 'none', color: '#fff', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>×</button>
-                    </>
-                  ) : (
-                    <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: photos.length > i ? 'default' : 'pointer', gap: 4 }}>
-                      <span style={{ fontSize: 22, opacity: 0.4 }}>📷</span>
-                      <span style={{ fontSize: 10, color: T.subtle }}>{i === 0 ? 'Okładka' : `Zdjęcie ${i+1}`}</span>
-                      {photos.length === i && <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files[0] && addPhoto(e.target.files[0])} />}
-                    </label>
-                  )}
-                </div>
-              ))}
-            </div>
-
+            <input value={form.website} onChange={e => f('website', e.target.value)} placeholder="https://facebook.com/..." type="url" style={{ ...inputStyle, marginBottom: 20 }} />
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setStep(0)} style={{ flex: 1, padding: '14px', borderRadius: 16, border: `2px solid ${T.border}`, background: T.card, color: T.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...FONT }}>← Wróć</button>
               <button onClick={() => setStep(2)} disabled={!form.description} style={{ flex: 2, padding: '14px', borderRadius: 16, background: !form.description ? T.border : '#1B4F8A', color: !form.description ? T.subtle : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>Dalej →</button>
@@ -672,12 +651,11 @@ function AddListingScreen({ T }) {
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Email</p>
             <input value={form.email} onChange={e => f('email', e.target.value)} placeholder="twoj@email.pl" type="email" style={{ ...inputStyle, marginBottom: 14 }} />
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Telefon</p>
-            <input value={form.phone} onChange={e => f('phone', e.target.value)} placeholder="+48 123 456 789" style={{ ...inputStyle, marginBottom: 6 }} />
-            {sendErr ? <p style={{ fontSize: 12, color: '#EF4444', margin: '8px 0 10px' }}>⚠️ {sendErr}</p> : <div style={{ height: 20 }} />}
+            <input value={form.phone} onChange={e => f('phone', e.target.value)} placeholder="+48 123 456 789" style={{ ...inputStyle, marginBottom: 20 }} />
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setStep(1)} style={{ flex: 1, padding: '14px', borderRadius: 16, border: `2px solid ${T.border}`, background: T.card, color: T.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...FONT }}>← Wróć</button>
-              <button onClick={submit} disabled={!form.name || sending} style={{ flex: 2, padding: '14px', borderRadius: 16, background: !form.name || sending ? T.border : '#2E9E6E', color: !form.name || sending ? T.subtle : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
-                {sending ? '⏳ Wysyłanie...' : '✓ Wyślij zgłoszenie'}
+              <button onClick={() => setDone(true)} disabled={!form.name} style={{ flex: 2, padding: '14px', borderRadius: 16, background: !form.name ? T.border : '#2E9E6E', color: !form.name ? T.subtle : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
+                ✓ Generuj wiadomość
               </button>
             </div>
           </div>
@@ -714,12 +692,98 @@ function FavoritesScreen({ listings, favs, onSelect, toggleFav, onBack, T }) {
   );
 }
 
+// ─── About screen ─────────────────────────────────────────────────────────────
+function AboutScreen({ onBack, T }) {
+  const categories = [
+    { icon: '🏠', label: 'Noclegi',             desc: 'Domki nad jeziorem, apartamenty, agroturystyki' },
+    { icon: '⛺', label: 'Kempingi',             desc: 'Dzikie i komfortowe, dla każdego turysty' },
+    { icon: '🎸', label: 'Koncerty i festiwale', desc: 'Muzyczne lato pełne mazurskich emocji' },
+    { icon: '🍽️', label: 'Restauracje',          desc: 'Od mazurskiej kuchni po street food' },
+    { icon: '🎉', label: 'Wydarzenia',           desc: 'Regaty, jarmarki, festiwale, atrakcje dla dzieci' },
+    { icon: '🚣', label: 'Czartery',             desc: 'Jachty, łódki, kajaki, rowery wodne' },
+    { icon: '🎡', label: 'Atrakcje',             desc: 'Wszystko co warto zobaczyć i przeżyć' },
+  ];
+  return (
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
+      {/* Header */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.bg, padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.border}` }}>
+        <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>←</button>
+        <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.text }}>O nas</p>
+      </div>
+
+      <div style={{ padding: '0 16px 40px' }}>
+        {/* Hero */}
+        <div style={{ background: 'linear-gradient(135deg, #0e2444 0%, #1B4F8A 60%, #1a6fa8 100%)', borderRadius: 24, padding: '32px 24px', margin: '16px 0', textAlign: 'center' }}>
+          <img src="/logo1.png" alt="Co na Mazurach" style={{ width: 80, height: 80, borderRadius: 20, marginBottom: 14, objectFit: 'contain' }} />
+          <p style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: -0.5 }}>Co na Mazurach?</p>
+          <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>Bezpłatna platforma stworzona<br/>z miłości do Mazur</p>
+        </div>
+
+        {/* Opis główny */}
+        <div style={{ background: T.card, borderRadius: 20, padding: 20, marginBottom: 12 }}>
+          <p style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800, color: T.text }}>Jedno miejsce. Wszystko o Mazurach.</p>
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.75 }}>
+            Mazury to kraina 3&nbsp;000 jezior, sosnowych lasów i nieba odbitego w wodzie. Miejsce, które wciąga na całe życie — i zasługuje na przewodnik godny swojej wyjątkowości.
+          </p>
+          <div style={{ height: 1, background: T.border, margin: '14px 0' }} />
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.75 }}>
+            Stworzyliśmy <strong style={{ color: T.text }}>Co na Mazurach?</strong> bo byliśmy zmęczeni przeszukiwaniem dziesiątek stron przed każdym wyjazdem. Noclegi tu, koncerty tam, restauracje gdzieś indziej... Teraz wszystko jest w jednym miejscu — wygodnie, szybko i bezpłatnie.
+          </p>
+        </div>
+
+        {/* Darmowe */}
+        <div style={{ background: 'linear-gradient(135deg, rgba(26,111,168,0.12), rgba(46,158,110,0.10))', borderRadius: 20, padding: 20, marginBottom: 12, border: `1.5px solid rgba(26,111,168,0.2)` }}>
+          <p style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: '#1a6fa8' }}>💙 100% bezpłatne — dla wszystkich</p>
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.7 }}>
+            Ani grosz dla turystów. Ani grosz dla właścicieli miejsc. Zero prowizji, zero ukrytych opłat. Wierzymy, że Mazury są dla wszystkich — i każdy zasługuje na łatwy dostęp do najlepszych miejsc w regionie.
+          </p>
+        </div>
+
+        {/* Kategorie */}
+        <div style={{ background: T.card, borderRadius: 20, padding: 20, marginBottom: 12 }}>
+          <p style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 800, color: T.text }}>Co znajdziesz w aplikacji?</p>
+          {categories.map((c, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: i < categories.length - 1 ? 12 : 0, marginBottom: i < categories.length - 1 ? 12 : 0, borderBottom: i < categories.length - 1 ? `1px solid ${T.border}` : 'none' }}>
+              <span style={{ fontSize: 22, width: 40, height: 40, borderRadius: 12, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{c.icon}</span>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: T.text }}>{c.label}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: T.subtle }}>{c.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dla właścicieli */}
+        <div style={{ background: 'linear-gradient(135deg, rgba(46,158,110,0.12), rgba(26,111,168,0.08))', borderRadius: 20, padding: 20, marginBottom: 20, border: `1.5px solid rgba(46,158,110,0.2)` }}>
+          <p style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: '#2E9E6E' }}>🏡 Masz miejsce na Mazurach?</p>
+          <p style={{ margin: 0, fontSize: 14, color: T.muted, lineHeight: 1.7 }}>
+            Dodaj je za darmo i dotrzyj do tysięcy turystów szukających właśnie czegoś takiego jak Ty oferujesz. Bądź częścią mazurskiej społeczności — razem budujemy coś wyjątkowego.
+          </p>
+        </div>
+
+        {/* Przyciski */}
+        <a href="mailto:kontakt@conamazurach.pl?subject=Chcę dodać moje miejsce" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '17px', borderRadius: 18, background: '#1a6fa8', color: '#fff', textAlign: 'center', fontWeight: 800, fontSize: 16, textDecoration: 'none', marginBottom: 10, boxShadow: '0 4px 16px rgba(26,111,168,0.35)', ...FONT }}>
+          + Dodaj swoje miejsce — to nic nie kosztuje
+        </a>
+        <a href="https://conamazurach.pl" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '15px', borderRadius: 18, background: 'transparent', color: '#1a6fa8', textAlign: 'center', fontWeight: 700, fontSize: 15, textDecoration: 'none', border: `2px solid #1a6fa8`, ...FONT }}>
+          🌐 Odwiedź conamazurach.pl
+        </a>
+
+        {/* Stopka */}
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: T.subtle, lineHeight: 1.6 }}>
+          Zrobione z 💙 dla Mazur<br/>© 2025 Co na Mazurach?
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Profile screen ────────────────────────────────────────────────────────────
-function ProfileScreen({ favs, onShowFavs, isDark, toggleTheme, T }) {
+function ProfileScreen({ favs, onShowFavs, onShowAbout, isDark, toggleTheme, T }) {
   const favsCount = favs?.size ?? 0;
   const items = [
     { icon: '❤️', label: 'Ulubione', sub: favsCount > 0 ? `${favsCount} zapisanych ofert` : 'Brak zapisanych ofert', action: onShowFavs, highlight: true },
-    { icon: '🌊', label: 'O Co na Mazurach?', sub: 'Poznaj nasz portal' },
+    { icon: '🌊', label: 'O Co na Mazurach?', sub: 'Poznaj nasz portal', action: onShowAbout },
     { icon: '📧', label: 'Kontakt', sub: 'conamazurach@gmail.com' },
     { icon: '📋', label: 'Regulamin', sub: 'Zasady korzystania' },
     { icon: '⭐', label: 'Oceń aplikację', sub: 'Zostaw recenzję' },
@@ -827,6 +891,7 @@ export default function AppMobile() {
   const [loading,   setLoading]   = useState(true);
   const [favs,      setFavs]      = useState(loadFavs);
   const [showFavs,  setShowFavs]  = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [themeName, setThemeName] = useState(loadTheme);
 
   const isDark = themeName === 'dark';
@@ -887,6 +952,14 @@ export default function AppMobile() {
     );
   }
 
+  if (showAbout) {
+    return (
+      <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
+        <AboutScreen onBack={() => setShowAbout(false)} T={T} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
       {splash && <Splash onDone={() => setSplash(false)} />}
@@ -905,7 +978,7 @@ export default function AppMobile() {
             {tab === 'mapa'      && <MapScreen        listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
             {tab === 'dodaj'     && <AddListingScreen T={T} />}
             {tab === 'kalendarz' && <CalendarScreen   listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />}
-            {tab === 'profil'    && <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />}
+            {tab === 'profil'    && <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />}
           </div>
           <BottomNav active={tab} onChange={setTab} T={T} />
         </>
