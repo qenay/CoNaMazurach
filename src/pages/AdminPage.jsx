@@ -152,7 +152,49 @@ function AdminPanel({ onLogout }) {
   const [newPass,      setNewPass]     = useState('');
   const [passSaved,    setPassSaved]   = useState(false);
   const [geocoding,    setGeocoding]   = useState(false);
-  const [geoStatus,    setGeoStatus]   = useState(''); // 'ok' | 'err' | ''
+  const [geoStatus,    setGeoStatus]   = useState('');
+  const [pending,      setPending]     = useState([]);
+  const [pendingLoad,  setPendingLoad] = useState(false);
+
+  useEffect(() => {
+    setPendingLoad(true);
+    fetch('/api/pending')
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d)) setPending(d); })
+      .catch(() => {})
+      .finally(() => setPendingLoad(false));
+  }, []);
+
+  async function rejectPending(id) {
+    if (!window.confirm('Odrzucić to zgłoszenie?')) return;
+    await fetch(`/api/pending?id=${id}`, { method: 'DELETE' });
+    setPending(p => p.filter(x => x.id !== id));
+  }
+
+  function importPending(item) {
+    setForm({
+      category:    item.category || '',
+      title:       item.title || '',
+      description: item.description || '',
+      city:        item.city || '',
+      address:     item.address || '',
+      price:       item.price || item.priceLabel || '',
+      rating:      '',
+      features:    item.features || [],
+      hashtags:    item.tags || [],
+      images:      item.images?.length ? item.images : (item.image ? [item.image] : []),
+      icon:        CATS.find(c => c.id === item.category)?.icon || '🎉',
+      status:      'aktywne',
+      lat:         item.lat || null,
+      lng:         item.lng || null,
+    });
+    setEditId(null);
+    setView('form');
+    setSidebar(false);
+    // usuń z pending po imporcie
+    fetch(`/api/pending?id=${item.id}`, { method: 'DELETE' })
+      .then(() => setPending(p => p.filter(x => x.id !== item.id)));
+  }
 
   async function geocodeAddress() {
     const q = [form.address, form.city, 'Polska'].filter(Boolean).join(', ');
@@ -247,10 +289,11 @@ function AdminPanel({ onLogout }) {
   const inputCls = 'w-full bg-[#1a2232] border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-[#1a6fa8] focus:ring-2 focus:ring-[#1a6fa8]/30';
 
   const navItems = [
-    { id: 'dashboard', label: 'Pulpit',         icon: '📊' },
-    { id: 'list',      label: 'Lista ogłoszeń', icon: '📋' },
-    { id: 'form_new',  label: 'Dodaj ogłoszenie', icon: '➕' },
-    { id: 'settings',  label: 'Ustawienia',     icon: '⚙️' },
+    { id: 'dashboard',   label: 'Pulpit',           icon: '📊' },
+    { id: 'list',        label: 'Lista ogłoszeń',   icon: '📋' },
+    { id: 'akceptacje',  label: `Akceptacje${pending.length > 0 ? ` (${pending.length})` : ''}`, icon: '📥' },
+    { id: 'form_new',    label: 'Dodaj ogłoszenie', icon: '➕' },
+    { id: 'settings',    label: 'Ustawienia',       icon: '⚙️' },
   ];
 
   function navClick(id) {
@@ -259,6 +302,7 @@ function AdminPanel({ onLogout }) {
   }
 
   const activeNav = view === 'form' ? 'form_new' : view;
+  const viewTitle = { dashboard: 'Pulpit', list: 'Lista ogłoszeń', form: editId ? 'Edytuj ogłoszenie' : 'Dodaj ogłoszenie', settings: 'Ustawienia', akceptacje: 'Akceptacje' };
 
   return (
     <div className="min-h-screen flex bg-[#f5f2eb]" style={{ fontFamily: 'Nunito, sans-serif' }}>
@@ -312,12 +356,7 @@ function AdminPanel({ onLogout }) {
         <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button className="md:hidden text-gray-500 text-xl" onClick={() => setSidebar(true)}>☰</button>
-            <h2 className="font-black text-[#12192b] text-lg">
-              {view === 'dashboard' && 'Pulpit'}
-              {view === 'list'      && 'Lista ogłoszeń'}
-              {view === 'form'      && (editId ? 'Edytuj ogłoszenie' : 'Dodaj ogłoszenie')}
-              {view === 'settings'  && 'Ustawienia'}
-            </h2>
+            <h2 className="font-black text-[#12192b] text-lg">{viewTitle[view] || view}</h2>
           </div>
           {view !== 'form' && (
             <button onClick={openNew} className="bg-[#1a6fa8] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#155d8f] transition-colors">
@@ -473,6 +512,72 @@ function AdminPanel({ onLogout }) {
               </div>
             );
           })()}
+
+          {/* ── AKCEPTACJE ── */}
+          {!loading && view === 'akceptacje' && (
+            <div className="space-y-4">
+              {pendingLoad && <p className="text-gray-400 text-sm text-center py-8">⏳ Ładowanie zgłoszeń…</p>}
+              {!pendingLoad && pending.length === 0 && (
+                <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
+                  <p className="text-4xl mb-3">📭</p>
+                  <p className="font-bold text-[#12192b]">Brak nowych zgłoszeń</p>
+                  <p className="text-gray-400 text-sm mt-1">Gdy ktoś wyśle ogłoszenie z aplikacji, pojawi się tutaj.</p>
+                </div>
+              )}
+              {pending.map(item => {
+                const cat = CATS.find(c => c.id === item.category);
+                const coverImg = item.images?.[0] || item.image;
+                return (
+                  <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="flex gap-4 p-5">
+                      {/* Thumbnail */}
+                      <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center">
+                        {coverImg
+                          ? <img src={coverImg} alt="" className="w-full h-full object-cover" />
+                          : <span className="text-3xl">{cat?.icon || '📋'}</span>}
+                      </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#DBEAFE', color: '#1e40af' }}>{cat?.icon} {cat?.label || item.category}</span>
+                          <span className="text-xs text-gray-400">{new Date(item.submittedAt).toLocaleDateString('pl-PL')}</span>
+                        </div>
+                        <p className="font-bold text-[#12192b] truncate">{item.title}</p>
+                        <p className="text-sm text-gray-500">📍 {item.city}{item.address ? `, ${item.address}` : ''}</p>
+                        {item.price && <p className="text-sm font-semibold text-[#1a6fa8] mt-0.5">{item.price}</p>}
+                        {item.name && <p className="text-xs text-gray-400 mt-1">Zgłosił: {item.name}{item.email ? ` · ${item.email}` : ''}{item.phone ? ` · ${item.phone}` : ''}</p>}
+                      </div>
+                    </div>
+                    {/* Opis */}
+                    {item.description && (
+                      <div className="px-5 pb-3">
+                        <p className="text-sm text-gray-600 line-clamp-3">{item.description}</p>
+                      </div>
+                    )}
+                    {/* Wszystkie zdjęcia */}
+                    {item.images?.length > 1 && (
+                      <div className="px-5 pb-3 flex gap-2">
+                        {item.images.slice(1).map((img, i) => (
+                          <img key={i} src={img} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                        ))}
+                      </div>
+                    )}
+                    {/* Akcje */}
+                    <div className="px-5 pb-5 flex gap-3">
+                      <button onClick={() => importPending(item)}
+                        className="flex-1 bg-[#1a6fa8] text-white py-2.5 rounded-xl font-bold text-sm hover:bg-[#155d8f] transition-colors">
+                        ✓ Importuj do oferty
+                      </button>
+                      <button onClick={() => rejectPending(item.id)}
+                        className="px-4 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors">
+                        🗑️ Odrzuć
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* ── FORM ── */}
           {view === 'form' && (
