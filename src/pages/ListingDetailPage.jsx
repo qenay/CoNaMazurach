@@ -1,9 +1,68 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { CATEGORIES } from '../data/mockListings';
 import DistanceCalculator from '../components/DistanceCalculator';
 import MapView from '../components/MapView';
+
+function ImageCarousel({ images, alt }) {
+  const [idx, setIdx] = useState(0);
+  const startX = useRef(null);
+
+  function prev() { setIdx(i => Math.max(0, i - 1)); }
+  function next() { setIdx(i => Math.min(images.length - 1, i + 1)); }
+
+  function onTouchStart(e) { startX.current = e.touches[0].clientX; }
+  function onTouchEnd(e) {
+    if (startX.current === null) return;
+    const dx = e.changedTouches[0].clientX - startX.current;
+    if (dx < -50) next();
+    if (dx > 50) prev();
+    startX.current = null;
+  }
+
+  if (!images?.length) return null;
+
+  return (
+    <div className="rounded-2xl overflow-hidden aspect-video relative select-none"
+      onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+
+      {/* Slides */}
+      <div className="flex h-full transition-transform duration-300 ease-out"
+        style={{ transform: `translateX(-${idx * 100}%)` }}>
+        {images.map((src, i) => (
+          <img key={i} src={src} alt={`${alt} ${i + 1}`}
+            className="w-full h-full object-cover flex-shrink-0" />
+        ))}
+      </div>
+
+      {/* Prev / Next buttons */}
+      {images.length > 1 && (
+        <>
+          <button onClick={prev} disabled={idx === 0}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all disabled:opacity-20 backdrop-blur-sm">
+            ‹
+          </button>
+          <button onClick={next} disabled={idx === images.length - 1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-all disabled:opacity-20 backdrop-blur-sm">
+            ›
+          </button>
+          {/* Counter */}
+          <div className="absolute top-3 right-3 bg-black/50 text-white text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-sm">
+            {idx + 1} / {images.length}
+          </div>
+          {/* Dots */}
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+            {images.map((_, i) => (
+              <button key={i} onClick={() => setIdx(i)}
+                className={`h-1.5 rounded-full transition-all ${i === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function StarRating({ rating }) {
   return (
@@ -124,14 +183,11 @@ export default function ListingDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* LEFT COLUMN — 70% */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Hero image */}
-            <div className="rounded-2xl overflow-hidden aspect-video">
-              <img
-                src={listing.image}
-                alt={`${listing.title} — ${listing.city}, Mazury`}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            {/* Hero image / carousel */}
+            <ImageCarousel
+              images={listing.images?.length > 0 ? listing.images : (listing.image ? [listing.image] : [])}
+              alt={`${listing.title} — ${listing.city}, Mazury`}
+            />
 
             {/* Title + meta */}
             <div>
