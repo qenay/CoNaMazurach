@@ -1070,14 +1070,128 @@ function AboutScreen({ onBack, T }) {
   );
 }
 
+// ─── Regulamin screen ─────────────────────────────────────────────────────────
+const REGULAMIN = [
+  {
+    title: '§1. Postanowienia ogólne',
+    items: [
+      'Niniejszy Regulamin określa zasady korzystania z serwisu internetowego oraz aplikacji mobilnej „Co na Mazurach?" dostępnych pod adresem conamazurach.pl.',
+      'Administratorem Serwisu jest redakcja Co na Mazurach?, kontakt: kontakt@conamazurach.pl.',
+      'Serwis jest bezpłatną platformą ogłoszeniową promującą wydarzenia, noclegi, restauracje, kempingi, koncerty, atrakcje i czartery na terenie Mazur.',
+      'Korzystanie z Serwisu jest równoznaczne z akceptacją niniejszego Regulaminu w całości.',
+    ],
+  },
+  {
+    title: '§2. Zakres usług',
+    items: [
+      'Serwis umożliwia bezpłatne przeglądanie ogłoszeń turystycznych i rekreacyjnych na Mazurach.',
+      'Użytkownicy mogą bezpłatnie dodawać ogłoszenia bez rejestracji przez formularz w Serwisie.',
+      'Ogłoszenia przed publikacją podlegają weryfikacji redakcji w terminie do 48 godzin roboczych.',
+      'Redakcja zastrzega sobie prawo do edytowania lub odmowy publikacji ogłoszeń niespełniających wymogów Regulaminu.',
+    ],
+  },
+  {
+    title: '§3. Zasady dodawania ogłoszeń',
+    items: [
+      'Dodanie ogłoszenia jest bezpłatne i nie wymaga rejestracji konta.',
+      'Ogłoszeniodawca oświadcza, że jest uprawniony do publikacji zamieszczanych treści i że są one zgodne z prawdą.',
+      'Ogłoszenie musi zawierać rzetelne i aktualne informacje o ofercie, lokalizacji i cenie.',
+      'Zabronione jest tworzenie ogłoszeń zbiorczych — jedno ogłoszenie dotyczy jednej oferty lub miejsca.',
+      'Ogłoszeniodawca zobowiązuje się do aktualizowania treści ogłoszenia w razie zmian.',
+    ],
+  },
+  {
+    title: '§4. Treści zabronione',
+    items: [
+      'Zabrania się publikowania treści niezgodnych z prawem, obraźliwych, dyskryminujących lub naruszających godność osobistą.',
+      'Zabrania się zamieszczania spamu, fałszywych informacji lub treści naruszających prawa własności intelektualnej.',
+      'Zabrania się dodawania ogłoszeń niezwiązanych z turystyką lub ofertą regionu Mazur.',
+      'Naruszenie zakazu może skutkować usunięciem ogłoszenia bez ostrzeżenia.',
+    ],
+  },
+  {
+    title: '§5. Ochrona danych osobowych (RODO)',
+    items: [
+      'Dane osobowe (imię, e-mail, telefon) przetwarzane są wyłącznie w celu weryfikacji i publikacji ogłoszenia.',
+      'Podstawą przetwarzania jest zgoda Użytkownika (art. 6 ust. 1 lit. a RODO) lub uzasadniony interes Administratora.',
+      'Dane nie są udostępniane podmiotom trzecim poza przypadkami wymaganymi przez prawo.',
+      'Użytkownik ma prawo do dostępu, sprostowania, usunięcia danych oraz wniesienia skargi do UODO (uodo.gov.pl).',
+      'Dane przechowywane są do 2 lat od ostatniego kontaktu.',
+    ],
+  },
+  {
+    title: '§6. Odpowiedzialność',
+    items: [
+      'Redakcja nie ponosi odpowiedzialności za treść, prawdziwość i aktualność ogłoszeń użytkowników.',
+      'Redakcja nie odpowiada za działania lub zaniechania osób trzecich prezentowanych w Serwisie.',
+      'Użytkownik korzysta z Serwisu na własne ryzyko.',
+    ],
+  },
+  {
+    title: '§7. Własność intelektualna',
+    items: [
+      'Wszelkie prawa do Serwisu (grafika, logotyp, kod, treści redakcyjne) przysługują redakcji Co na Mazurach?',
+      'Kopiowanie i rozpowszechnianie treści Serwisu bez zgody redakcji jest zabronione.',
+      'Dodając ogłoszenie, ogłoszeniodawca udziela redakcji nieodpłatnej licencji na prezentację zamieszczonych materiałów w Serwisie.',
+    ],
+  },
+  {
+    title: '§8. Zmiany Regulaminu i postanowienia końcowe',
+    items: [
+      'Redakcja zastrzega sobie prawo do zmiany Regulaminu. Zmiany wchodzą w życie z dniem publikacji.',
+      'Dalsze korzystanie z Serwisu po zmianach oznacza ich akceptację.',
+      'W sprawach nieuregulowanych stosuje się przepisy prawa polskiego.',
+      'Regulamin obowiązuje od 1 czerwca 2025 r.',
+    ],
+  },
+];
+
+function RegulaminScreen({ onBack, T }) {
+  return (
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.bg, paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 8, paddingLeft: 16, paddingRight: 16, display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.border}` }}>
+        <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: T.text }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.text} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.text }}>Regulamin</p>
+      </div>
+
+      <div style={{ padding: '12px 16px 40px' }}>
+        <div style={{ background: 'linear-gradient(135deg, rgba(27,79,138,0.1), rgba(27,79,138,0.05))', borderRadius: 16, padding: 16, marginBottom: 16, border: '1.5px solid rgba(27,79,138,0.2)' }}>
+          <p style={{ margin: 0, fontSize: 13, color: '#1B4F8A', lineHeight: 1.6 }}>
+            <strong>Co na Mazurach?</strong> to bezpłatna platforma łącząca turystów z najlepszymi miejscami i wydarzeniami na Mazurach. Korzystając z serwisu, akceptujesz poniższy Regulamin.
+          </p>
+          <p style={{ margin: '6px 0 0', fontSize: 12, color: T.muted }}>Ostatnia aktualizacja: 1 czerwca 2025 r.</p>
+        </div>
+
+        {REGULAMIN.map(({ title, items }) => (
+          <div key={title} style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 10, boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}>
+            <p style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 800, color: T.text, paddingBottom: 8, borderBottom: `1px solid ${T.border}` }}>{title}</p>
+            {items.map((item, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: i < items.length - 1 ? 8 : 0 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#1B4F8A', flexShrink: 0, marginTop: 2 }}>{i + 1}.</span>
+                <p style={{ margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.65 }}>{item}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <p style={{ textAlign: 'center', fontSize: 11, color: T.subtle, marginTop: 16, lineHeight: 1.6 }}>
+          © 2025 Co na Mazurach? · Wszelkie prawa zastrzeżone{'\n'}kontakt@conamazurach.pl
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Profile screen ────────────────────────────────────────────────────────────
-function ProfileScreen({ favs, onShowFavs, onShowAbout, isDark, toggleTheme, T }) {
+function ProfileScreen({ favs, onShowFavs, onShowAbout, onShowRegulamin, isDark, toggleTheme, T }) {
   const favsCount = favs?.size ?? 0;
   const items = [
     { icon: '❤️', label: 'Ulubione', sub: favsCount > 0 ? `${favsCount} zapisanych ofert` : 'Brak zapisanych ofert', action: onShowFavs, highlight: true },
     { icon: '🌊', label: 'O Co na Mazurach?', sub: 'Poznaj nasz portal', action: onShowAbout },
     { icon: '📧', label: 'Kontakt', sub: 'kontakt@conamazurach.pl' },
-    { icon: '📋', label: 'Regulamin', sub: 'Zasady korzystania' },
+    { icon: '📋', label: 'Regulamin', sub: 'Zasady korzystania', action: onShowRegulamin },
     { icon: '⭐', label: 'Oceń aplikację', sub: 'Zostaw recenzję' },
   ];
   return (
@@ -1184,6 +1298,7 @@ export default function AppMobile() {
   const [favs,      setFavs]      = useState(loadFavs);
   const [showFavs,  setShowFavs]  = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showRegulamin, setShowRegulamin] = useState(false);
   const [themeName, setThemeName] = useState(loadTheme);
   const mainContentRef = useRef(null);
   const [mountedTabs, setMountedTabs] = useState(() => new Set(['odkryj']));
@@ -1271,7 +1386,7 @@ export default function AppMobile() {
             )}
             {mountedTabs.has('profil') && (
               <div style={{ height: '100%', display: tab === 'profil' ? 'block' : 'none' }}>
-                <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
+                <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} onShowRegulamin={() => setShowRegulamin(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
               </div>
             )}
           </div>
@@ -1288,6 +1403,12 @@ export default function AppMobile() {
       {showAbout && (
         <SwipeBackWrapper onBack={() => setShowAbout(false)} zIndex={60} bgRef={mainContentRef}>
           <AboutScreen onBack={() => setShowAbout(false)} T={T} />
+        </SwipeBackWrapper>
+      )}
+
+      {showRegulamin && (
+        <SwipeBackWrapper onBack={() => setShowRegulamin(false)} zIndex={60} bgRef={mainContentRef}>
+          <RegulaminScreen onBack={() => setShowRegulamin(false)} T={T} />
         </SwipeBackWrapper>
       )}
 
