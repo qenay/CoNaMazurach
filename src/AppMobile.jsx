@@ -298,6 +298,52 @@ function SwipeBackWrapper({ onBack, zIndex, bgRef, children }) {
   );
 }
 
+// ─── Image carousel ───────────────────────────────────────────────────────────
+function ImageCarousel({ images, alt, fallbackIcon, fallbackBg }) {
+  const [idx, setIdx] = useState(0);
+  const startX = useRef(null);
+
+  function onTouchStart(e) { startX.current = e.touches[0].clientX; }
+  function onTouchEnd(e) {
+    if (startX.current === null) return;
+    const dx = e.changedTouches[0].clientX - startX.current;
+    if (dx < -40 && idx < images.length - 1) setIdx(i => i + 1);
+    if (dx > 40 && idx > 0) setIdx(i => i - 1);
+    startX.current = null;
+  }
+
+  return (
+    <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: fallbackBg }}
+      onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      {images.length > 0 ? (
+        <div style={{ display: 'flex', height: '100%', transform: `translateX(-${idx * 100}%)`, transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)' }}>
+          {images.map((src, i) => (
+            <img key={i} src={src} alt={`${alt} ${i + 1}`}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', flexShrink: 0 }} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 80 }}>{fallbackIcon}</span>
+        </div>
+      )}
+      {images.length > 1 && (
+        <>
+          <div style={{ position: 'absolute', top: 10, right: 12, background: 'rgba(0,0,0,0.45)', color: '#fff', padding: '2px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
+            {idx + 1} / {images.length}
+          </div>
+          <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 5 }}>
+            {images.map((_, i) => (
+              <div key={i} onClick={() => setIdx(i)}
+                style={{ width: i === idx ? 20 : 6, height: 6, borderRadius: 999, background: i === idx ? '#fff' : 'rgba(255,255,255,0.5)', transition: 'all 0.25s', cursor: 'pointer' }} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Detail screen ────────────────────────────────────────────────────────────
 function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
   const c = cat(listing.category);
@@ -315,12 +361,15 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
 
   return (
     <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
-      <div style={{ position: 'relative', aspectRatio: '4/3', background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {hasImg(listing)
-          ? <img src={listing.image} alt={listing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <span style={{ fontSize: 80 }}>{c.icon}</span>}
-        <button onClick={onBack} style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', left: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>←</button>
-        <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', right: 16, display: 'flex', gap: 8 }}>
+      <div style={{ position: 'relative' }}>
+        <ImageCarousel
+          images={listing.images?.length > 0 ? listing.images : (hasImg(listing) ? [listing.image] : [])}
+          alt={listing.title}
+          fallbackIcon={c.icon}
+          fallbackBg={c.bg}
+        />
+        <button onClick={onBack} style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', left: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 2 }}>←</button>
+        <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', right: 16, display: 'flex', gap: 8, zIndex: 2 }}>
           <button onClick={share} style={{ width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B4F8A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </button>
@@ -802,7 +851,7 @@ function AddListingScreen({ T }) {
   const [step, setStep]       = useState(0);
   const EMPTY_FORM = { category: '', title: '', city: '', address: '', description: '', price: '', website: '', name: '', email: '', phone: '' };
   const [form, setForm]       = useState(EMPTY_FORM);
-  const [photos, setPhotos]   = useState([]); // max 3, photos[0] = okładka
+  const [photos, setPhotos]   = useState([]); // max 8, photos[0] = okładka
   const [sending, setSending] = useState(false);
   const [done, setDone]       = useState(false);
   const [sendErr, setSendErr] = useState('');
@@ -811,7 +860,7 @@ function AddListingScreen({ T }) {
   const inputStyle = { width: '100%', padding: '13px 16px', borderRadius: 14, border: `1.5px solid ${T.inputBorder}`, fontSize: 14, ...FONT, boxSizing: 'border-box', outline: 'none', background: T.input, color: T.text };
 
   async function addPhoto(file) {
-    if (photos.length >= 3) return;
+    if (photos.length >= 8) return;
     const compressed = await compressImage(file);
     setPhotos(p => [...p, compressed]);
   }
@@ -927,26 +976,23 @@ function AddListingScreen({ T }) {
 
             {/* Zdjęcia */}
             <p style={{ margin: '0 0 8px', fontWeight: 600, fontSize: 13, color: T.muted }}>
-              📷 Zdjęcia <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>maks. 3 — pierwsze = okładka</span>
+              📷 Zdjęcia <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>{photos.length}/8 — pierwsze = okładka</span>
             </p>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ flex: 1, aspectRatio: '1', borderRadius: 14, overflow: 'hidden', position: 'relative', border: `2px dashed ${photos[i] ? '#1B4F8A' : T.border}`, background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {photos[i] ? (
-                    <>
-                      <img src={photos[i]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      {i === 0 && <div style={{ position: 'absolute', bottom: 4, left: 0, right: 0, textAlign: 'center', fontSize: 9, fontWeight: 700, color: '#fff', background: 'rgba(27,79,138,0.7)', padding: '2px 0' }}>OKŁADKA</div>}
-                      <button onClick={() => setPhotos(p => p.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 3, right: 3, width: 22, height: 22, borderRadius: 999, background: 'rgba(0,0,0,0.55)', border: 'none', color: '#fff', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>×</button>
-                    </>
-                  ) : (
-                    <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: photos.length > i ? 'default' : 'pointer', gap: 4 }}>
-                      <span style={{ fontSize: 22, opacity: 0.4 }}>📷</span>
-                      <span style={{ fontSize: 10, color: T.subtle }}>{i === 0 ? 'Okładka' : `Zdjęcie ${i+1}`}</span>
-                      {photos.length === i && <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files[0] && addPhoto(e.target.files[0])} />}
-                    </label>
-                  )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 }}>
+              {photos.map((src, i) => (
+                <div key={i} style={{ aspectRatio: '1', borderRadius: 12, overflow: 'hidden', position: 'relative', border: `2px solid ${i === 0 ? '#1B4F8A' : T.border}` }}>
+                  <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {i === 0 && <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, textAlign: 'center', fontSize: 8, fontWeight: 700, color: '#fff', background: 'rgba(27,79,138,0.75)', padding: '2px 0' }}>OKŁADKA</div>}
+                  <button onClick={() => setPhotos(p => p.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 2, right: 2, width: 20, height: 20, borderRadius: 999, background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>×</button>
                 </div>
               ))}
+              {photos.length < 8 && (
+                <label style={{ aspectRatio: '1', borderRadius: 12, border: `2px dashed ${T.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: 3, background: T.bg }}>
+                  <span style={{ fontSize: 22, color: T.subtle }}>+</span>
+                  <span style={{ fontSize: 9, color: T.subtle, fontWeight: 600 }}>Dodaj</span>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) { addPhoto(e.target.files[0]); e.target.value = ''; } }} />
+                </label>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: 10 }}>
