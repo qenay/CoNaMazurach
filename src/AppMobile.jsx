@@ -178,6 +178,7 @@ const CATS = [
   { id: 'kempingi',    label: 'Kempingi',    icon: '⛺', color: '#7C3AED', bg: '#EDE9FE' },
   { id: 'koncerty',    label: 'Koncerty',    icon: '🎸', color: '#DB2777', bg: '#FCE7F3' },
   { id: 'atrakcje',    label: 'Atrakcje',    icon: '🎯', color: '#1B4F8A', bg: '#DBEAFE' },
+  { id: 'czartery',    label: 'Czartery',    icon: '⛵', color: '#0891b2', bg: '#CFFAFE' },
 ];
 
 const NAV = [
@@ -936,7 +937,7 @@ function AboutScreen({ onBack, T }) {
     { icon: '🎸', label: 'Koncerty i festiwale', desc: 'Muzyczne lato pełne mazurskich emocji' },
     { icon: '🍽️', label: 'Restauracje',          desc: 'Od mazurskiej kuchni po street food' },
     { icon: '🎉', label: 'Wydarzenia',           desc: 'Regaty, jarmarki, festiwale, atrakcje dla dzieci' },
-    { icon: '🚣', label: 'Czartery',             desc: 'Jachty, łódki, kajaki, rowery wodne' },
+    { icon: '⛵', label: 'Czartery',              desc: 'Jachty, łódki, kajaki, rowery wodne' },
     { icon: '🎡', label: 'Atrakcje',             desc: 'Wszystko co warto zobaczyć i przeżyć' },
   ];
   return (

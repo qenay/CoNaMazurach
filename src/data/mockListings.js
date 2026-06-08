@@ -5,6 +5,7 @@ export const CATEGORIES = [
   { id: 'kempingi',   label: 'Kempingi',   icon: '⛺', color: '#8B5CF6', bg: '#EDE9FE' },
   { id: 'koncerty',   label: 'Koncerty',   icon: '🎸', color: '#EC4899', bg: '#FCE7F3' },
   { id: 'atrakcje',   label: 'Atrakcje',   icon: '🎯', color: '#1B4F8A', bg: '#DBEAFE' },
+  { id: 'czartery',  label: 'Czartery',   icon: '⛵', color: '#0891b2', bg: '#CFFAFE' },
 ];
 
 export const mockListings = [

@@ -7,6 +7,7 @@ const CATS = [
   { id: 'kempingi',    label: 'Kemping',      icon: '⛺' },
   { id: 'koncerty',    label: 'Koncert',       icon: '🎸' },
   { id: 'atrakcje',    label: 'Atrakcja',     icon: '🎯' },
+  { id: 'czartery',   label: 'Czarter',      icon: '⛵' },
 ];
 
 const ICONS      = ['🏡', '⛺', '🎸', '🎉', '🍽️', '🌊', '🏄', '🎪', '🏕️', '🚣', '🎯', '🎭'];
