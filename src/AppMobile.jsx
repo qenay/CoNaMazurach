@@ -848,15 +848,17 @@ function AboutScreen({ onBack, T }) {
   ];
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.bg, padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.border}` }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.bg, paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 8, paddingLeft: 16, paddingRight: 16, display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.border}` }}>
         <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>←</button>
         <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.text }}>O nas</p>
       </div>
       <div style={{ padding: '0 16px 40px' }}>
-        <div style={{ background: 'linear-gradient(135deg, #0e2444 0%, #1B4F8A 60%, #1a6fa8 100%)', borderRadius: 24, padding: '32px 24px', margin: '16px 0', textAlign: 'center' }}>
-          <img src="/logo1.png" alt="Co na Mazurach" style={{ width: 80, height: 80, borderRadius: 20, marginBottom: 14, objectFit: 'contain' }} />
-          <p style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: -0.5 }}>Co na Mazurach?</p>
-          <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.6 }}>Bezpłatna platforma stworzona<br/>z miłości do Mazur</p>
+        <div style={{ background: 'linear-gradient(135deg, #0e2444 0%, #1B4F8A 60%, #1a6fa8 100%)', borderRadius: 20, padding: '20px 20px', margin: '12px 0', textAlign: 'center', display: 'flex', alignItems: 'center', gap: 14 }}>
+          <img src="/logo1.png" alt="Co na Mazurach" style={{ width: 52, height: 52, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ margin: '0 0 3px', fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: -0.3 }}>Co na Mazurach?</p>
+            <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.75)', lineHeight: 1.4 }}>Bezpłatna platforma stworzona z miłości do Mazur</p>
+          </div>
         </div>
         <div style={{ background: T.card, borderRadius: 20, padding: 20, marginBottom: 12 }}>
           <p style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800, color: T.text }}>Jedno miejsce. Wszystko o Mazurach.</p>
