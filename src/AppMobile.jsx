@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback, memo, lazy, Suspense } from 'react';
 import { mockListings } from './data/mockListings';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -458,55 +458,127 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
   );
 }
 
+// ─── Map helpers ──────────────────────────────────────────────────────────────
+function MapClickAway({ onClickAway }) {
+  useMapEvents({ click: onClickAway });
+  return null;
+}
+function MapCapture({ onReady }) {
+  const map = useMap();
+  useEffect(() => { onReady(map); }, []);
+  return null;
+}
+
 // ─── Map screen ───────────────────────────────────────────────────────────────
-function MapScreen({ listings, onSelect, favs, toggleFav, T }) {
-  const withCoords = listings.filter(l => l.lat && l.lng);
+function MapScreen({ listings, onSelect, T }) {
+  const [activeCat, setActiveCat] = useState('all');
+  const [search,    setSearch]    = useState('');
+  const [selected,  setSelected]  = useState(null);
+  const mapRef = useRef(null);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return listings.filter(l => {
+      if (!l.lat || !l.lng) return false;
+      if (activeCat !== 'all' && l.category !== activeCat) return false;
+      return !q || l.title?.toLowerCase().includes(q) || l.city?.toLowerCase().includes(q);
+    });
+  }, [listings, activeCat, search]);
+
+  function geolocate() {
+    navigator.geolocation.getCurrentPosition(
+      p => mapRef.current?.flyTo([p.coords.latitude, p.coords.longitude], 13),
+      () => {}
+    );
+  }
+
+  const isDark = T.bg === '#0f172a';
+  const tileUrl = isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: T.bg }}>
-      <div style={{ padding: '16px 16px 8px' }}>
-        <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>Mapa Mazur</p>
-        <p style={{ margin: '2px 0 0', fontSize: 13, color: T.muted }}>{withCoords.length} miejsc na mapie</p>
-      </div>
-      <div style={{ flex: 1, margin: '0 16px 8px', borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.1)' }}>
-        <MapContainer center={[53.87, 21.5]} zoom={9} style={{ height: '100%', width: '100%' }} attributionControl={false}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
-          {withCoords.map(l => {
-            const c = cat(l.category);
-            const icon = L.divIcon({
-              html: `<div style="background:${c.color};width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)"><span style="transform:rotate(45deg);font-size:13px">${c.icon}</span></div>`,
-              className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -34],
-            });
-            return (
-              <Marker key={l.id} position={[l.lat, l.lng]} icon={icon}>
-                <Popup maxWidth={200}>
-                  <div style={{ ...FONT, padding: 4 }} onClick={() => onSelect(l)}>
-                    <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: 13 }}>{l.title}</p>
-                    <p style={{ margin: '0 0 6px', fontSize: 12, color: '#64748b' }}>📍 {l.city}</p>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1B4F8A' }}>{l.priceLabel || (l.price === 0 ? 'Bezpłatne' : `${l.price} zł`)}</p>
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
-        </MapContainer>
-      </div>
-      {/* Quick list below map */}
-      <div style={{ height: 140, overflowX: 'auto', display: 'flex', gap: 10, padding: '0 16px 16px', scrollbarWidth: 'none' }}>
-        {withCoords.slice(0, 10).map(l => {
+    <div style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+
+      {/* Pełnoekranowa mapa */}
+      <MapContainer center={[53.87, 21.5]} zoom={9} style={{ height: '100%', width: '100%' }} attributionControl={false} zoomControl={false}>
+        <TileLayer url={tileUrl} maxZoom={19} />
+        <MapCapture onReady={m => { mapRef.current = m; }} />
+        <MapClickAway onClickAway={() => setSelected(null)} />
+        {filtered.map(l => {
           const c = cat(l.category);
+          const isSel = selected?.id === l.id;
+          const size = isSel ? 42 : 36;
+          const icon = L.divIcon({
+            html: `<div style="width:${size}px;height:${size}px;border-radius:999px;background:${isSel ? c.color : '#fff'};display:flex;align-items:center;justify-content:center;font-size:${isSel ? 20 : 17}px;box-shadow:0 3px 10px rgba(0,0,0,${isSel ? 0.35 : 0.2});border:2.5px solid ${isSel ? '#fff' : c.color}">${c.icon}</div>`,
+            className: '', iconSize: [size, size], iconAnchor: [size / 2, size / 2],
+          });
           return (
-            <div key={l.id} onClick={() => onSelect(l)} style={{ flexShrink: 0, width: 140, background: '#fff', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              <div style={{ height: 70, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {hasImg(l) ? <img src={l.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 28 }}>{c.icon}</span>}
-              </div>
-              <div style={{ padding: '6px 8px' }}>
-                <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>{l.title.substring(0, 30)}{l.title.length > 30 ? '…' : ''}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 10, color: '#64748b' }}>📍 {l.city}</p>
-              </div>
-            </div>
+            <Marker key={l.id} position={[l.lat, l.lng]} icon={icon}
+              eventHandlers={{ click: e => { e.originalEvent?.stopPropagation(); setSelected(l); } }}
+            />
           );
         })}
+      </MapContainer>
+
+      {/* Górny overlay: wyszukiwarka + filtry */}
+      <div style={{ position: 'absolute', top: 'env(safe-area-inset-top, 0px)', left: 0, right: 0, zIndex: 1000, padding: '10px 14px 0', pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'all', background: T.card, borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.15)', ...FONT }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.subtle} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Szukaj w pobliżu..."
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: 15, color: T.text, background: 'transparent', ...FONT }} />
+          {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: T.subtle, cursor: 'pointer', fontSize: 20, padding: 0, lineHeight: 1 }}>×</button>}
+        </div>
+        <div style={{ pointerEvents: 'all', display: 'flex', gap: 7, marginTop: 8, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 6, WebkitOverflowScrolling: 'touch' }}>
+          {CATS.map(c => (
+            <button key={c.id} onClick={() => setActiveCat(c.id)} style={{
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 13px', borderRadius: 999, border: 'none', cursor: 'pointer',
+              background: activeCat === c.id ? c.color : T.card,
+              color: activeCat === c.id ? '#fff' : T.text,
+              fontSize: 12, fontWeight: 700, ...FONT,
+              boxShadow: '0 1px 6px rgba(0,0,0,0.12)',
+            }}><span>{c.icon}</span>{c.label}</button>
+          ))}
+        </div>
       </div>
+
+      {/* Przycisk geolokalizacji */}
+      <button onClick={geolocate} style={{
+        position: 'absolute', right: 14,
+        bottom: selected ? 148 : 24,
+        zIndex: 1000, width: 46, height: 46, borderRadius: 999,
+        background: T.card, border: 'none', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
+        transition: 'bottom 0.3s cubic-bezier(0.4,0,0.2,1)',
+      }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1B4F8A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" opacity=".3"/>
+        </svg>
+      </button>
+
+      {/* Karta wybranego miejsca */}
+      {selected && (
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 1000, padding: '0 14px 20px' }}>
+          <div onClick={() => onSelect(selected)} style={{ background: T.card, borderRadius: 20, padding: 12, display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', cursor: 'pointer', ...FONT }}>
+            <div style={{ width: 72, height: 72, borderRadius: 14, overflow: 'hidden', flexShrink: 0, background: cat(selected.category).bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {hasImg(selected)
+                ? <img src={selected.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                : <span style={{ fontSize: 32 }}>{cat(selected.category).icon}</span>}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected.title}</p>
+                {selected.rating && <span style={{ fontSize: 12, color: '#F4A825', fontWeight: 700, flexShrink: 0 }}>⭐ {selected.rating}</span>}
+              </div>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: T.muted }}>{cat(selected.category).label} · 📍 {selected.city}</p>
+              <p style={{ margin: '5px 0 0', fontSize: 14, fontWeight: 800, color: '#1B4F8A' }}>{selected.priceLabel || (selected.price === 0 ? 'Bezpłatne' : `${selected.price} zł`)}</p>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.subtle} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
