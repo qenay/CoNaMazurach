@@ -5,7 +5,7 @@ import MapView from '../components/MapView';
 import EventCalendar from '../components/EventCalendar';
 import SearchBar from '../components/SearchBar';
 
-const PER_PAGE = 15;
+const PER_PAGE = 16;
 
 export default function HomePage({ listings, allListings, city, setCity, selDay, setSelDay, category }) {
   const cardsRef = useRef(null);
