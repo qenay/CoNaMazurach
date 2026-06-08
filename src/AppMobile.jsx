@@ -430,7 +430,7 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
 
   function goToPage(p) {
     setPage(p);
-    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }
 
   return (

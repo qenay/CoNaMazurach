@@ -19,7 +19,8 @@ export default function HomePage({ listings, allListings, city, setCity, selDay,
 
   function goToPage(p) {
     setPage(p);
-    setTimeout(() => cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    const top = (cardsRef.current?.getBoundingClientRect().top ?? 0) + window.scrollY - 80;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   }
 
   function handleCitySelect(name, cityObj) {
