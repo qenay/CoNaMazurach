@@ -1117,6 +1117,46 @@ function AboutScreen({ onBack, T }) {
 }
 
 // ─── Regulamin screen ─────────────────────────────────────────────────────────
+const PRIVACY = [
+  { title: '§1. Administrator danych', items: ['Administratorem danych osobowych jest redakcja Co na Mazurach?, kontakt: kontakt@conamazurach.pl.', 'Niniejsza Polityka opisuje jakie dane zbieramy, w jakim celu i jak je chronimy.'] },
+  { title: '§2. Jakie dane zbieramy', items: ['Dane podawane dobrowolnie w formularzu: imię, e-mail, telefon, treść ogłoszenia, zdjęcia.', 'Dane techniczne (anonimowe): typ urządzenia, system operacyjny — wyłącznie do celów statystycznych.', 'Serwis nie zbiera danych wrażliwych ani nie wymaga rejestracji.'] },
+  { title: '§3. Cel przetwarzania', items: ['Dane z formularza służą weryfikacji i publikacji ogłoszenia oraz kontaktowi z ogłoszeniodawcą.', 'Podstawą prawną przetwarzania jest zgoda użytkownika (art. 6 ust. 1 lit. a RODO).', 'Dane nie są przetwarzane w celach marketingowych bez wyraźnej zgody.'] },
+  { title: '§4. Udostępnianie danych', items: ['Dane nie są sprzedawane ani udostępniane podmiotom trzecim w celach komercyjnych.', 'Mogą być przekazane wyłącznie podmiotom technicznym (hosting) lub organom państwowym na żądanie.'] },
+  { title: '§5. Prawa użytkownika', items: ['Masz prawo do dostępu do swoich danych, ich sprostowania i usunięcia.', 'Aby skorzystać z tych praw, skontaktuj się: kontakt@conamazurach.pl', 'Administrator odpowie w ciągu 30 dni.'] },
+  { title: '§6. Bezpieczeństwo', items: ['Transmisja danych odbywa się z szyfrowaniem SSL/TLS (HTTPS).', 'Dostęp do danych mają wyłącznie upoważnione osoby z redakcji.', 'Polityka obowiązuje od 9 czerwca 2026 r.'] },
+];
+
+function PrivacyScreen({ onBack, T }) {
+  return (
+    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.bg, paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 8, paddingLeft: 16, paddingRight: 16, display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.border}` }}>
+        <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: T.text }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.text} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.text }}>Polityka prywatności</p>
+      </div>
+      <div style={{ padding: '12px 16px 40px' }}>
+        <div style={{ background: 'linear-gradient(135deg, rgba(27,79,138,0.1), rgba(27,79,138,0.05))', borderRadius: 16, padding: 16, marginBottom: 16, border: '1.5px solid rgba(27,79,138,0.2)' }}>
+          <p style={{ margin: 0, fontSize: 13, color: '#1B4F8A', lineHeight: 1.6 }}>Twoja prywatność jest dla nas ważna. Poniżej opisujemy jakie dane zbieramy i jak je chronimy.</p>
+          <p style={{ margin: '6px 0 0', fontSize: 12, color: T.muted }}>Obowiązuje od 9 czerwca 2026 r.</p>
+        </div>
+        {PRIVACY.map(({ title, items }) => (
+          <div key={title} style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 10, boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}>
+            <p style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 800, color: T.text, paddingBottom: 8, borderBottom: `1px solid ${T.border}` }}>{title}</p>
+            {items.map((item, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: i < items.length - 1 ? 8 : 0 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#1B4F8A', flexShrink: 0, marginTop: 2 }}>{i + 1}.</span>
+                <p style={{ margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.65 }}>{item}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+        <p style={{ textAlign: 'center', fontSize: 11, color: T.subtle, marginTop: 16 }}>kontakt@conamazurach.pl</p>
+      </div>
+    </div>
+  );
+}
+
 const REGULAMIN = [
   {
     title: '§1. Postanowienia ogólne',
@@ -1232,13 +1272,14 @@ function RegulaminScreen({ onBack, T }) {
 }
 
 // ─── Profile screen ────────────────────────────────────────────────────────────
-function ProfileScreen({ favs, onShowFavs, onShowAbout, onShowRegulamin, isDark, toggleTheme, T }) {
+function ProfileScreen({ favs, onShowFavs, onShowAbout, onShowRegulamin, onShowPrivacy, isDark, toggleTheme, T }) {
   const favsCount = favs?.size ?? 0;
   const items = [
     { icon: '❤️', label: 'Ulubione', sub: favsCount > 0 ? `${favsCount} zapisanych ofert` : 'Brak zapisanych ofert', action: onShowFavs, highlight: true },
     { icon: '🌊', label: 'O Co na Mazurach?', sub: 'Poznaj nasz portal', action: onShowAbout },
     { icon: '📧', label: 'Kontakt', sub: 'kontakt@conamazurach.pl' },
     { icon: '📋', label: 'Regulamin', sub: 'Zasady korzystania', action: onShowRegulamin },
+    { icon: '🔒', label: 'Polityka prywatności', sub: 'Ochrona danych osobowych', action: onShowPrivacy },
     { icon: '⭐', label: 'Oceń aplikację', sub: 'Zostaw recenzję' },
   ];
   return (
@@ -1346,6 +1387,7 @@ export default function AppMobile() {
   const [showFavs,  setShowFavs]  = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showRegulamin, setShowRegulamin] = useState(false);
+  const [showPrivacy,   setShowPrivacy]   = useState(false);
   const [themeName, setThemeName] = useState(loadTheme);
   const mainContentRef = useRef(null);
   const [mountedTabs, setMountedTabs] = useState(() => new Set(['odkryj']));
@@ -1433,7 +1475,7 @@ export default function AppMobile() {
             )}
             {mountedTabs.has('profil') && (
               <div style={{ height: '100%', display: tab === 'profil' ? 'block' : 'none' }}>
-                <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} onShowRegulamin={() => setShowRegulamin(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
+                <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} onShowRegulamin={() => setShowRegulamin(true)} onShowPrivacy={() => setShowPrivacy(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
               </div>
             )}
           </div>
@@ -1456,6 +1498,12 @@ export default function AppMobile() {
       {showRegulamin && (
         <SwipeBackWrapper onBack={() => setShowRegulamin(false)} zIndex={60} bgRef={mainContentRef}>
           <RegulaminScreen onBack={() => setShowRegulamin(false)} T={T} />
+        </SwipeBackWrapper>
+      )}
+
+      {showPrivacy && (
+        <SwipeBackWrapper onBack={() => setShowPrivacy(false)} zIndex={60} bgRef={mainContentRef}>
+          <PrivacyScreen onBack={() => setShowPrivacy(false)} T={T} />
         </SwipeBackWrapper>
       )}
 

@@ -30,7 +30,8 @@ export default function Footer() {
               { to: '/kalendarz', label: 'Kalendarz wydarzeń' },
               { to: '/o-nas',     label: 'O nas' },
               { to: '/kontakt',   label: 'Kontakt' },
-              { to: '/regulamin', label: 'Regulamin' },
+              { to: '/regulamin',  label: 'Regulamin' },
+              { to: '/prywatnosc', label: 'Polityka prywatności' },
             ].map(l => (
               <li key={l.to}>
                 <Link to={l.to} className="hover:text-[#F4A825] transition-colors">
@@ -56,8 +57,12 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-gray-700 text-center py-4 text-xs text-gray-500">
-        © Co na Mazurach? 2025 — Wszelkie prawa zastrzeżone
+      <div className="border-t border-gray-700 text-center py-4 text-xs text-gray-500 flex flex-wrap items-center justify-center gap-3">
+        <span>© Co na Mazurach? 2026 — Wszelkie prawa zastrzeżone</span>
+        <span className="text-gray-700">·</span>
+        <Link to="/prywatnosc" className="hover:text-[#F4A825] transition-colors">Polityka prywatności</Link>
+        <span className="text-gray-700">·</span>
+        <Link to="/regulamin" className="hover:text-[#F4A825] transition-colors">Regulamin</Link>
       </div>
     </footer>
   );

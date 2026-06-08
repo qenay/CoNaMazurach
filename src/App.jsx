@@ -90,6 +90,7 @@ const CalendarPage      = lazy(() => import('./pages/CalendarPage'));
 const AboutPage         = lazy(() => import('./pages/AboutPage'));
 const ContactPage       = lazy(() => import('./pages/ContactPage'));
 const RegulaminPage     = lazy(() => import('./pages/RegulaminPage'));
+const PrywatnoPage      = lazy(() => import('./pages/PrywatnoPage'));
 const NotFoundPage      = lazy(() => import('./pages/NotFoundPage'));
 const AdminPage         = lazy(() => import('./pages/AdminPage'));
 
@@ -124,6 +125,7 @@ function AppLayout() {
             <Route path="/o-nas"       element={<AboutPage />} />
             <Route path="/kontakt"     element={<ContactPage />} />
             <Route path="/regulamin"   element={<RegulaminPage />} />
+            <Route path="/prywatnosc" element={<PrywatnoPage />} />
             <Route path="/paneladmina" element={<AdminPage />} />
             <Route path="*"            element={<NotFoundPage />} />
           </Routes>
