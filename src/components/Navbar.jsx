@@ -4,8 +4,8 @@ import ThemeToggle from './ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 import GlassCategoryTabs from './ui/glass-category-tabs';
 
-const LogoContent = ({ theme, size = 48, showSubtitle = true }) => (
-  <Link to="/" className="flex items-center gap-2 flex-shrink-0 z-10">
+const LogoContent = ({ theme, size = 48, showSubtitle = true, onClick }) => (
+  <Link to="/" onClick={onClick} className="flex items-center gap-2 flex-shrink-0 z-10">
     <div style={{
       backgroundColor: theme === 'dark' ? '#1e293b' : 'transparent',
       borderRadius: '50%', overflow: 'hidden',
@@ -49,6 +49,12 @@ export default function Navbar({ onSearch, onCategoryChange, activeCategory }) {
     navigate('/');
   }
 
+  function handleLogoClick() {
+    setQuery('');
+    if (onSearch) onSearch('');
+    if (onCategoryChange) onCategoryChange(null);
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-[#1e293b] shadow-md dark:shadow-black/30 transition-colors duration-300">
 
@@ -56,7 +62,7 @@ export default function Navbar({ onSearch, onCategoryChange, activeCategory }) {
       <div className="md:hidden">
         {/* Row 1: logo + actions */}
         <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-          <LogoContent theme={theme} size={40} showSubtitle={false} />
+          <LogoContent theme={theme} size={40} showSubtitle={false} onClick={handleLogoClick} />
           <div className="flex items-center gap-2">
             <Link
               to="/dodaj"
@@ -89,7 +95,7 @@ export default function Navbar({ onSearch, onCategoryChange, activeCategory }) {
 
       {/* ── DESKTOP ── */}
       <div className="hidden md:flex relative w-full px-4 py-3 items-center justify-between">
-        <LogoContent theme={theme} size={48} showSubtitle />
+        <LogoContent theme={theme} size={48} showSubtitle onClick={handleLogoClick} />
 
         <form
           onSubmit={handleSearch}
