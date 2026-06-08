@@ -522,7 +522,7 @@ function MapScreen({ listings, onSelect, T }) {
       </MapContainer>
 
       {/* Górny overlay: wyszukiwarka + filtry */}
-      <div style={{ position: 'absolute', top: 'env(safe-area-inset-top, 0px)', left: 0, right: 0, zIndex: 1000, padding: '10px 14px 0', pointerEvents: 'none' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000, paddingTop: 'calc(env(safe-area-inset-top) + 10px)', paddingLeft: 14, paddingRight: 14, pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'all', background: T.card, borderRadius: 14, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.15)', ...FONT }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.subtle} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Szukaj w pobliżu..."
@@ -1150,15 +1150,17 @@ export default function AppMobile() {
 
       {!loading && (
         <>
+          {/* Mapa: pełny ekran od top:0, pod spodem safe area jest obsługiwane przez własny overlay */}
+          {mountedTabs.has('mapa') && (
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', display: tab === 'mapa' ? 'block' : 'none', zIndex: 1 }}>
+              <MapScreen listings={listings} onSelect={setDetail} T={T} />
+            </div>
+          )}
+
           <div ref={mainContentRef} style={{ position: 'absolute', top: 'env(safe-area-inset-top)', left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', overflowY: 'hidden' }}>
             <div style={{ height: '100%', display: tab === 'odkryj' ? 'block' : 'none' }}>
               <DiscoverScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
             </div>
-            {mountedTabs.has('mapa') && (
-              <div style={{ height: '100%', display: tab === 'mapa' ? 'block' : 'none' }}>
-                <MapScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
-              </div>
-            )}
             {mountedTabs.has('dodaj') && (
               <div style={{ height: '100%', display: tab === 'dodaj' ? 'block' : 'none' }}>
                 <AddListingScreen T={T} />
