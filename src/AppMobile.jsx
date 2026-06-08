@@ -299,7 +299,7 @@ function SwipeBackWrapper({ onBack, zIndex, bgRef, children }) {
 function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
   const c = cat(listing.category);
   const isFav = favs?.has(String(listing.id));
-  const mailto = `mailto:conamazurach@gmail.com?subject=${encodeURIComponent(`Zapytanie: ${listing.title}`)}&body=${encodeURIComponent(`Dzień dobry,\n\nChciałbym się dowiedzieć więcej o "${listing.title}" w ${listing.city}.\n\nPozdrawiam`)}`;
+  const mailto = `mailto:kontakt@conamazurach.pl?subject=${encodeURIComponent(`Zapytanie: ${listing.title}`)}&body=${encodeURIComponent(`Dzień dobry,\n\nChciałbym się dowiedzieć więcej o "${listing.title}" w ${listing.city}.\n\nPozdrawiam`)}`;
 
   return (
     <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
@@ -978,7 +978,7 @@ function ProfileScreen({ favs, onShowFavs, onShowAbout, isDark, toggleTheme, T }
   const items = [
     { icon: '❤️', label: 'Ulubione', sub: favsCount > 0 ? `${favsCount} zapisanych ofert` : 'Brak zapisanych ofert', action: onShowFavs, highlight: true },
     { icon: '🌊', label: 'O Co na Mazurach?', sub: 'Poznaj nasz portal', action: onShowAbout },
-    { icon: '📧', label: 'Kontakt', sub: 'conamazurach@gmail.com' },
+    { icon: '📧', label: 'Kontakt', sub: 'kontakt@conamazurach.pl' },
     { icon: '📋', label: 'Regulamin', sub: 'Zasady korzystania' },
     { icon: '⭐', label: 'Oceń aplikację', sub: 'Zostaw recenzję' },
   ];
