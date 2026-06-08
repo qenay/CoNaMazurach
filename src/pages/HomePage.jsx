@@ -1,12 +1,26 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import ListingCard from '../components/ListingCard';
 import MapView from '../components/MapView';
 import EventCalendar from '../components/EventCalendar';
 import SearchBar from '../components/SearchBar';
 
+const PER_PAGE = 15;
+
 export default function HomePage({ listings, allListings, city, setCity, selDay, setSelDay, category }) {
   const cardsRef = useRef(null);
+  const [page, setPage] = useState(1);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setPage(1); }, [listings]);
+
+  const totalPages = Math.max(1, Math.ceil(listings.length / PER_PAGE));
+  const paginated  = listings.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  function goToPage(p) {
+    setPage(p);
+    setTimeout(() => cardsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
 
   function handleCitySelect(name, cityObj) {
     setCity(name);
@@ -92,9 +106,47 @@ export default function HomePage({ listings, allListings, city, setCity, selDay,
               <p className="text-sm mt-2">Spróbuj zmienić filtry lub lokalizację</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {listings.map(l => <ListingCard key={l.id} listing={l} />)}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {paginated.map(l => <ListingCard key={l.id} listing={l} />)}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-10">
+                  <button
+                    onClick={() => goToPage(page - 1)}
+                    disabled={page === 1}
+                    className="flex items-center gap-1 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ← Poprzednia
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                      <button
+                        key={p}
+                        onClick={() => goToPage(p)}
+                        className={`w-9 h-9 rounded-xl text-sm font-bold transition-colors ${
+                          p === page
+                            ? 'bg-[#1B4F8A] text-white shadow-md'
+                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => goToPage(page + 1)}
+                    disabled={page === totalPages}
+                    className="flex items-center gap-1 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Następna →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
