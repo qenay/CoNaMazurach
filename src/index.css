@@ -77,6 +77,15 @@ h1, h2, h3, h4 {
   font-family: 'Nunito', sans-serif;
 }
 
+/* Page transition animation */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-in {
+  animation: pageIn 0.22s ease-out;
+}
+
 /* Leaflet fix */
 .leaflet-container {
   z-index: 1;

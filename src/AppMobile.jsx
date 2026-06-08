@@ -405,10 +405,14 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
 }
 
 // ─── Discover screen ──────────────────────────────────────────────────────────
+const DISCOVER_PER_PAGE = 16;
+
 function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
   const [cat,    setCat]    = useState('all');
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [page, setPage]     = useState(1);
+  const scrollRef           = useRef(null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -418,8 +422,19 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
     });
   }, [listings, cat, search]);
 
+  // Reset to page 1 when filter/search changes
+  useEffect(() => { setPage(1); }, [filtered]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / DISCOVER_PER_PAGE));
+  const paginated  = filtered.slice((page - 1) * DISCOVER_PER_PAGE, page * DISCOVER_PER_PAGE);
+
+  function goToPage(p) {
+    setPage(p);
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
+    <div ref={scrollRef} style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ padding: '16px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>Cześć! 👋</p>
@@ -453,24 +468,85 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
       )}
 
       <div style={{ marginBottom: 12 }}>
-        <CategoryChips active={cat} onChange={setCat} T={T} />
+        <CategoryChips active={cat} onChange={v => { setCat(v); }} T={T} />
       </div>
 
-      <div style={{ padding: '0 16px 8px' }}>
+      <div style={{ padding: '0 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 600 }}>
           {filtered.length} {filtered.length === 1 ? 'oferta' : 'ofert'}{search ? ` dla "${search}"` : ''}
         </p>
+        {totalPages > 1 && (
+          <p style={{ margin: 0, fontSize: 12, color: T.subtle, fontWeight: 600 }}>
+            Strona {page} / {totalPages}
+          </p>
+        )}
       </div>
 
-      <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Karty — key={page} wywołuje animację przy zmianie strony */}
+      <div key={page} className="page-in" style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {filtered.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 0', color: T.subtle }}>
             <p style={{ fontSize: 40 }}>😕</p>
             <p style={{ fontWeight: 600 }}>Brak wyników</p>
           </div>
         )}
-        {filtered.map(l => <Card key={l.id} listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} />)}
+        {paginated.map(l => <Card key={l.id} listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} />)}
       </div>
+
+      {/* Kontrolki paginacji */}
+      {totalPages > 1 && (
+        <div style={{ padding: '4px 16px 90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <button
+            onClick={() => goToPage(page - 1)}
+            disabled={page === 1}
+            style={{
+              flex: 1, padding: '14px', borderRadius: 16,
+              background: page === 1 ? T.card2 : T.card,
+              border: `1.5px solid ${T.border}`,
+              color: page === 1 ? T.subtle : T.text,
+              fontWeight: 700, fontSize: 14, cursor: page === 1 ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...FONT,
+              opacity: page === 1 ? 0.4 : 1,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Poprzednia
+          </button>
+
+          <div style={{ display: 'flex', gap: 6 }}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+              <button
+                key={p}
+                onClick={() => goToPage(p)}
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: p === page ? '#1B4F8A' : T.card,
+                  border: `1.5px solid ${p === page ? '#1B4F8A' : T.border}`,
+                  color: p === page ? '#fff' : T.muted,
+                  fontWeight: 700, fontSize: 13, cursor: 'pointer', ...FONT,
+                }}
+              >{p}</button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => goToPage(page + 1)}
+            disabled={page === totalPages}
+            style={{
+              flex: 1, padding: '14px', borderRadius: 16,
+              background: page === totalPages ? T.card2 : '#1B4F8A',
+              border: `1.5px solid ${page === totalPages ? T.border : '#1B4F8A'}`,
+              color: page === totalPages ? T.subtle : '#fff',
+              fontWeight: 700, fontSize: 14, cursor: page === totalPages ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...FONT,
+              opacity: page === totalPages ? 0.4 : 1,
+            }}
+          >
+            Następna
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
