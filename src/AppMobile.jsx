@@ -1115,7 +1115,7 @@ const REGULAMIN = [
       'Dane osobowe (imię, e-mail, telefon) przetwarzane są wyłącznie w celu weryfikacji i publikacji ogłoszenia.',
       'Podstawą przetwarzania jest zgoda Użytkownika (art. 6 ust. 1 lit. a RODO) lub uzasadniony interes Administratora.',
       'Dane nie są udostępniane podmiotom trzecim poza przypadkami wymaganymi przez prawo.',
-      'Użytkownik ma prawo do dostępu, sprostowania, usunięcia danych oraz wniesienia skargi do UODO (uodo.gov.pl).',
+      'Użytkownik ma prawo do dostępu, sprostowania i usunięcia swoich danych osobowych.',
       'Dane przechowywane są do 2 lat od ostatniego kontaktu.',
     ],
   },

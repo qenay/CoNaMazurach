@@ -51,7 +51,6 @@ const SECTIONS = [
       'Podstawą prawną przetwarzania danych jest zgoda Użytkownika (art. 6 ust. 1 lit. a RODO) lub uzasadniony interes Administratora (art. 6 ust. 1 lit. f RODO).',
       'Dane nie są udostępniane podmiotom trzecim, z wyjątkiem przypadków wymaganych przez prawo.',
       'Użytkownik ma prawo do dostępu do swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia danych oraz wniesienia sprzeciwu wobec przetwarzania.',
-      'Użytkownik ma prawo do wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (uodo.gov.pl).',
       'Dane przechowywane są przez okres niezbędny do realizacji usług, nie dłużej niż 2 lata od ostatniego kontaktu.',
     ],
   },
