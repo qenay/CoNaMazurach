@@ -849,7 +849,7 @@ function AboutScreen({ onBack, T }) {
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.bg, paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 8, paddingLeft: 16, paddingRight: 16, display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.border}` }}>
-        <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>←</button>
+        <button onClick={onBack} style={{ width: 38, height: 38, borderRadius: 999, background: T.card, border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', color: T.text }}>←</button>
         <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.text }}>O nas</p>
       </div>
       <div style={{ padding: '0 16px 40px' }}>
