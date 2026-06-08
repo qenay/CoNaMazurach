@@ -1141,7 +1141,7 @@ const REGULAMIN = [
       'Redakcja zastrzega sobie prawo do zmiany Regulaminu. Zmiany wchodzą w życie z dniem publikacji.',
       'Dalsze korzystanie z Serwisu po zmianach oznacza ich akceptację.',
       'W sprawach nieuregulowanych stosuje się przepisy prawa polskiego.',
-      'Regulamin obowiązuje od 1 czerwca 2025 r.',
+      'Regulamin obowiązuje od 9 czerwca 2026 r.',
     ],
   },
 ];
@@ -1161,7 +1161,7 @@ function RegulaminScreen({ onBack, T }) {
           <p style={{ margin: 0, fontSize: 13, color: '#1B4F8A', lineHeight: 1.6 }}>
             <strong>Co na Mazurach?</strong> to bezpłatna platforma łącząca turystów z najlepszymi miejscami i wydarzeniami na Mazurach. Korzystając z serwisu, akceptujesz poniższy Regulamin.
           </p>
-          <p style={{ margin: '6px 0 0', fontSize: 12, color: T.muted }}>Ostatnia aktualizacja: 1 czerwca 2025 r.</p>
+          <p style={{ margin: '6px 0 0', fontSize: 12, color: T.muted }}>Ostatnia aktualizacja: 9 czerwca 2026 r.</p>
         </div>
 
         {REGULAMIN.map(({ title, items }) => (

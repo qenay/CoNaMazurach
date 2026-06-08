@@ -87,7 +87,7 @@ const SECTIONS = [
       'W sprawach nieuregulowanych niniejszym Regulaminem zastosowanie mają przepisy prawa polskiego, w szczególności Kodeksu cywilnego oraz ustawy o świadczeniu usług drogą elektroniczną.',
       'Wszelkie spory wynikające z korzystania z Serwisu będą rozstrzygane przez sąd właściwy dla siedziby Administratora.',
       'Nieważność lub bezskuteczność któregokolwiek z postanowień Regulaminu nie wpływa na ważność pozostałych postanowień.',
-      'Regulamin wchodzi w życie z dniem 1 czerwca 2025 r.',
+      'Regulamin wchodzi w życie z dniem 9 czerwca 2026 r.',
     ],
   },
 ];
@@ -103,7 +103,7 @@ export default function RegulaminPage() {
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-black text-[#1C2B3A] dark:text-white mb-2">Regulamin serwisu</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Ostatnia aktualizacja: 1 czerwca 2025 r.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Ostatnia aktualizacja: 9 czerwca 2026 r.</p>
         </div>
 
         <div className="bg-[#EFF6FF] dark:bg-[#1e3a5f]/30 border border-[#1B4F8A]/20 rounded-2xl p-5 mb-8">
