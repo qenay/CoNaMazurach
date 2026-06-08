@@ -1087,7 +1087,7 @@ const REGULAMIN = [
       'Serwis umożliwia bezpłatne przeglądanie ogłoszeń turystycznych i rekreacyjnych na Mazurach.',
       'Użytkownicy mogą bezpłatnie dodawać ogłoszenia bez rejestracji przez formularz w Serwisie.',
       'Ogłoszenia przed publikacją podlegają weryfikacji redakcji w terminie do 48 godzin roboczych.',
-      'Redakcja zastrzega sobie prawo do edytowania lub odmowy publikacji ogłoszeń niespełniających wymogów Regulaminu.',
+      'Redakcja zastrzega sobie prawo do odmowy publikacji ogłoszeń naruszających Regulamin.',
     ],
   },
   {
@@ -1106,33 +1106,34 @@ const REGULAMIN = [
       'Zabrania się publikowania treści niezgodnych z prawem, obraźliwych, dyskryminujących lub naruszających godność osobistą.',
       'Zabrania się zamieszczania spamu, fałszywych informacji lub treści naruszających prawa własności intelektualnej.',
       'Zabrania się dodawania ogłoszeń niezwiązanych z turystyką lub ofertą regionu Mazur.',
-      'Naruszenie zakazu może skutkować usunięciem ogłoszenia bez ostrzeżenia.',
     ],
   },
   {
     title: '§5. Ochrona danych osobowych (RODO)',
     items: [
       'Dane osobowe (imię, e-mail, telefon) przetwarzane są wyłącznie w celu weryfikacji i publikacji ogłoszenia.',
-      'Podstawą przetwarzania jest zgoda Użytkownika (art. 6 ust. 1 lit. a RODO) lub uzasadniony interes Administratora.',
+      'Podstawą przetwarzania jest zgoda Użytkownika (art. 6 ust. 1 lit. a RODO).',
       'Dane nie są udostępniane podmiotom trzecim poza przypadkami wymaganymi przez prawo.',
-      'Użytkownik ma prawo do dostępu, sprostowania i usunięcia swoich danych osobowych.',
-      'Dane przechowywane są do 2 lat od ostatniego kontaktu.',
+      'Użytkownik ma prawo do dostępu, sprostowania i usunięcia swoich danych — kontakt: kontakt@conamazurach.pl.',
+      'Dane przechowywane są przez okres niezbędny do realizacji celów, dla których zostały zebrane.',
     ],
   },
   {
     title: '§6. Odpowiedzialność',
     items: [
       'Redakcja nie ponosi odpowiedzialności za treść, prawdziwość i aktualność ogłoszeń użytkowników.',
-      'Redakcja nie odpowiada za działania lub zaniechania osób trzecich prezentowanych w Serwisie.',
-      'Użytkownik korzysta z Serwisu na własne ryzyko.',
+      'Redakcja nie odpowiada za działania osób trzecich prezentowanych w Serwisie.',
     ],
   },
   {
-    title: '§7. Własność intelektualna',
+    title: '§7. Zakaz kopiowania i własność intelektualna',
     items: [
-      'Wszelkie prawa do Serwisu (grafika, logotyp, kod, treści redakcyjne) przysługują redakcji Co na Mazurach?',
-      'Kopiowanie i rozpowszechnianie treści Serwisu bez zgody redakcji jest zabronione.',
-      'Dodając ogłoszenie, ogłoszeniodawca udziela redakcji nieodpłatnej licencji na prezentację zamieszczonych materiałów w Serwisie.',
+      'Wszelkie prawa do Serwisu (grafika, logotyp, kod, treści redakcyjne) przysługują wyłącznie redakcji Co na Mazurach?',
+      'Zabrania się kopiowania, powielania, pobierania lub rozpowszechniania jakichkolwiek treści Serwisu — w całości lub w części — bez pisemnej zgody redakcji.',
+      'Zabrania się korzystania z treści Serwisu w celach komercyjnych bez zgody redakcji.',
+      'Zabrania się automatycznego pobierania danych z Serwisu (scrapery, boty, crawlery).',
+      'Naruszenie zakazu kopiowania może skutkować odpowiedzialnością cywilną i karną.',
+      'Dodając ogłoszenie, ogłoszeniodawca udziela redakcji nieodpłatnej licencji na prezentację materiałów w Serwisie.',
     ],
   },
   {
