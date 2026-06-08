@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,7 +6,26 @@ import { z } from 'zod';
 import { CATEGORIES } from '../data/mockListings';
 import DatePickerInput from '../components/ui/DatePickerInput';
 
-const CONTACT_EMAIL = 'conamazurach@gmail.com';
+const API = 'https://conamazurach.pl';
+
+function compressImage(file, maxW = 900) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.78));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 const step1Schema = z.object({
   title:     z.string().min(10, 'Tytuł musi mieć minimum 10 znaków'),
@@ -43,121 +62,89 @@ function Field({ label, error, children, hint }) {
 
 const inputCls = 'w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1B4F8A] focus:ring-2 focus:ring-[#1B4F8A]/20';
 
-function buildMessage(d1, d2) {
-  const cat = CATEGORIES.find(c => c.id === d1.category);
-  const lines = [
-    `NOWE OGŁOSZENIE — Co na Mazurach?`,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    ``,
-    `📌 TYTUŁ: ${d1.title}`,
-    `📂 KATEGORIA: ${cat ? `${cat.icon} ${cat.label}` : d1.category}`,
-    `📍 MIASTO: ${d1.city}`,
-    `🏠 ADRES: ${d1.address}`,
-    d1.dateStart ? `📅 DATA: ${d1.dateStart}${d1.dateEnd && d1.dateEnd !== d1.dateStart ? ` → ${d1.dateEnd}` : ''}` : null,
-    d1.time      ? `🕐 GODZINA: ${d1.time}` : null,
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `💰 CENA: ${d2.free ? 'Bezpłatne' : d2.price ? `${d2.price} zł` : 'Nie podano'}`,
-    d2.website     ? `🌐 STRONA: ${d2.website}` : null,
-    d2.phone       ? `📞 TELEFON: ${d2.phone}` : null,
-    d2.senderEmail ? `📧 EMAIL KONTAKTOWY: ${d2.senderEmail}` : null,
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `📝 OPIS:`,
-    ``,
-    d2.description,
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `Zgłaszający: ${d2.senderName}${d2.senderEmail ? ` <${d2.senderEmail}>` : ''}`,
-    `Data zgłoszenia: ${new Date().toLocaleString('pl-PL')}`,
-  ];
-  return lines.filter(l => l !== null).join('\n');
-}
 
-function ResultPanel({ data1, data2 }) {
-  const [copied, setCopied] = useState(false);
-  const message  = buildMessage(data1, data2);
-  const subject  = encodeURIComponent(`Nowe ogłoszenie: ${data1.title} — ${data1.city}`);
-  const body     = encodeURIComponent(message);
-  const mailtoHref = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-
-  function handleCopy() {
-    navigator.clipboard.writeText(message);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  }
-
+function SuccessPanel({ title }) {
   return (
-    <div className="space-y-6">
-      {/* Success header */}
-      <div className="bg-[#D1FAE5] border border-[#2E9E6E]/30 rounded-2xl p-5 flex items-start gap-4">
-        <span className="text-3xl">✅</span>
-        <div>
-          <p className="font-black text-[#1C2B3A] text-lg">Formularz wypełniony!</p>
-          <p className="text-sm text-gray-600 mt-1">
-            Poniżej znajdziesz gotową wiadomość. Wyślij ją mailem lub skopiuj i prześlij samodzielnie.
-            <br />Ogłoszenie zostanie dodane <strong>ręcznie przez redakcję</strong> po weryfikacji.
-          </p>
-        </div>
+    <div className="space-y-6 text-center">
+      <div className="bg-gradient-to-br from-[#1B4F8A] to-[#2563EB] rounded-2xl p-8 text-white">
+        <div className="text-5xl mb-4">🎉</div>
+        <h2 className="text-xl font-black mb-2">Zgłoszenie wysłane!</h2>
+        <p className="text-white/80 text-sm leading-relaxed">
+          Twoje ogłoszenie <strong className="text-white">„{title}"</strong> trafiło do panelu admina.<br />
+          Po weryfikacji pojawi się na portalu automatycznie.
+        </p>
       </div>
-
-      {/* Message preview */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-[#1C2B3A]">📋 Treść wiadomości</span>
-          <span className="text-xs text-gray-500">Do: {CONTACT_EMAIL}</span>
-        </div>
-        <pre className="p-4 text-xs text-gray-700 leading-relaxed whitespace-pre-wrap font-mono overflow-x-auto max-h-72 overflow-y-auto">
-          {message}
-        </pre>
+      <div className="bg-white border border-gray-100 rounded-2xl p-5 flex gap-3 text-left shadow-sm">
+        <span className="text-2xl">✅</span>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          <strong className="text-[#1C2B3A]">Co dalej?</strong><br />
+          Administrator przejrzy Twoje zgłoszenie i opublikuje je na stronie i w aplikacji.
+        </p>
       </div>
-
-      {/* Action buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <a
-          href={mailtoHref}
-          className="flex items-center justify-center gap-2 bg-[#1B4F8A] text-white py-4 rounded-xl font-bold text-sm hover:bg-[#163f70] transition-colors"
-        >
-          <span>📧</span>
-          Wyślij przez email
-        </a>
-        <button
-          onClick={handleCopy}
-          className={`flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm transition-all border-2 ${
-            copied
-              ? 'bg-[#2E9E6E] text-white border-[#2E9E6E]'
-              : 'border-[#1B4F8A] text-[#1B4F8A] hover:bg-[#1B4F8A] hover:text-white'
-          }`}
-        >
-          <span>{copied ? '✓' : '📋'}</span>
-          {copied ? 'Skopiowano!' : 'Kopiuj wiadomość'}
-        </button>
-      </div>
-
-      <p className="text-xs text-gray-400 text-center">
-        Możesz też wysłać wiadomość bezpośrednio na{' '}
-        <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#1B4F8A] underline">{CONTACT_EMAIL}</a>
-      </p>
-
-      <a href="/" className="block text-center text-sm text-gray-500 hover:text-[#1B4F8A] transition-colors">
-        ← Wróć na stronę główną
+      <a href="/" className="block w-full bg-[#1B4F8A] text-white py-3.5 rounded-xl font-bold text-sm hover:bg-[#163f70] transition-colors">
+        Wróć na stronę główną
       </a>
     </div>
   );
 }
 
 export default function AddListingPage() {
-  const [step,    setStep]    = useState(0);
-  const [data1,   setData1]   = useState({});
-  const [data2,   setData2]   = useState({});
-  const [isFree,  setIsFree]  = useState(false);
-  const [done,    setDone]    = useState(false);
+  const [step,       setStep]       = useState(0);
+  const [data1,      setData1]      = useState({});
+  const [isFree,     setIsFree]     = useState(false);
+  const [done,       setDone]       = useState(false);
+  const [photos,     setPhotos]     = useState([]);
+  const [sending,    setSending]    = useState(false);
+  const [sendErr,    setSendErr]    = useState('');
 
   const form1 = useForm({ resolver: zodResolver(step1Schema) });
   const form2 = useForm({ resolver: zodResolver(step2Schema) });
 
+  async function addPhoto(file) {
+    if (photos.length >= 8) return;
+    const compressed = await compressImage(file);
+    setPhotos(p => [...p, compressed]);
+  }
+
   function onStep1(values) { setData1(values); setStep(1); }
-  function onStep2(values) { setData2(values); setStep(2); setDone(true); }
+
+  async function onStep2(values) {
+    setSending(true);
+    setSendErr('');
+    try {
+      const payload = {
+        title:       data1.title,
+        category:    data1.category,
+        city:        data1.city,
+        address:     data1.address,
+        date:        data1.dateStart || null,
+        time:        data1.time || null,
+        description: values.description,
+        price:       values.free ? 0 : parseFloat(values.price) || 0,
+        priceLabel:  values.free ? 'Bezpłatne' : values.price ? `${values.price} zł` : '',
+        website:     values.website || '',
+        phone:       values.phone || '',
+        name:        values.senderName,
+        email:       values.senderEmail || '',
+        images:      photos,
+        image:       photos[0] || '',
+        tags:        [],
+        status:      'pending',
+      };
+      const r = await fetch(`${API}/api/pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pending: payload }),
+      });
+      if (!r.ok) throw new Error(`Błąd serwera ${r.status}`);
+      setDone(true);
+      setStep(2);
+    } catch (e) {
+      setSendErr(e.message || 'Wystąpił błąd. Spróbuj ponownie.');
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <>
@@ -283,22 +270,56 @@ export default function AddListingPage() {
               <input {...form2.register('senderName')} placeholder="Jan Kowalski" className={inputCls} />
             </Field>
 
+            {/* Zdjęcia */}
+            <div>
+              <label className="block text-sm font-semibold text-[#1C2B3A] mb-1">
+                📷 Zdjęcia
+                <span className="text-gray-400 font-normal ml-1">({photos.length}/8) — pierwsze = okładka</span>
+              </label>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                {photos.map((src, i) => (
+                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border-2 border-[#1B4F8A]">
+                    <img src={src} className="w-full h-full object-cover" alt="" />
+                    {i === 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 text-center text-[8px] font-bold text-white bg-[#1B4F8A]/80 py-0.5">
+                        OKŁADKA
+                      </div>
+                    )}
+                    <button type="button" onClick={() => setPhotos(p => p.filter((_, j) => j !== i))}
+                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-xs flex items-center justify-center hover:bg-black/80">
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {photos.length < 8 && (
+                  <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-[#1B4F8A] hover:bg-blue-50 transition-colors gap-1">
+                    <span className="text-2xl text-gray-400">+</span>
+                    <span className="text-[9px] text-gray-400 font-semibold">Dodaj</span>
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={e => { if (e.target.files[0]) { addPhoto(e.target.files[0]); e.target.value = ''; } }} />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            {sendErr && <p className="text-red-500 text-sm">⚠️ {sendErr}</p>}
+
             <div className="flex gap-3">
               <button type="button" onClick={() => setStep(0)}
                 className="flex-1 border-2 border-gray-300 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors">
                 ← Wróć
               </button>
-              <button type="submit"
-                className="flex-1 bg-[#2E9E6E] text-white py-3 rounded-xl font-bold hover:bg-[#247d57] transition-colors">
-                Generuj wiadomość →
+              <button type="submit" disabled={sending}
+                className="flex-1 bg-[#2E9E6E] text-white py-3 rounded-xl font-bold hover:bg-[#247d57] transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                {sending ? '⏳ Wysyłanie...' : '✓ Wyślij zgłoszenie'}
               </button>
             </div>
           </form>
         )}
 
-        {/* Step 3 — result */}
+        {/* Step 3 — success */}
         {step === 2 && done && (
-          <ResultPanel data1={data1} data2={data2} />
+          <SuccessPanel title={data1.title} />
         )}
       </div>
     </>
