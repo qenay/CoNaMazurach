@@ -30,26 +30,7 @@ function loadFavs()  { try { return new Set(JSON.parse(localStorage.getItem(FAV_
 function saveFavs(s) { try { localStorage.setItem(FAV_KEY, JSON.stringify([...s])); } catch {} }
 function loadTheme() { return localStorage.getItem(THEME_KEY) || 'light'; }
 
-function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371, r = d => d * Math.PI / 180;
-  const a = Math.sin(r(lat2-lat1)/2)**2 + Math.cos(r(lat1))*Math.cos(r(lat2))*Math.sin(r(lon2-lon1)/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-function fmtDist(km) { return km < 1 ? `${Math.round(km*1000)} m` : `${km.toFixed(1)} km`; }
 
-function useUserLocation() {
-  const [loc, setLoc] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const get = useCallback(() => {
-    setLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      p => { setLoc({ lat: p.coords.latitude, lng: p.coords.longitude }); setLoading(false); },
-      () => setLoading(false),
-      { enableHighAccuracy: false, timeout: 8000 }
-    );
-  }, []);
-  return [loc, get, loading];
-}
 
 function useSwipeBack(onBack, bgRef) {
   const elRef = useRef(null);
@@ -270,7 +251,7 @@ function CategoryChips({ active, onChange, T }) {
 }
 
 // ─── Listing card (full width) ────────────────────────────────────────────────
-const Card = memo(function Card({ listing, onClick, favs, toggleFav, T, distKm }) {
+const Card = memo(function Card({ listing, onClick, favs, toggleFav, T }) {
   const c = cat(listing.category);
   const isFav = favs?.has(String(listing.id));
   return (
@@ -295,11 +276,8 @@ const Card = memo(function Card({ listing, onClick, favs, toggleFav, T, distKm }
         {listing.date && <p style={{ margin: '4px 0 0', fontSize: 12, color: T.heading, fontWeight: 600 }}>📅 {new Date(listing.date).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' })}{listing.time ? ` · ${listing.time}` : ''}</p>}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: T.heading }}>{listing.priceLabel || (listing.price === 0 ? 'Bezpłatne' : `${listing.price} zł`)}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {distKm != null && (
-              <span style={{ fontSize: 10, color: '#1B4F8A', background: '#DBEAFE', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>📍 {fmtDist(distKm)}</span>
-            )}
-            {(listing.tags || []).slice(0, 1).map(t => (
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(listing.tags || []).slice(0, 2).map(t => (
               <span key={t} style={{ fontSize: 10, color: T.muted, background: T.chipBg, padding: '2px 7px', borderRadius: 999, fontWeight: 600 }}>#{t}</span>
             ))}
           </div>
@@ -427,31 +405,17 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
 
 // ─── Discover screen ──────────────────────────────────────────────────────────
 function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
-  const [cat,       setCat]       = useState('all');
-  const [search,    setSearch]    = useState('');
+  const [cat,    setCat]    = useState('all');
+  const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [sortNear,  setSortNear]  = useState(false);
-  const [userLoc, getUserLoc, locLoading] = useUserLocation();
-
-  function toggleNear() {
-    if (!sortNear && !userLoc) getUserLoc();
-    setSortNear(s => !s);
-  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    let result = listings.filter(l => {
+    return listings.filter(l => {
       if (cat !== 'all' && l.category !== cat) return false;
       return !q || l.title?.toLowerCase().includes(q) || l.city?.toLowerCase().includes(q) || (l.tags||[]).some(t => t.toLowerCase().includes(q));
     });
-    if (sortNear && userLoc) {
-      result = result
-        .filter(l => l.lat && l.lng)
-        .map(l => ({ ...l, _dist: haversine(userLoc.lat, userLoc.lng, l.lat, l.lng) }))
-        .sort((a, b) => a._dist - b._dist);
-    }
-    return result;
-  }, [listings, cat, search, sortNear, userLoc]);
+  }, [listings, cat, search]);
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
@@ -460,30 +424,19 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
           <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>Cześć! 👋</p>
           <p style={{ margin: 0, fontSize: 30, fontWeight: 800, color: T.heading, fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: -0.3 }}>Co na Mazurach?</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          <button onClick={toggleNear} style={{
-            height: 46, padding: '0 14px', borderRadius: 999,
-            background: sortNear ? '#1B4F8A' : '#1e3a6e',
-            border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 6,
-            boxShadow: '0 4px 12px rgba(14,36,68,0.3)',
-            color: '#fff', fontSize: 12, fontWeight: 700, ...FONT,
-          }}>
-            {locLoading ? '⏳' : '📍'}{sortNear ? 'Blisko' : 'Blisko mnie'}
-          </button>
-          <button onClick={() => setShowSearch(s => !s)} style={{
-            width: 46, height: 46, borderRadius: 999,
-            background: '#1e3a6e',
-            border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(14,36,68,0.3)',
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(200,215,235,0.95)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="7"/>
-              <line x1="16.5" y1="16.5" x2="22" y2="22"/>
-            </svg>
-          </button>
-        </div>
+        <button onClick={() => setShowSearch(s => !s)} style={{
+          width: 46, height: 46, borderRadius: 999,
+          background: '#1e3a6e',
+          border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 12px rgba(14,36,68,0.3)',
+          flexShrink: 0,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(200,215,235,0.95)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+          </svg>
+        </button>
       </div>
 
       {showSearch && (
@@ -515,11 +468,7 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
             <p style={{ fontWeight: 600 }}>Brak wyników</p>
           </div>
         )}
-        {filtered.map(l => (
-          <Card key={l.id} listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T}
-            distKm={sortNear && userLoc && l.lat && l.lng ? haversine(userLoc.lat, userLoc.lng, l.lat, l.lng) : undefined}
-          />
-        ))}
+        {filtered.map(l => <Card key={l.id} listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} />)}
       </div>
     </div>
   );
@@ -541,44 +490,23 @@ function MapScreen({ listings, onSelect, T }) {
   const [activeCat, setActiveCat] = useState('all');
   const [search,    setSearch]    = useState('');
   const [selected,  setSelected]  = useState(null);
-  const [nearMe,    setNearMe]    = useState(false);
   const mapRef = useRef(null);
-  const [userLoc, getUserLoc, locLoading] = useUserLocation();
 
   function geolocate() {
-    if (!userLoc) {
-      getUserLoc();
-    } else {
-      mapRef.current?.flyTo([userLoc.lat, userLoc.lng], 13);
-    }
+    navigator.geolocation.getCurrentPosition(
+      p => mapRef.current?.flyTo([p.coords.latitude, p.coords.longitude], 13),
+      () => {}
+    );
   }
-
-  function toggleNearMe() {
-    if (!nearMe && !userLoc) {
-      getUserLoc();
-      mapRef.current && navigator.geolocation.getCurrentPosition(
-        p => mapRef.current?.flyTo([p.coords.latitude, p.coords.longitude], 11),
-        () => {}
-      );
-    } else if (!nearMe && userLoc) {
-      mapRef.current?.flyTo([userLoc.lat, userLoc.lng], 11);
-    }
-    setNearMe(s => !s);
-  }
-
-  const NEAR_RADIUS_KM = 40;
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return listings.filter(l => {
       if (!l.lat || !l.lng) return false;
       if (activeCat !== 'all' && l.category !== activeCat) return false;
-      if (nearMe && userLoc) {
-        if (haversine(userLoc.lat, userLoc.lng, l.lat, l.lng) > NEAR_RADIUS_KM) return false;
-      }
       return !q || l.title?.toLowerCase().includes(q) || l.city?.toLowerCase().includes(q);
     });
-  }, [listings, activeCat, search, nearMe, userLoc]);
+  }, [listings, activeCat, search]);
 
   const isDark = T.bg === '#0f172a';
   const tileUrl = isDark
@@ -618,14 +546,6 @@ function MapScreen({ listings, onSelect, T }) {
           {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: T.subtle, cursor: 'pointer', fontSize: 20, padding: 0, lineHeight: 1 }}>×</button>}
         </div>
         <div style={{ pointerEvents: 'all', display: 'flex', gap: 7, marginTop: 8, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 6, WebkitOverflowScrolling: 'touch' }}>
-          <button onClick={toggleNearMe} style={{
-            flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
-            padding: '6px 13px', borderRadius: 999, border: 'none', cursor: 'pointer',
-            background: nearMe ? '#1B4F8A' : T.card,
-            color: nearMe ? '#fff' : T.text,
-            fontSize: 12, fontWeight: 700, ...FONT,
-            boxShadow: '0 1px 6px rgba(0,0,0,0.12)',
-          }}>{locLoading ? '⏳' : '📍'} Blisko mnie</button>
           {CATS.map(c => (
             <button key={c.id} onClick={() => setActiveCat(c.id)} style={{
               flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
