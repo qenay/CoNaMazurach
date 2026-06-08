@@ -790,14 +790,19 @@ function AddListingScreen({ T }) {
         {step === 0 && (
           <div style={{ background: T.card, borderRadius: 20, padding: 20 }}>
             <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: 15, color: T.text }}>Kategoria *</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 20 }}>
               {CATS.filter(c => c.id !== 'all').map(c => (
                 <button key={c.id} onClick={() => f('category', c.id)} style={{
-                  padding: '8px 14px', borderRadius: 12, border: '2px solid', cursor: 'pointer', fontSize: 13, fontWeight: 600, ...FONT,
-                  borderColor: form.category === c.id ? c.color : '#E2E8F0',
-                  background: form.category === c.id ? c.bg : '#F8FAFC',
-                  color: form.category === c.id ? c.color : '#64748b',
-                }}>{c.icon} {c.label}</button>
+                  padding: '14px 8px', borderRadius: 14, border: '2px solid', cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, ...FONT,
+                  borderColor: form.category === c.id ? c.color : T.border,
+                  background: form.category === c.id ? c.bg : T.card2,
+                  color: form.category === c.id ? c.color : T.muted,
+                  transition: 'all 0.15s',
+                }}>
+                  <span style={{ fontSize: 26 }}>{c.icon}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{c.label}</span>
+                </button>
               ))}
             </div>
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Tytuł ogłoszenia *</p>
