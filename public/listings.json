@@ -1,28 +1,5 @@
 [
   {
-    "id": 9,
-    "title": "Pub \"Mazurska Belka\" — craft beer i muzyka na żywo",
-    "category": "restauracje",
-    "city": "Giżycko",
-    "address": "ul. Wyzwolenia 14, Giżycko",
-    "lat": 54.038,
-    "lng": 21.765,
-    "date": null,
-    "time": null,
-    "price": 20,
-    "priceLabel": "od 20 zł",
-    "description": "<p>Klimatyczny pub w centrum Giżycka z szerokim wyborem lokalnych piw rzemieślniczych. Każdy weekend — muzyka na żywo i karaoke.</p>\n<p>Specjalność: piwo mazurskie warzone na miejscu i lokalne przekąski.</p>",
-    "image": "https://picsum.photos/seed/pub-gizycko/800/450",
-    "rating": 4.4,
-    "isNew": true,
-    "tags": [
-      "pub",
-      "craft beer",
-      "muzyka na żywo",
-      "Giżycko"
-    ]
-  },
-  {
     "id": 11,
     "title": "Nocna obserwacja nieba nad Puszczą Piską",
     "category": "atrakcje",
