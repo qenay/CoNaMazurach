@@ -23,29 +23,6 @@
     "status": "aktywne"
   },
   {
-    "id": 14,
-    "title": "Apartamenty Mazurska Przystań",
-    "category": "noclegi",
-    "city": "Mikołajki",
-    "address": "ul. Leśna 8, Mikołajki",
-    "lat": 53.7965,
-    "lng": 21.5812,
-    "date": null,
-    "time": null,
-    "price": 380,
-    "priceLabel": "od 380 zł / noc",
-    "description": "<p>Nowoczesne apartamenty w centrum Mikołajek, 5 minut pieszo od jeziora. Sauna, taras, miejsce parkingowe.</p>",
-    "image": "https://picsum.photos/seed/apartamenty-mikolajki/800/450",
-    "rating": 4.7,
-    "isNew": false,
-    "tags": [
-      "apartament",
-      "sauna",
-      "centrum"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 15,
     "title": "Kajaki na Krutyni — wynajem i spływy",
     "category": "czartery",
