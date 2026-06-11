@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "title": "test",
+    "category": "wydarzenia",
+    "city": "Giżycko",
+    "address": "test",
+    "description": "test",
+    "price": 0,
+    "priceLabel": "",
+    "website": "",
+    "phone": "",
+    "name": "Test",
+    "email": "",
+    "images": [],
+    "image": "",
+    "tags": [],
+    "status": "pending",
+    "id": 1781199179605,
+    "submittedAt": "2026-06-11T17:32:59.605Z"
+  }
+]
