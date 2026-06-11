@@ -66,6 +66,7 @@ function buildListing(form, existing) {
     icon:        form.icon,
     status:      form.status,
     image:       form.images?.[0] || existing?.image || '',
+    images:      form.images?.length > 0 ? form.images : (existing?.images || []),
     createdAt:   existing?.createdAt || Date.now(),
   };
 }
