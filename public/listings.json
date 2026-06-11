@@ -23,29 +23,6 @@
     ]
   },
   {
-    "id": 7,
-    "title": "Agroturystyka \"Mazurski Raj\" — cisza i spokój",
-    "category": "noclegi",
-    "city": "Węgorzewo",
-    "address": "Węgielsztyn 22, gmina Węgorzewo",
-    "lat": 54.2185,
-    "lng": 21.7324,
-    "date": null,
-    "time": null,
-    "price": 180,
-    "priceLabel": "od 180 zł / noc",
-    "description": "<p>Tradycyjna mazurska agroturystyka w sercu Krainy Wielkich Jezior. Dala od miejskiego zgiełku, blisko natury.</p>\n<ul>\n<li>4 pokoje gościnne (2-4 osoby)</li>\n<li>Śniadania z lokalnych produktów</li>\n<li>Jazda konna</li>\n<li>Wędkowanie na prywatnym stawie</li>\n<li>Grzybobranie z przewodnikiem</li>\n</ul>",
-    "image": "https://picsum.photos/seed/agroturystyka-wegorzewo/800/450",
-    "rating": 4.8,
-    "isNew": false,
-    "tags": [
-      "agroturystyka",
-      "konie",
-      "wędkowanie",
-      "spokój"
-    ]
-  },
-  {
     "id": 8,
     "title": "Dni Giżycka 2026 — wielkie święto nad Niegocinem",
     "category": "wydarzenia",
