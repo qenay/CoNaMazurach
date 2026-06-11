@@ -41,7 +41,7 @@ const step2Schema = z.object({
   description:   z.string().min(50, 'Opis musi mieć minimum 50 znaków'),
   free:          z.boolean().optional(),
   price:         z.string().optional(),
-  website:       z.string().url('Nieprawidłowy URL').optional().or(z.literal('')),
+  website:       z.string().optional().or(z.literal('')),
   phone:         z.string().optional(),
   senderEmail:   z.string().email('Nieprawidłowy email').optional().or(z.literal('')),
   senderName:    z.string().min(2, 'Podaj imię i nazwisko'),
@@ -282,8 +282,9 @@ export default function AddListingPage() {
               </Field>
             )}
 
-            <Field label="Strona internetowa" error={form2.formState.errors.website?.message}>
-              <input {...form2.register('website')} placeholder="https://..." className={inputCls} />
+            <Field label="Strona internetowa lub media społecznościowe" error={form2.formState.errors.website?.message}
+              hint="Podaj jeden link — stronę www, Facebook, Instagram lub inny profil">
+              <input {...form2.register('website')} placeholder="np. https://mojastrona.pl lub facebook.com/mojastrona" className={inputCls} />
             </Field>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
