@@ -98,6 +98,8 @@ export default function AddListingPage() {
   const [sendErr,    setSendErr]    = useState('');
 
   const form1 = useForm({ resolver: zodResolver(step1Schema) });
+  const selectedCategory = form1.watch('category');
+  const showTime = ['wydarzenia', 'koncerty', 'atrakcje'].includes(selectedCategory);
   const form2 = useForm({ resolver: zodResolver(step2Schema) });
 
   async function addPhoto(file) {
@@ -197,7 +199,7 @@ export default function AddListingPage() {
                 <input {...form1.register('address')} placeholder="ul. Przykładowa 1" className={inputCls} />
               </Field>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className={`grid grid-cols-1 gap-4 ${showTime ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
               <Field label="Data rozpoczęcia">
                 <Controller
                   name="dateStart"
@@ -216,9 +218,11 @@ export default function AddListingPage() {
                   )}
                 />
               </Field>
-              <Field label="Godzina">
-                <input {...form1.register('time')} type="time" className={inputCls} />
-              </Field>
+              {showTime && (
+                <Field label="Godzina">
+                  <input {...form1.register('time')} type="time" className={inputCls} />
+                </Field>
+              )}
             </div>
             <button type="submit" className="w-full bg-[#1B4F8A] text-white py-3 rounded-xl font-bold hover:bg-[#163f70] transition-colors">
               Dalej →
