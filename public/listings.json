@@ -23,30 +23,6 @@
     ]
   },
   {
-    "id": 10,
-    "title": "Kemping \"Przystań Ryn\" — przy Kanale Mazurskim",
-    "category": "kempingi",
-    "city": "Ryn",
-    "address": "ul. Mazurska 8, Ryn",
-    "lat": 53.9421,
-    "lng": 21.5305,
-    "date": null,
-    "time": null,
-    "price": 45,
-    "priceLabel": "od 45 zł / noc",
-    "description": "<p>Kemping z widokiem na słynny zamek w Rynie i Kanał Mazurski. Idealne miejsce dla fanów żeglarstwa, rowerów i pieszych wycieczek.</p>\n<ul>\n<li>Miejsca namiotowe i dla kamperów z prądem</li>\n<li>Domki letniskowe (2-6 osób)</li>\n<li>Wypożyczalnia rowerów i sprzętu wodnego</li>\n<li>Restauracja mazurska na miejscu</li>\n</ul>",
-    "image": "https://picsum.photos/seed/kemping-ryn/800/450",
-    "rating": 4.7,
-    "isNew": false,
-    "tags": [
-      "kemping",
-      "zamek",
-      "Ryn",
-      "kanał mazurski",
-      "rowery"
-    ]
-  },
-  {
     "id": 11,
     "title": "Nocna obserwacja nieba nad Puszczą Piską",
     "category": "atrakcje",
