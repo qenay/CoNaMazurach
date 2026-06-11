@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { CATEGORIES } from '../data/mockListings';
 import DatePickerInput from '../components/ui/DatePickerInput';
 
-const API = 'https://conamazurach.pl';
+const API = 'https://www.conamazurach.pl';
 
 function compressImage(file, maxW = 900) {
   return new Promise(resolve => {
