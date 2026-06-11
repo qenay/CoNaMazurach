@@ -1,29 +1,5 @@
 [
   {
-    "id": 18,
-    "title": "Koncert Mazurskie Lato — Varius Manx",
-    "category": "koncerty",
-    "city": "Giżycko",
-    "address": "Amfiteatr Giżycko",
-    "lat": 54.0421,
-    "lng": 21.7698,
-    "date": "2026-07-19",
-    "time": "20:00",
-    "price": 89,
-    "priceLabel": "89 zł",
-    "description": "<p>Letni koncert Varius Manx w plenerowym amfiteatrze w Giżycku. Letnie hity przy mazurskich jeziorach.</p>",
-    "image": "https://picsum.photos/seed/koncert-gizycko/800/450",
-    "rating": 4.8,
-    "isNew": true,
-    "tags": [
-      "koncert",
-      "plener",
-      "muzyka",
-      "lato"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 19,
     "title": "Park Linowy Mazury Adventure",
     "category": "atrakcje",
