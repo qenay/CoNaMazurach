@@ -208,8 +208,20 @@ export default function ListingDetailPage() {
               </div>
             </div>
 
+            {/* Features / udogodnienia */}
+            {listing.features?.length > 0 && (
+              <div>
+                <h3 className="text-base font-black text-[#1C2B3A] dark:text-white mb-2">✅ Udogodnienia</h3>
+                <div className="flex flex-wrap gap-2">
+                  {listing.features.map((f, i) => (
+                    <span key={i} className="bg-[#D1FAE5] text-[#2E9E6E] px-3 py-1.5 rounded-full text-xs font-bold">{f}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Tags */}
-            {listing.tags && (
+            {listing.tags?.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {listing.tags.map(t => (
                   <span key={t} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">#{t}</span>
