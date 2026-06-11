@@ -46,30 +46,6 @@
     ]
   },
   {
-    "id": 12,
-    "title": "Wynajem jachtu żaglowego 8m — jezioro Mamry",
-    "category": "atrakcje",
-    "city": "Węgorzewo",
-    "address": "Marina Węgorzewo, ul. Portowa 1",
-    "lat": 54.2219,
-    "lng": 21.7442,
-    "date": null,
-    "time": null,
-    "price": 650,
-    "priceLabel": "od 650 zł / dzień",
-    "description": "<p>Wynajmij jacht i odkryj Mazury od strony wody! Oferujemy jachty żaglowe 8m i 10m w pełni wyposażone do samodzielnego czarterowania.</p>\n<p>Wymagania: patent żeglarski lub sternik motorowodny. Wynajem możliwy od 1 do 14 dni.</p>\n<ul>\n<li>Jacht 8m — max 6 osób, od 650 zł/dzień</li>\n<li>Jacht 10m — max 8 osób, od 950 zł/dzień</li>\n<li>GPS, VHF, koła ratunkowe</li>\n<li>Opcja: skipper (+200 zł/dzień)</li>\n</ul>",
-    "image": "https://picsum.photos/seed/jacht-wegorzewo/800/450",
-    "rating": 4.85,
-    "isNew": false,
-    "tags": [
-      "jacht",
-      "żeglarstwo",
-      "Mamry",
-      "czarter",
-      "Węgorzewo"
-    ]
-  },
-  {
     "id": 13,
     "title": "Festiwal Smaków Mazurskich",
     "category": "wydarzenia",
