@@ -1,29 +1,5 @@
 [
   {
-    "id": 22,
-    "title": "Maraton Mazurski 2026",
-    "category": "wydarzenia",
-    "city": "Mrągowo",
-    "address": "Stadion Miejski, Mrągowo",
-    "lat": 53.8711,
-    "lng": 21.3022,
-    "date": "2026-08-16",
-    "time": "09:00",
-    "price": 120,
-    "priceLabel": "120 zł",
-    "description": "<p>Bieg maratoński i półmaratoński malowniczą trasą wokół jezior mazurskich. Medale dla wszystkich finisherów.</p>",
-    "image": "https://picsum.photos/seed/maraton-mazurski/800/450",
-    "rating": 4.7,
-    "isNew": true,
-    "tags": [
-      "bieg",
-      "maraton",
-      "sport",
-      "lato"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 23,
     "title": "Domek Mazurski Raj — nad samym jeziorem Śniardwy",
     "category": "noclegi",
