@@ -28,7 +28,7 @@ function compressImage(file, maxW = 900) {
 }
 
 const step1Schema = z.object({
-  title:     z.string().min(10, 'Tytuł musi mieć minimum 10 znaków'),
+  title:     z.string().min(1, 'Wpisz tytuł ogłoszenia'),
   category:  z.string().min(1, 'Wybierz kategorię'),
   city:      z.string().min(2, 'Wpisz nazwę miasta'),
   address:   z.string().min(5, 'Podaj adres'),
