@@ -827,9 +827,13 @@ function compressImage(file, maxW = 900) {
 // ─── Add listing screen ────────────────────────────────────────────────────────
 function AddListingScreen({ T }) {
   const [step, setStep]       = useState(0);
-  const EMPTY_FORM = { category: '', title: '', city: '', address: '', description: '', price: '', website: '', name: '', email: '', phone: '' };
+  const EMPTY_FORM = { category: '', title: '', city: '', postalCode: '', address: '', description: '', price: '', website: '', name: '', email: '', phone: '' };
   const [form, setForm]       = useState(EMPTY_FORM);
-  const [photos, setPhotos]   = useState([]); // max 8, photos[0] = okładka
+  const [photos, setPhotos]   = useState([]);
+  const [hashtags, setHashtags] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [hashInput, setHashInput] = useState('');
+  const [featInput, setFeatInput] = useState('');
   const [sending, setSending] = useState(false);
   const [done, setDone]       = useState(false);
   const [sendErr, setSendErr] = useState('');
@@ -851,7 +855,8 @@ function AddListingScreen({ T }) {
         ...form,
         images: photos,
         image: photos[0] || '',
-        tags: [],
+        tags: hashtags,
+        features: features,
         status: 'pending',
       };
       const r = await fetch(`${API}/api/pending`, {
@@ -888,7 +893,7 @@ function AddListingScreen({ T }) {
               Administrator przeglądnie Twoje zgłoszenie i opublikuje je na stronie i w aplikacji.
             </p>
           </div>
-          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); setPhotos([]); }} style={{ width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
+          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); setPhotos([]); setHashtags([]); setFeatures([]); setHashInput(''); setFeatInput(''); }} style={{ width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
             + Dodaj kolejne ogłoszenie
           </button>
         </div>
@@ -927,16 +932,18 @@ function AddListingScreen({ T }) {
             </div>
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Tytuł ogłoszenia *</p>
             <input value={form.title} onChange={e => f('title', e.target.value)} placeholder="np. Domek nad jeziorem Niegocin" style={{ ...inputStyle, marginBottom: 14 }} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
               <div>
                 <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Miasto *</p>
                 <input value={form.city} onChange={e => f('city', e.target.value)} placeholder="np. Giżycko" style={inputStyle} />
               </div>
               <div>
-                <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Adres</p>
-                <input value={form.address} onChange={e => f('address', e.target.value)} placeholder="ul. Przykładowa 1" style={inputStyle} />
+                <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Kod pocztowy</p>
+                <input value={form.postalCode} onChange={e => f('postalCode', e.target.value)} placeholder="np. 11-500" maxLength={6} style={inputStyle} />
               </div>
             </div>
+            <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Adres</p>
+            <input value={form.address} onChange={e => f('address', e.target.value)} placeholder="ul. Przykładowa 1" style={inputStyle} />
             <button onClick={() => setStep(1)} disabled={!form.category || !form.title || !form.city} style={{ width: '100%', padding: '15px', borderRadius: 16, background: !form.category || !form.title || !form.city ? '#E2E8F0' : '#1B4F8A', color: !form.category || !form.title || !form.city ? '#94a3b8' : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT, marginTop: 20 }}>Dalej →</button>
           </div>
         )}
@@ -972,6 +979,80 @@ function AddListingScreen({ T }) {
                 </label>
               )}
             </div>
+
+            {/* Hashtagi */}
+            <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>
+              🏷️ Hashtagi <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>({hashtags.length}/3)</span>
+            </p>
+            {hashtags.length < 3 && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input
+                  value={hashInput}
+                  onChange={e => setHashInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const v = hashInput.trim().replace(/^#/, '');
+                      if (v && !hashtags.includes(v) && hashtags.length < 3) { setHashtags(p => [...p, v]); setHashInput(''); }
+                    }
+                  }}
+                  placeholder="np. jezioro"
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+                <button
+                  onClick={() => { const v = hashInput.trim().replace(/^#/, ''); if (v && !hashtags.includes(v) && hashtags.length < 3) { setHashtags(p => [...p, v]); setHashInput(''); } }}
+                  style={{ padding: '0 16px', borderRadius: 14, background: '#1B4F8A', border: 'none', color: '#fff', fontSize: 20, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
+                >+</button>
+              </div>
+            )}
+            {hashtags.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                {hashtags.map((h, i) => (
+                  <span key={i} style={{ background: '#DBEAFE', color: '#1B4F8A', fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 999, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    #{h}
+                    <button onClick={() => setHashtags(p => p.filter((_, j) => j !== i))} style={{ border: 'none', background: 'none', color: '#1B4F8A', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {hashtags.length === 0 && <div style={{ height: 14 }} />}
+
+            {/* Udogodnienia */}
+            <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>
+              ✅ Udogodnienia <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>({features.length}/5)</span>
+            </p>
+            {features.length < 5 && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input
+                  value={featInput}
+                  onChange={e => setFeatInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const v = featInput.trim();
+                      if (v && !features.includes(v) && features.length < 5) { setFeatures(p => [...p, v]); setFeatInput(''); }
+                    }
+                  }}
+                  placeholder="np. prywatna plaża"
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+                <button
+                  onClick={() => { const v = featInput.trim(); if (v && !features.includes(v) && features.length < 5) { setFeatures(p => [...p, v]); setFeatInput(''); } }}
+                  style={{ padding: '0 16px', borderRadius: 14, background: '#2E9E6E', border: 'none', color: '#fff', fontSize: 20, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}
+                >+</button>
+              </div>
+            )}
+            {features.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                {features.map((feat, i) => (
+                  <span key={i} style={{ background: '#D1FAE5', color: '#2E9E6E', fontSize: 12, fontWeight: 700, padding: '5px 10px', borderRadius: 999, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    {feat}
+                    <button onClick={() => setFeatures(p => p.filter((_, j) => j !== i))} style={{ border: 'none', background: 'none', color: '#2E9E6E', fontWeight: 800, fontSize: 14, cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {features.length === 0 && <div style={{ height: 6 }} />}
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setStep(0)} style={{ flex: 1, padding: '14px', borderRadius: 16, border: `2px solid ${T.border}`, background: T.card, color: T.muted, fontWeight: 700, fontSize: 14, cursor: 'pointer', ...FONT }}>← Wróć</button>

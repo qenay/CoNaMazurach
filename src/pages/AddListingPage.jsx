@@ -98,6 +98,10 @@ export default function AddListingPage() {
   const [isFree,     setIsFree]     = useState(false);
   const [done,       setDone]       = useState(false);
   const [photos,     setPhotos]     = useState([]);
+  const [hashtags,   setHashtags]   = useState([]);
+  const [features,   setFeatures]   = useState([]);
+  const [hashInput,  setHashInput]  = useState('');
+  const [featInput,  setFeatInput]  = useState('');
   const [sending,    setSending]    = useState(false);
   const [sendErr,    setSendErr]    = useState('');
 
@@ -140,7 +144,8 @@ export default function AddListingPage() {
         email:       values.senderEmail || '',
         images:      photos,
         image:       photos[0] || '',
-        tags:        [],
+        tags:        hashtags,
+        features:    features,
         status:      'pending',
       };
       const r = await fetch(`${API}/api/pending`, {
@@ -294,6 +299,70 @@ export default function AddListingPage() {
               hint="Podaj jeden link — stronę www, Facebook, Instagram lub inny profil">
               <input {...form2.register('website')} placeholder="np. https://mojastrona.pl lub facebook.com/mojastrona" className={inputCls} />
             </Field>
+
+            {/* Hashtagi */}
+            <div>
+              <label className="block text-sm font-semibold text-[#1C2B3A] mb-1">
+                🏷️ Hashtagi <span className="text-gray-400 font-normal text-xs">({hashtags.length}/3 — np. jezioro, mazury, camping)</span>
+              </label>
+              {hashtags.length < 3 && (
+                <div className="flex gap-2 mb-2">
+                  <input
+                    value={hashInput}
+                    onChange={e => setHashInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { e.preventDefault(); const v = hashInput.trim().replace(/^#/, ''); if (v && !hashtags.includes(v)) { setHashtags(p => [...p, v]); setHashInput(''); } }
+                    }}
+                    placeholder="np. jezioro"
+                    className={inputCls}
+                  />
+                  <button type="button" onClick={() => { const v = hashInput.trim().replace(/^#/, ''); if (v && !hashtags.includes(v)) { setHashtags(p => [...p, v]); setHashInput(''); } }}
+                    className="bg-[#1B4F8A] text-white px-4 rounded-xl font-bold text-lg hover:bg-[#163f70] transition-colors flex-shrink-0">+</button>
+                </div>
+              )}
+              {hashtags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {hashtags.map((h, i) => (
+                    <span key={i} className="bg-[#DBEAFE] text-[#1B4F8A] text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                      #{h}
+                      <button type="button" onClick={() => setHashtags(p => p.filter((_, j) => j !== i))} className="font-black hover:text-red-500 transition-colors text-sm leading-none">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Udogodnienia */}
+            <div>
+              <label className="block text-sm font-semibold text-[#1C2B3A] mb-1">
+                ✅ Udogodnienia <span className="text-gray-400 font-normal text-xs">({features.length}/5 — np. prywatna plaża, basen, WiFi)</span>
+              </label>
+              {features.length < 5 && (
+                <div className="flex gap-2 mb-2">
+                  <input
+                    value={featInput}
+                    onChange={e => setFeatInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { e.preventDefault(); const v = featInput.trim(); if (v && !features.includes(v)) { setFeatures(p => [...p, v]); setFeatInput(''); } }
+                    }}
+                    placeholder="np. prywatna plaża"
+                    className={inputCls}
+                  />
+                  <button type="button" onClick={() => { const v = featInput.trim(); if (v && !features.includes(v)) { setFeatures(p => [...p, v]); setFeatInput(''); } }}
+                    className="bg-[#2E9E6E] text-white px-4 rounded-xl font-bold text-lg hover:bg-[#267d57] transition-colors flex-shrink-0">+</button>
+                </div>
+              )}
+              {features.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {features.map((feat, i) => (
+                    <span key={i} className="bg-[#D1FAE5] text-[#2E9E6E] text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                      {feat}
+                      <button type="button" onClick={() => setFeatures(p => p.filter((_, j) => j !== i))} className="font-black hover:text-red-500 transition-colors text-sm leading-none">×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Telefon kontaktowy">
