@@ -1,28 +1,5 @@
 [
   {
-    "id": 3,
-    "title": "Restauracja \"Pod Żaglami\" — kuchnia mazurska",
-    "category": "restauracje",
-    "city": "Mrągowo",
-    "address": "ul. Giżycka 3, Mrągowo",
-    "lat": 53.8695,
-    "lng": 21.3063,
-    "date": null,
-    "time": null,
-    "price": 45,
-    "priceLabel": "od 45 zł / os.",
-    "description": "<p>Najlepsza restauracja mazurska w Mrągowie, serwująca tradycyjne dania kuchni warmińsko-mazurskiej. Specjalność domu: karp z jeziora, raki i zupa rybna.</p>\n<p>Otwarte codziennie 12:00–22:00. Rezerwacja stolik zalecana w weekendy.</p>",
-    "image": "https://picsum.photos/seed/restauracja-mragowo/800/450",
-    "rating": 4.7,
-    "isNew": false,
-    "tags": [
-      "kuchnia mazurska",
-      "ryby",
-      "karp",
-      "tradycja"
-    ]
-  },
-  {
     "id": 4,
     "title": "Kemping \"Leśna Polana\" nad jeziorem Śniardwy",
     "category": "kempingi",
