@@ -1,28 +1,5 @@
 [
   {
-    "id": 16,
-    "title": "Restauracja Mazurska Chata",
-    "category": "restauracje",
-    "city": "Pisz",
-    "address": "ul. Rybacka 3, Pisz",
-    "lat": 53.6277,
-    "lng": 21.8197,
-    "date": null,
-    "time": null,
-    "price": 0,
-    "priceLabel": "Menu od 25 zł",
-    "description": "<p>Tradycyjna kuchnia mazurska w klimatycznej chacie nad jeziorem. Ryby z lokalnych połowów, zupy, pierogi z serem i ziemniakami.</p>",
-    "image": "https://picsum.photos/seed/chata-mazurska/800/450",
-    "rating": 4.5,
-    "isNew": false,
-    "tags": [
-      "ryby",
-      "tradycja",
-      "jezioro"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 17,
     "title": "Kemping Leśna Polana nad Jeziorem Tałty",
     "category": "kempingi",
