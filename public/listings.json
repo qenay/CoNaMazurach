@@ -1,29 +1,5 @@
 [
   {
-    "id": 15,
-    "title": "Kajaki na Krutyni — wynajem i spływy",
-    "category": "czartery",
-    "city": "Ruciane-Nida",
-    "address": "Przystań Krutynia, Ruciane-Nida",
-    "lat": 53.6401,
-    "lng": 21.5217,
-    "date": null,
-    "time": null,
-    "price": 60,
-    "priceLabel": "od 60 zł / dzień",
-    "description": "<p>Spływy kajakowe trasą Krutyni — jednej z najpiękniejszych rzek Mazur. Wynajem kajaków 1 i 2-osobowych, transport na start.</p>",
-    "image": "https://picsum.photos/seed/kajaki-krutynia/800/450",
-    "rating": 4.9,
-    "isNew": true,
-    "tags": [
-      "kajak",
-      "Krutynia",
-      "spływ",
-      "rzeka"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 16,
     "title": "Restauracja Mazurska Chata",
     "category": "restauracje",
