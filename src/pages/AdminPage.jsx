@@ -19,6 +19,7 @@ const emptyForm = {
   category: '', title: '', description: '', city: '', postalCode: '', address: '',
   price: '', rating: '', features: [], hashtags: [], images: [], icon: '🎉', status: 'aktywne',
   lat: null, lng: null,
+  name: '', email: '', phone: '', website: '',
 };
 
 function getAdminPass() {
@@ -42,6 +43,10 @@ function listingToForm(l) {
     status:      l.status || 'aktywne',
     lat:         l.lat || null,
     lng:         l.lng || null,
+    name:        l.name || '',
+    email:       l.email || '',
+    phone:       l.phone || '',
+    website:     l.website || '',
   };
 }
 
@@ -70,6 +75,10 @@ function buildListing(form, existing) {
     image:       form.images?.[0] || existing?.image || '',
     images:      form.images?.length > 0 ? form.images : (existing?.images || []),
     createdAt:   existing?.createdAt || Date.now(),
+    name:        form.name || existing?.name || '',
+    email:       form.email || existing?.email || '',
+    phone:       form.phone || existing?.phone || '',
+    website:     form.website || existing?.website || '',
   };
 }
 
@@ -159,6 +168,8 @@ function AdminPanel({ onLogout }) {
   const [geoStatus,    setGeoStatus]   = useState('');
   const [pending,      setPending]     = useState([]);
   const [pendingLoad,  setPendingLoad] = useState(false);
+  const [contactSearch, setContactSearch] = useState('');
+  const [contactCat,    setContactCat]    = useState('');
 
   useEffect(() => {
     setPendingLoad(true);
@@ -192,6 +203,10 @@ function AdminPanel({ onLogout }) {
       status:      'aktywne',
       lat:         item.lat || null,
       lng:         item.lng || null,
+      name:        item.name || '',
+      email:       item.email || '',
+      phone:       item.phone || '',
+      website:     item.website || '',
     });
     setEditId(null);
     setView('form');
@@ -297,6 +312,7 @@ function AdminPanel({ onLogout }) {
     { id: 'dashboard',   label: 'Pulpit',           icon: '📊' },
     { id: 'list',        label: 'Lista ogłoszeń',   icon: '📋' },
     { id: 'akceptacje',  label: `Akceptacje${pending.length > 0 ? ` (${pending.length})` : ''}`, icon: '📥' },
+    { id: 'kontakty',    label: 'Baza kontaktów',   icon: '📞' },
     { id: 'form_new',    label: 'Dodaj ogłoszenie', icon: '➕' },
     { id: 'settings',    label: 'Ustawienia',       icon: '⚙️' },
   ];
@@ -307,7 +323,7 @@ function AdminPanel({ onLogout }) {
   }
 
   const activeNav = view === 'form' ? 'form_new' : view;
-  const viewTitle = { dashboard: 'Pulpit', list: 'Lista ogłoszeń', form: editId ? 'Edytuj ogłoszenie' : 'Dodaj ogłoszenie', settings: 'Ustawienia', akceptacje: 'Akceptacje' };
+  const viewTitle = { dashboard: 'Pulpit', list: 'Lista ogłoszeń', form: editId ? 'Edytuj ogłoszenie' : 'Dodaj ogłoszenie', settings: 'Ustawienia', akceptacje: 'Akceptacje', kontakty: 'Baza kontaktów' };
 
   return (
     <div className="min-h-screen flex bg-[#f5f2eb]" style={{ fontFamily: 'Nunito, sans-serif' }}>
@@ -721,6 +737,35 @@ function AdminPanel({ onLogout }) {
                 )}
               </div>
 
+              {/* Contact info */}
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">📞 Dane kontaktowe (opcjonalne)</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1.5">Imię i nazwisko / Firma</label>
+                    <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="np. Jan Kowalski" className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1.5">Email</label>
+                    <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                      type="email" placeholder="np. jan@example.com" className={inputCls} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1.5">Telefon</label>
+                    <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                      placeholder="np. +48 600 000 000" className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1.5">Strona / Social media</label>
+                    <input value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+                      placeholder="np. facebook.com/..." className={inputCls} />
+                  </div>
+                </div>
+              </div>
+
               {/* Icon / photo */}
               <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">🖼 Zdjęcia</p>
@@ -788,6 +833,159 @@ function AdminPanel({ onLogout }) {
               </div>
             </div>
           )}
+
+          {/* ── KONTAKTY ── */}
+          {!loading && view === 'kontakty' && (() => {
+            const q = contactSearch.toLowerCase();
+            const allContacts = listings.filter(l =>
+              l.email || l.phone || l.name || l.website
+            );
+            const filtered = allContacts.filter(l => {
+              const matchSearch = !q ||
+                l.title?.toLowerCase().includes(q) ||
+                l.name?.toLowerCase().includes(q) ||
+                l.email?.toLowerCase().includes(q) ||
+                l.phone?.includes(q) ||
+                l.city?.toLowerCase().includes(q);
+              const matchCat = !contactCat || l.category === contactCat;
+              return matchSearch && matchCat;
+            });
+
+            function exportCSV() {
+              const header = ['Firma/Tytuł','Kategoria','Miasto','Kod pocztowy','Adres','Kontakt','Email','Telefon','Strona'];
+              const rows = filtered.map(l => [
+                l.title || '',
+                catMap[l.category]?.label || l.category || '',
+                l.city || '',
+                l.postalCode || '',
+                l.address || '',
+                l.name || '',
+                l.email || '',
+                l.phone || '',
+                l.website || '',
+              ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+              const csv = [header.join(','), ...rows].join('\n');
+              const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url; a.download = 'kontakty-conamazurach.csv'; a.click();
+              URL.revokeObjectURL(url);
+            }
+
+            function copyText(text) {
+              navigator.clipboard.writeText(text).catch(() => {});
+            }
+
+            return (
+              <div className="space-y-4">
+                {/* Toolbar */}
+                <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-wrap items-center gap-3">
+                  <input
+                    value={contactSearch} onChange={e => setContactSearch(e.target.value)}
+                    placeholder="Szukaj po nazwie, email, telefonie, mieście…"
+                    className="flex-1 min-w-[200px] border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#1a6fa8] focus:ring-2 focus:ring-[#1a6fa8]/20"
+                  />
+                  <select value={contactCat} onChange={e => setContactCat(e.target.value)}
+                    className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white text-gray-600 font-semibold focus:outline-none focus:border-[#1a6fa8]">
+                    <option value="">Wszystkie kategorie</option>
+                    {CATS.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
+                  </select>
+                  <button onClick={exportCSV}
+                    className="flex items-center gap-2 bg-[#1a6fa8] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#155d8f] transition-colors">
+                    ⬇️ Eksportuj CSV
+                  </button>
+                </div>
+
+                {/* Stats */}
+                <div className="flex items-center gap-3 text-sm text-gray-500 px-1">
+                  <span className="font-semibold text-[#12192b]">{filtered.length}</span> kontaktów
+                  {(contactSearch || contactCat) && <span>· z {allContacts.length} łącznie</span>}
+                  {allContacts.length < listings.length && (
+                    <span className="text-gray-400">· {listings.length - allContacts.length} ogłoszeń bez danych kontaktowych</span>
+                  )}
+                </div>
+
+                {filtered.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
+                    <p className="text-4xl mb-3">📭</p>
+                    <p className="font-bold text-[#12192b]">{contactSearch || contactCat ? 'Brak wyników' : 'Brak kontaktów'}</p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      {contactSearch || contactCat
+                        ? 'Spróbuj zmienić filtry'
+                        : 'Dodaj dane kontaktowe w formularzach ogłoszeń lub zaakceptuj zgłoszenia z aplikacji.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-gray-50 text-left">
+                            {['Firma / Ogłoszenie','Kategoria','Lokalizacja','Kontakt','Email','Telefon','Strona'].map(h => (
+                              <th key={h} className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filtered.map(l => (
+                            <tr key={l.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-base">{l.icon || catMap[l.category]?.icon}</span>
+                                  <div>
+                                    <p className="font-semibold text-[#12192b] truncate max-w-[160px]">{l.title}</p>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${l.status === 'aktywne' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                      {l.status === 'aktywne' ? 'Aktywne' : 'Szkic'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{catMap[l.category]?.label || '—'}</td>
+                              <td className="px-4 py-3">
+                                <p className="text-gray-700 text-xs font-semibold">{l.city || '—'}</p>
+                                {l.postalCode && <p className="text-gray-400 text-xs">{l.postalCode}</p>}
+                                {l.address && <p className="text-gray-400 text-xs truncate max-w-[120px]">{l.address}</p>}
+                              </td>
+                              <td className="px-4 py-3 text-gray-600 text-xs max-w-[120px] truncate">{l.name || <span className="text-gray-300">—</span>}</td>
+                              <td className="px-4 py-3">
+                                {l.email ? (
+                                  <div className="flex items-center gap-1">
+                                    <a href={`mailto:${l.email}`} className="text-[#1a6fa8] hover:underline text-xs truncate max-w-[150px]">{l.email}</a>
+                                    <button onClick={() => copyText(l.email)} title="Kopiuj" className="text-gray-300 hover:text-[#1a6fa8] transition-colors flex-shrink-0">
+                                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
+                                  </div>
+                                ) : <span className="text-gray-300 text-xs">—</span>}
+                              </td>
+                              <td className="px-4 py-3">
+                                {l.phone ? (
+                                  <div className="flex items-center gap-1">
+                                    <a href={`tel:${l.phone.replace(/\s/g, '')}`} className="text-[#1a6fa8] hover:underline text-xs whitespace-nowrap">{l.phone}</a>
+                                    <button onClick={() => copyText(l.phone)} title="Kopiuj" className="text-gray-300 hover:text-[#1a6fa8] transition-colors flex-shrink-0">
+                                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
+                                  </div>
+                                ) : <span className="text-gray-300 text-xs">—</span>}
+                              </td>
+                              <td className="px-4 py-3">
+                                {l.website ? (
+                                  <a href={l.website.startsWith('http') ? l.website : `https://${l.website}`}
+                                    target="_blank" rel="noopener noreferrer"
+                                    className="text-[#1a6fa8] hover:underline text-xs truncate max-w-[130px] block">
+                                    {l.website.replace(/^https?:\/\//, '')}
+                                  </a>
+                                ) : <span className="text-gray-300 text-xs">—</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ── SETTINGS ── */}
           {view === 'settings' && (

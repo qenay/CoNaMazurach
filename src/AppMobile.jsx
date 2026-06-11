@@ -911,7 +911,7 @@ function AddListingScreen({ T }) {
   }
 
   return (
-    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
+    <div style={{ ...FONT, height: '100%', overflowY: 'auto', overflowX: 'hidden', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ padding: '16px 16px 0' }}>
         <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>Dodaj ogłoszenie</p>
         <p style={{ margin: '2px 0 16px', fontSize: 13, color: T.muted }}>Krok {step + 1} z 3</p>
@@ -956,28 +956,35 @@ function AddListingScreen({ T }) {
 
             {showDates && (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: isAtrakcje ? '1fr 1fr' : '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
-                  <div>
-                    <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data rozpoczęcia</p>
-                    <input type="date" value={form.dateStart} onChange={e => f('dateStart', e.target.value)} style={inputStyle} />
-                  </div>
-                  {!isAtrakcje && (
+                {isAtrakcje && !showEndDate ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
                     <div>
-                      <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data zakończenia</p>
-                      <input type="date" value={form.dateEnd} onChange={e => f('dateEnd', e.target.value)} style={inputStyle} />
+                      <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data rozpoczęcia</p>
+                      <input type="date" value={form.dateStart} onChange={e => f('dateStart', e.target.value)} style={inputStyle} />
                     </div>
-                  )}
-                  {isAtrakcje && showEndDate && (
                     <div>
-                      <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data zakończenia</p>
-                      <input type="date" value={form.dateEnd} onChange={e => f('dateEnd', e.target.value)} style={inputStyle} />
+                      <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Godzina</p>
+                      <input type="time" value={form.time} onChange={e => f('time', e.target.value)} style={inputStyle} />
                     </div>
-                  )}
-                  <div>
-                    <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Godzina</p>
-                    <input type="time" value={form.time} onChange={e => f('time', e.target.value)} style={inputStyle} />
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                      <div>
+                        <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data rozpoczęcia</p>
+                        <input type="date" value={form.dateStart} onChange={e => f('dateStart', e.target.value)} style={inputStyle} />
+                      </div>
+                      <div>
+                        <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data zakończenia</p>
+                        <input type="date" value={form.dateEnd} onChange={e => f('dateEnd', e.target.value)} style={inputStyle} />
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: 10 }}>
+                      <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Godzina</p>
+                      <input type="time" value={form.time} onChange={e => f('time', e.target.value)} style={{ ...inputStyle, maxWidth: '50%' }} />
+                    </div>
+                  </>
+                )}
                 {isAtrakcje && (
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, cursor: 'pointer' }}>
                     <input type="checkbox" checked={showEndDate} onChange={e => { setShowEndDate(e.target.checked); if (!e.target.checked) f('dateEnd', ''); }} style={{ width: 18, height: 18, accentColor: '#1B4F8A' }} />
