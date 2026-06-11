@@ -1,39 +1,5 @@
 [
   {
-    "id": 23,
-    "title": "Domek Mazurski Raj — nad samym jeziorem Śniardwy",
-    "category": "noclegi",
-    "city": "Ruciane-Nida",
-    "address": "ul. Jeziorna 4, Ruciane-Nida",
-    "lat": 53.645,
-    "lng": 21.528,
-    "date": null,
-    "time": null,
-    "price": 350,
-    "priceLabel": "od 350 zł / noc",
-    "description": "<p>Wyjątkowy drewniany domek mazurski z bezpośrednim zejściem do jeziora Śniardwy. Idealne miejsce na rodzinny wypoczynek z dala od zgiełku.</p><p>W cenie masz dostęp do pomostu, kajaku, hamaku i grilla. Piękne widoki na jezioro prosto z tarasu.</p>",
-    "images": [
-      "https://picsum.photos/seed/mazury-dom-1/800/600",
-      "https://picsum.photos/seed/mazury-dom-2/800/600",
-      "https://picsum.photos/seed/mazury-dom-3/800/600",
-      "https://picsum.photos/seed/mazury-dom-4/800/600",
-      "https://picsum.photos/seed/mazury-dom-5/800/600",
-      "https://picsum.photos/seed/mazury-dom-6/800/600",
-      "https://picsum.photos/seed/mazury-dom-7/800/600",
-      "https://picsum.photos/seed/mazury-dom-8/800/600"
-    ],
-    "image": "https://picsum.photos/seed/mazury-dom-1/800/600",
-    "rating": 4.95,
-    "isNew": true,
-    "tags": [
-      "jezioro",
-      "domek",
-      "kajak",
-      "pomost"
-    ],
-    "status": "aktywne"
-  },
-  {
     "date": null,
     "time": null,
     "isNew": true,
