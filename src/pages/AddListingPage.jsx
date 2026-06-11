@@ -97,10 +97,14 @@ export default function AddListingPage() {
   const [sending,    setSending]    = useState(false);
   const [sendErr,    setSendErr]    = useState('');
 
+  const [showEndDate, setShowEndDate] = useState(false);
+
   const form1 = useForm({ resolver: zodResolver(step1Schema) });
   const selectedCategory = form1.watch('category');
-  const showDates = ['wydarzenia', 'koncerty', 'atrakcje'].includes(selectedCategory);
-  const showTime  = showDates;
+  const showDates     = ['wydarzenia', 'koncerty', 'atrakcje'].includes(selectedCategory);
+  const showTime      = showDates;
+  const isAtrakcje    = selectedCategory === 'atrakcje';
+  const showEndDateField = showDates && (!isAtrakcje || showEndDate);
   const form2 = useForm({ resolver: zodResolver(step2Schema) });
 
   async function addPhoto(file) {
@@ -201,29 +205,50 @@ export default function AddListingPage() {
               </Field>
             </div>
             {showDates && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Field label="Data rozpoczęcia">
-                  <Controller
-                    name="dateStart"
-                    control={form1.control}
-                    render={({ field }) => (
-                      <DatePickerInput value={field.value || ''} onChange={field.onChange} placeholder="Wybierz datę" />
-                    )}
-                  />
-                </Field>
-                <Field label="Data zakończenia">
-                  <Controller
-                    name="dateEnd"
-                    control={form1.control}
-                    render={({ field }) => (
-                      <DatePickerInput value={field.value || ''} onChange={field.onChange} placeholder="Wybierz datę" />
-                    )}
-                  />
-                </Field>
-                <Field label="Godzina">
-                  <input {...form1.register('time')} type="time" className={inputCls} />
-                </Field>
-              </div>
+              <>
+                <div className={`grid grid-cols-1 gap-4 ${showEndDateField ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+                  <Field label="Data rozpoczęcia">
+                    <Controller
+                      name="dateStart"
+                      control={form1.control}
+                      render={({ field }) => (
+                        <DatePickerInput value={field.value || ''} onChange={field.onChange} placeholder="Wybierz datę" />
+                      )}
+                    />
+                  </Field>
+                  {showEndDateField && (
+                    <Field label="Data zakończenia">
+                      <Controller
+                        name="dateEnd"
+                        control={form1.control}
+                        render={({ field }) => (
+                          <DatePickerInput value={field.value || ''} onChange={field.onChange} placeholder="Wybierz datę" />
+                        )}
+                      />
+                    </Field>
+                  )}
+                  <Field label="Godzina">
+                    <input {...form1.register('time')} type="time" className={inputCls} />
+                  </Field>
+                </div>
+                {isAtrakcje && (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="showEndDate"
+                      checked={showEndDate}
+                      onChange={e => {
+                        setShowEndDate(e.target.checked);
+                        if (!e.target.checked) form1.setValue('dateEnd', '');
+                      }}
+                      className="w-4 h-4 accent-[#1B4F8A]"
+                    />
+                    <label htmlFor="showEndDate" className="text-sm font-semibold text-[#1C2B3A]">
+                      Dodaj datę zakończenia
+                    </label>
+                  </div>
+                )}
+              </>
             )}
             <button type="submit" className="w-full bg-[#1B4F8A] text-white py-3 rounded-xl font-bold hover:bg-[#163f70] transition-colors">
               Dalej →
