@@ -1,29 +1,5 @@
 [
   {
-    "id": 19,
-    "title": "Park Linowy Mazury Adventure",
-    "category": "atrakcje",
-    "city": "Węgorzewo",
-    "address": "ul. Leśna 22, Węgorzewo",
-    "lat": 54.2201,
-    "lng": 21.7388,
-    "date": null,
-    "time": null,
-    "price": 55,
-    "priceLabel": "od 55 zł",
-    "description": "<p>Park linowy z 8 trasami o różnym stopniu trudności, ziplinem 250m, ścianką wspinaczkową i strefą dla dzieci 3+.</p>",
-    "image": "https://picsum.photos/seed/park-linowy/800/450",
-    "rating": 4.6,
-    "isNew": false,
-    "tags": [
-      "park linowy",
-      "adrenalina",
-      "dzieci",
-      "zipline"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 20,
     "title": "Rejs statkiem po Wielkich Jeziorach Mazurskich",
     "category": "czartery",
