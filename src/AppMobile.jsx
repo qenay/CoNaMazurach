@@ -379,7 +379,7 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
 
         <div style={{ background: T.card, borderRadius: 16, padding: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>📍 {listing.address}, {listing.city}</p>
+            <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>📍 {listing.address}{listing.postalCode ? `, ${listing.postalCode}` : ''} {listing.city}</p>
             {listing.date && <p style={{ margin: 0, fontSize: 13, color: T.muted }}>📅 {new Date(listing.date).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>}
             {listing.time && <p style={{ margin: 0, fontSize: 13, color: T.muted }}>🕐 {listing.time}</p>}
           </div>
@@ -394,10 +394,10 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
 
         {listing.features?.length > 0 && (
           <div style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 14 }}>
-            <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: 15, color: T.text }}>Udogodnienia</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: 15, color: T.text }}>✅ Udogodnienia</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {listing.features.map((f, i) => (
-                <p key={i} style={{ margin: 0, fontSize: 13, color: T.muted }}>✓ {f}</p>
+                <span key={i} style={{ fontSize: 12, color: '#2E9E6E', background: '#D1FAE5', padding: '5px 12px', borderRadius: 999, fontWeight: 700 }}>{f}</span>
               ))}
             </div>
           </div>
@@ -406,7 +406,7 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
         {(listing.tags || []).length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
             {listing.tags.map(t => (
-              <span key={t} style={{ fontSize: 12, color: '#1B4F8A', background: '#DBEAFE', padding: '4px 10px', borderRadius: 999, fontWeight: 600 }}>#{t}</span>
+              <span key={t} style={{ fontSize: 12, color: '#1B4F8A', background: '#DBEAFE', padding: '5px 12px', borderRadius: 999, fontWeight: 700 }}>#{t}</span>
             ))}
           </div>
         )}
