@@ -1,29 +1,5 @@
 [
   {
-    "id": 20,
-    "title": "Rejs statkiem po Wielkich Jeziorach Mazurskich",
-    "category": "czartery",
-    "city": "Giżycko",
-    "address": "Przystań Giżycko, ul. Portowa 1",
-    "lat": 54.0355,
-    "lng": 21.7555,
-    "date": null,
-    "time": null,
-    "price": 120,
-    "priceLabel": "od 120 zł / os.",
-    "description": "<p>Rejs statkiem pasażerskim po szlaku Wielkich Jezior Mazurskich. Trasa: Giżycko–Mikołajki–Giżycko, 6 godzin na wodzie.</p>",
-    "image": "https://picsum.photos/seed/rejs-statkiem/800/450",
-    "rating": 4.75,
-    "isNew": true,
-    "tags": [
-      "rejs",
-      "statek",
-      "jezioro",
-      "wycieczka"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 21,
     "title": "Ośrodek Wypoczynkowy Słoneczna Zatoka",
     "category": "noclegi",
