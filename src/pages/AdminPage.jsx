@@ -16,7 +16,7 @@ const SESSION_KEY = 'cnm_admin_session';
 const DEFAULT_PASS = 'admin';
 
 const emptyForm = {
-  category: '', title: '', description: '', city: '', address: '',
+  category: '', title: '', description: '', city: '', postalCode: '', address: '',
   price: '', rating: '', features: [], hashtags: [], images: [], icon: '🎉', status: 'aktywne',
   lat: null, lng: null,
 };
@@ -31,6 +31,7 @@ function listingToForm(l) {
     title:       l.title || '',
     description: l.description?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '',
     city:        l.city || '',
+    postalCode:  l.postalCode || '',
     address:     l.address || '',
     price:       l.priceLabel || l.price?.toString() || '',
     rating:      l.rating?.toString() || '',
@@ -54,6 +55,7 @@ function buildListing(form, existing) {
     title:       form.title,
     category:    form.category,
     city:        form.city,
+    postalCode:  form.postalCode || '',
     address:     form.address,
     lat:         form.lat  ?? existing?.lat  ?? 53.8,
     lng:         form.lng  ?? existing?.lng  ?? 21.5,
@@ -179,6 +181,7 @@ function AdminPanel({ onLogout }) {
       title:       item.title || '',
       description: item.description || '',
       city:        item.city || '',
+      postalCode:  item.postalCode || '',
       address:     item.address || '',
       price:       item.price || item.priceLabel || '',
       rating:      '',
@@ -545,7 +548,7 @@ function AdminPanel({ onLogout }) {
                           <span className="text-xs text-gray-400">{new Date(item.submittedAt).toLocaleDateString('pl-PL')}</span>
                         </div>
                         <p className="font-bold text-[#12192b] truncate">{item.title}</p>
-                        <p className="text-sm text-gray-500">📍 {item.city}{item.address ? `, ${item.address}` : ''}</p>
+                        <p className="text-sm text-gray-500">📍 {item.city}{item.postalCode ? ` ${item.postalCode}` : ''}{item.address ? `, ${item.address}` : ''}</p>
                         {item.price && <p className="text-sm font-semibold text-[#1a6fa8] mt-0.5">{item.price}</p>}
                         {item.name && <p className="text-xs text-gray-400 mt-1">Zgłosił: {item.name}{item.email ? ` · ${item.email}` : ''}{item.phone ? ` · ${item.phone}` : ''}</p>}
                       </div>
@@ -615,12 +618,18 @@ function AdminPanel({ onLogout }) {
                   <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                     placeholder="Klimatyczny opis miejsca lub wydarzenia..." rows={4} className={`${inputCls} resize-none`} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5">Miasto *</label>
                     <input value={form.city}
                       onChange={e => { setForm(f => ({ ...f, city: e.target.value, lat: null, lng: null })); setGeoStatus(''); }}
                       placeholder="np. Kozłowo" className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1.5">Kod pocztowy</label>
+                    <input value={form.postalCode || ''}
+                      onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
+                      placeholder="np. 11-500" maxLength={6} className={inputCls} />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1.5">Adres</label>
