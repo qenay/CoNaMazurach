@@ -1,28 +1,5 @@
 [
   {
-    "id": 13,
-    "title": "Festiwal Smaków Mazurskich",
-    "category": "wydarzenia",
-    "city": "Mrągowo",
-    "address": "Rynek Główny, Mrągowo",
-    "lat": 53.8686,
-    "lng": 21.3063,
-    "date": "2026-07-05",
-    "time": "12:00",
-    "price": 0,
-    "priceLabel": "Bezpłatne",
-    "description": "<p>Festiwal lokalnej kuchni mazurskiej z pokazami gotowania, degustacjami i warsztatami dla dzieci.</p>",
-    "image": "https://picsum.photos/seed/festiwal-smakow/800/450",
-    "rating": 4.6,
-    "isNew": true,
-    "tags": [
-      "festiwal",
-      "jedzenie",
-      "rodzina"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 15,
     "title": "Kajaki na Krutyni — wynajem i spływy",
     "category": "czartery",
