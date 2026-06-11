@@ -1,29 +1,5 @@
 [
   {
-    "id": 21,
-    "title": "Ośrodek Wypoczynkowy Słoneczna Zatoka",
-    "category": "noclegi",
-    "city": "Ruciane-Nida",
-    "address": "ul. Nadjeziorna 5, Ruciane-Nida",
-    "lat": 53.6489,
-    "lng": 21.5301,
-    "date": null,
-    "time": null,
-    "price": 220,
-    "priceLabel": "od 220 zł / noc",
-    "description": "<p>Ośrodek wypoczynkowy bezpośrednio nad jeziorem Nidzkim. Domki 4- i 6-osobowe, plażowisko, kajaki w cenie.</p>",
-    "image": "https://picsum.photos/seed/sloneczna-zatoka/800/450",
-    "rating": 4.5,
-    "isNew": false,
-    "tags": [
-      "domki",
-      "plaża",
-      "kajaki",
-      "Nidzkie"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 22,
     "title": "Maraton Mazurski 2026",
     "category": "wydarzenia",
