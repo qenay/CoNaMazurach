@@ -8,7 +8,7 @@ import DatePickerInput from '../components/ui/DatePickerInput';
 
 const API = 'https://www.conamazurach.pl';
 
-function compressImage(file, maxW = 900) {
+function compressImage(file, maxW = 800) {
   return new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -16,10 +16,13 @@ function compressImage(file, maxW = 900) {
       img.onload = () => {
         const scale = Math.min(1, maxW / img.width);
         const canvas = document.createElement('canvas');
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.78));
+        // Try quality 0.7 first; if still > 80 KB re-encode at 0.5
+        let dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        if (dataUrl.length > 110000) dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+        resolve(dataUrl);
       };
       img.src = e.target.result;
     };
