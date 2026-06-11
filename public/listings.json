@@ -1,29 +1,5 @@
 [
   {
-    "id": 4,
-    "title": "Kemping \"Leśna Polana\" nad jeziorem Śniardwy",
-    "category": "kempingi",
-    "city": "Pisz",
-    "address": "Wiartel Mały 45, gmina Pisz",
-    "lat": 53.6325,
-    "lng": 21.8012,
-    "date": null,
-    "time": null,
-    "price": 35,
-    "priceLabel": "od 35 zł / namiot",
-    "description": "<p>Kemping zlokalizowany bezpośrednio nad brzegiem Śniardw, w cieniu sosnowego lasu. Spokojne, rodzinne miejsce z pełnym zapleczem.</p>\n<ul>\n<li>Miejsca namiotowe i dla kamperów</li>\n<li>Sanitariaty i prysznice (ciepła woda 24h)</li>\n<li>Plac zabaw dla dzieci</li>\n<li>Wypożyczalnia kajaków</li>\n<li>Sklep spożywczy na miejscu</li>\n</ul>",
-    "image": "https://picsum.photos/seed/kemping-pisz/800/450",
-    "rating": 4.5,
-    "isNew": true,
-    "tags": [
-      "kemping",
-      "namioty",
-      "kamper",
-      "Śniardwy",
-      "las"
-    ]
-  },
-  {
     "id": 5,
     "title": "Festiwal Country Piknik — Mrągowo 2026",
     "category": "koncerty",
@@ -44,30 +20,6 @@
       "muzyka",
       "festiwal",
       "Mrągowo"
-    ]
-  },
-  {
-    "id": 6,
-    "title": "Spływ kajakowy Krutynią — 3 dni przez puszczę",
-    "category": "atrakcje",
-    "city": "Mrągowo",
-    "address": "Krutyń 7, gmina Piecki",
-    "lat": 53.7008,
-    "lng": 21.5241,
-    "date": "2026-06-21",
-    "time": "09:00",
-    "price": 180,
-    "priceLabel": "od 180 zł / os.",
-    "description": "<p>Niezapomniany 3-dniowy spływ trasą rzeki Krutyni — perły Mazur. Jeden z najpiękniejszych szlaków kajakowych w Polsce, przez serce Mazurskiego Parku Krajobrazowego.</p>\n<p>W cenie:</p>\n<ul>\n<li>Kajak i sprzęt (kamizelka, pagaj, worek wodoodporny)</li>\n<li>Nocleg w agrokwaterze</li>\n<li>Śniadania i kolacje</li>\n<li>Przewodnik</li>\n<li>Transport powrotny</li>\n</ul>",
-    "image": "https://picsum.photos/seed/krutyn-kayak/800/450",
-    "rating": 4.95,
-    "isNew": false,
-    "tags": [
-      "kajaki",
-      "Krutynia",
-      "spływ",
-      "przyroda",
-      "puszcza"
     ]
   },
   {
