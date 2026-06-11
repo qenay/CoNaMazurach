@@ -827,16 +827,21 @@ function compressImage(file, maxW = 900) {
 // ─── Add listing screen ────────────────────────────────────────────────────────
 function AddListingScreen({ T }) {
   const [step, setStep]       = useState(0);
-  const EMPTY_FORM = { category: '', title: '', city: '', postalCode: '', address: '', description: '', price: '', website: '', name: '', email: '', phone: '' };
+  const EMPTY_FORM = { category: '', title: '', city: '', postalCode: '', address: '', dateStart: '', dateEnd: '', time: '', description: '', price: '', website: '', name: '', email: '', phone: '' };
   const [form, setForm]       = useState(EMPTY_FORM);
   const [photos, setPhotos]   = useState([]);
   const [hashtags, setHashtags] = useState([]);
   const [features, setFeatures] = useState([]);
   const [hashInput, setHashInput] = useState('');
   const [featInput, setFeatInput] = useState('');
+  const [isFree, setIsFree]   = useState(false);
+  const [showEndDate, setShowEndDate] = useState(false);
   const [sending, setSending] = useState(false);
   const [done, setDone]       = useState(false);
   const [sendErr, setSendErr] = useState('');
+
+  const showDates  = ['wydarzenia', 'koncerty', 'atrakcje'].includes(form.category);
+  const isAtrakcje = form.category === 'atrakcje';
 
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const inputStyle = { width: '100%', padding: '13px 16px', borderRadius: 14, border: `1.5px solid ${T.inputBorder}`, fontSize: 14, ...FONT, boxSizing: 'border-box', outline: 'none', background: T.input, color: T.text };
@@ -853,11 +858,15 @@ function AddListingScreen({ T }) {
     try {
       const payload = {
         ...form,
-        images: photos,
-        image: photos[0] || '',
-        tags: hashtags,
+        price:    isFree ? 0 : (parseFloat(form.price) || 0),
+        priceLabel: isFree ? 'Bezpłatne' : form.price ? `${form.price} zł` : '',
+        date:     form.dateStart || null,
+        time:     form.time || null,
+        images:   photos,
+        image:    photos[0] || '',
+        tags:     hashtags,
         features: features,
-        status: 'pending',
+        status:   'pending',
       };
       const r = await fetch(`${API}/api/pending`, {
         method: 'POST',
@@ -893,7 +902,7 @@ function AddListingScreen({ T }) {
               Administrator przeglądnie Twoje zgłoszenie i opublikuje je na stronie i w aplikacji.
             </p>
           </div>
-          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); setPhotos([]); setHashtags([]); setFeatures([]); setHashInput(''); setFeatInput(''); }} style={{ width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
+          <button onClick={() => { setDone(false); setStep(0); setForm(EMPTY_FORM); setPhotos([]); setHashtags([]); setFeatures([]); setHashInput(''); setFeatInput(''); setIsFree(false); setShowEndDate(false); }} style={{ width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT }}>
             + Dodaj kolejne ogłoszenie
           </button>
         </div>
@@ -943,7 +952,41 @@ function AddListingScreen({ T }) {
               </div>
             </div>
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Adres</p>
-            <input value={form.address} onChange={e => f('address', e.target.value)} placeholder="ul. Przykładowa 1" style={inputStyle} />
+            <input value={form.address} onChange={e => f('address', e.target.value)} placeholder="ul. Przykładowa 1" style={{ ...inputStyle, marginBottom: 14 }} />
+
+            {showDates && (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: isAtrakcje ? '1fr 1fr' : '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data rozpoczęcia</p>
+                    <input type="date" value={form.dateStart} onChange={e => f('dateStart', e.target.value)} style={inputStyle} />
+                  </div>
+                  {!isAtrakcje && (
+                    <div>
+                      <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data zakończenia</p>
+                      <input type="date" value={form.dateEnd} onChange={e => f('dateEnd', e.target.value)} style={inputStyle} />
+                    </div>
+                  )}
+                  {isAtrakcje && showEndDate && (
+                    <div>
+                      <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Data zakończenia</p>
+                      <input type="date" value={form.dateEnd} onChange={e => f('dateEnd', e.target.value)} style={inputStyle} />
+                    </div>
+                  )}
+                  <div>
+                    <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Godzina</p>
+                    <input type="time" value={form.time} onChange={e => f('time', e.target.value)} style={inputStyle} />
+                  </div>
+                </div>
+                {isAtrakcje && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={showEndDate} onChange={e => { setShowEndDate(e.target.checked); if (!e.target.checked) f('dateEnd', ''); }} style={{ width: 18, height: 18, accentColor: '#1B4F8A' }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: T.muted }}>Dodaj datę zakończenia</span>
+                  </label>
+                )}
+              </>
+            )}
+
             <button onClick={() => setStep(1)} disabled={!form.category || !form.title || !form.city} style={{ width: '100%', padding: '15px', borderRadius: 16, background: !form.category || !form.title || !form.city ? '#E2E8F0' : '#1B4F8A', color: !form.category || !form.title || !form.city ? '#94a3b8' : '#fff', border: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', ...FONT, marginTop: 20 }}>Dalej →</button>
           </div>
         )}
@@ -952,8 +995,16 @@ function AddListingScreen({ T }) {
           <div style={{ background: T.card, borderRadius: 20, padding: 20 }}>
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Opis *</p>
             <textarea value={form.description} onChange={e => f('description', e.target.value)} placeholder="Opisz swoje ogłoszenie szczegółowo..." rows={4} style={{ ...inputStyle, resize: 'none', marginBottom: 14 }} />
-            <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Cena</p>
-            <input value={form.price} onChange={e => f('price', e.target.value)} placeholder="np. od 299 zł / noc lub Bezpłatne" style={{ ...inputStyle, marginBottom: 14 }} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, cursor: 'pointer' }}>
+              <input type="checkbox" checked={isFree} onChange={e => setIsFree(e.target.checked)} style={{ width: 18, height: 18, accentColor: '#1B4F8A' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: T.muted }}>Bezpłatne</span>
+            </label>
+            {!isFree && (
+              <>
+                <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>Cena (zł)</p>
+                <input value={form.price} onChange={e => f('price', e.target.value)} placeholder="np. 99" style={{ ...inputStyle, marginBottom: 14 }} />
+              </>
+            )}
             <p style={{ margin: '0 0 6px', fontWeight: 600, fontSize: 13, color: T.muted }}>
               🌐 Strona / Facebook <span style={{ fontSize: 11, fontWeight: 400, color: T.subtle }}>(opcjonalne)</span>
             </p>
