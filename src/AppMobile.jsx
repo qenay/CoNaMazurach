@@ -339,6 +339,10 @@ function ImageCarousel({ images, alt, fallbackIcon, fallbackBg }) {
 function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
   const c = cat(listing.category);
   const isFav = favs?.has(String(listing.id));
+  const [showPhone, setShowPhone] = useState(false);
+  const siteUrl = listing.website
+    ? (listing.website.startsWith('http') ? listing.website : `https://${listing.website}`)
+    : null;
   const mailto = `mailto:kontakt@conamazurach.pl?subject=${encodeURIComponent(`Zapytanie: ${listing.title}`)}&body=${encodeURIComponent(`Dzień dobry,\n\nChciałbym się dowiedzieć więcej o "${listing.title}" w ${listing.city}.\n\nPozdrawiam`)}`;
 
   async function share() {
@@ -433,11 +437,34 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
               </div>
             )}
           </div>
-          {listing.phone && <p style={{ margin: '0 0 12px', fontSize: 14, color: T.muted, fontWeight: 500 }}>📞 {listing.phone}</p>}
-          {listing.website && <a href={listing.website} style={{ display: 'block', marginBottom: 12, fontSize: 13, color: '#1B4F8A', fontWeight: 600 }}>🌐 {listing.website}</a>}
-          <a href={mailto} style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', border: 'none', fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>
-            {listing.price === 0 ? '📧 Napisz do nas' : listing.category === 'noclegi' || listing.category === 'kempingi' ? '📧 Zarezerwuj' : '📧 Kup bilety'}
-          </a>
+
+          {/* Główny przycisk akcji — link do strony ogłoszeniodawcy lub email */}
+          {siteUrl ? (
+            <a href={siteUrl} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 10 }}>
+              {listing.price === 0 ? '🌐 Sprawdź szczegóły' : listing.category === 'noclegi' || listing.category === 'kempingi' ? '🌐 Zarezerwuj nocleg' : listing.category === 'koncerty' || listing.category === 'wydarzenia' ? '🎫 Kup bilety' : '🌐 Sprawdź dostępność'}
+            </a>
+          ) : (
+            <a href={mailto}
+              style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 10 }}>
+              {listing.price === 0 ? '📧 Napisz do nas' : listing.category === 'noclegi' || listing.category === 'kempingi' ? '📧 Zarezerwuj' : listing.category === 'koncerty' || listing.category === 'wydarzenia' ? '📧 Kup bilety' : '📧 Kontakt'}
+            </a>
+          )}
+
+          {/* Przycisk telefonu — ujawnia numer po kliknięciu */}
+          {listing.phone && (
+            showPhone ? (
+              <a href={`tel:${listing.phone.replace(/\s/g, '')}`}
+                style={{ display: 'block', width: '100%', padding: '13px', borderRadius: 16, background: 'transparent', border: '2px solid #2E9E6E', color: '#2E9E6E', fontSize: 15, fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>
+                📞 {listing.phone}
+              </a>
+            ) : (
+              <button onClick={() => setShowPhone(true)}
+                style={{ width: '100%', padding: '13px', borderRadius: 16, background: 'transparent', border: '2px solid #2E9E6E', color: '#2E9E6E', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+                📞 Pokaż numer kontaktowy
+              </button>
+            )
+          )}
         </div>
       </div>
     </div>

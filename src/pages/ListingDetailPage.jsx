@@ -99,6 +99,7 @@ export default function ListingDetailPage() {
   const navigate     = useNavigate();
   const [allListings, setAllListings] = useState([]);
   const [loaded,      setLoaded]      = useState(false);
+  const [showPhone,   setShowPhone]   = useState(false);
 
   useEffect(() => {
     fetch('/api/listings')
@@ -281,17 +282,22 @@ export default function ListingDetailPage() {
                   </button>
                 )}
                 {listing.phone ? (
-                  <a
-                    href={`tel:${listing.phone.replace(/\s/g, '')}`}
-                    className="block w-full border-2 border-[#2E9E6E] text-[#2E9E6E] py-2 rounded-xl font-semibold text-sm hover:bg-[#2E9E6E] hover:text-white transition-colors text-center"
-                  >
-                    📞 {listing.phone}
-                  </a>
-                ) : (
-                  <button className="w-full border-2 border-[#2E9E6E] text-[#2E9E6E] py-2 rounded-xl font-semibold text-sm hover:bg-[#2E9E6E] hover:text-white transition-colors">
-                    📞 Kontakt z organizatorem
-                  </button>
-                )}
+                  showPhone ? (
+                    <a
+                      href={`tel:${listing.phone.replace(/\s/g, '')}`}
+                      className="block w-full border-2 border-[#2E9E6E] text-[#2E9E6E] py-2.5 rounded-xl font-bold text-sm hover:bg-[#2E9E6E] hover:text-white transition-colors text-center"
+                    >
+                      📞 {listing.phone}
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => setShowPhone(true)}
+                      className="w-full border-2 border-[#2E9E6E] text-[#2E9E6E] py-2.5 rounded-xl font-bold text-sm hover:bg-[#2E9E6E] hover:text-white transition-colors"
+                    >
+                      📞 Pokaż numer kontaktowy
+                    </button>
+                  )
+                ) : null}
 
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <ShareButtons title={listing.title} url={`https://conamazurach.pl/events/${listing.id}`} />
