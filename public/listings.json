@@ -1,29 +1,5 @@
 [
   {
-    "id": 17,
-    "title": "Kemping Leśna Polana nad Jeziorem Tałty",
-    "category": "kempingi",
-    "city": "Mikołajki",
-    "address": "Tałty 12, k. Mikołajek",
-    "lat": 53.8102,
-    "lng": 21.6044,
-    "date": null,
-    "time": null,
-    "price": 45,
-    "priceLabel": "od 45 zł / os./noc",
-    "description": "<p>Kemping w sosnowym lesie przy jeziorze Tałty. Miejsca namiotowe i dla kamperów, sanitariaty, plac zabaw, wypożyczalnia rowerów.</p>",
-    "image": "https://picsum.photos/seed/kemping-talty/800/450",
-    "rating": 4.4,
-    "isNew": false,
-    "tags": [
-      "namiot",
-      "kamper",
-      "las",
-      "Tałty"
-    ],
-    "status": "aktywne"
-  },
-  {
     "id": 18,
     "title": "Koncert Mazurskie Lato — Varius Manx",
     "category": "koncerty",
