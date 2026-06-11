@@ -1,29 +1,5 @@
 [
   {
-    "id": 8,
-    "title": "Dni Giżycka 2026 — wielkie święto nad Niegocinem",
-    "category": "wydarzenia",
-    "city": "Giżycko",
-    "address": "Promenada Wojska Polskiego, Giżycko",
-    "lat": 54.0396,
-    "lng": 21.7689,
-    "date": "2026-06-07",
-    "time": "12:00",
-    "price": 0,
-    "priceLabel": "Bezpłatne",
-    "description": "<p>Coroczne Dni Giżycka to największa impreza plenerowa w Krainie Wielkich Jezior! Trzy dni pełne atrakcji dla całej rodziny.</p>\n<p>W programie:</p>\n<ul>\n<li>Koncerty muzyczne — polskie i zagraniczne gwiazdy</li>\n<li>Pokazy fajerwerków nad jeziorem</li>\n<li>Wyścigi motorówek</li>\n<li>Jarmark rękodzielniczy</li>\n<li>Strefa dla dzieci</li>\n</ul>",
-    "image": "https://picsum.photos/seed/dni-gizycka/800/450",
-    "rating": 4.6,
-    "isNew": false,
-    "tags": [
-      "festyn",
-      "Giżycko",
-      "Niegocin",
-      "muzyka",
-      "fajerwerki"
-    ]
-  },
-  {
     "id": 9,
     "title": "Pub \"Mazurska Belka\" — craft beer i muzyka na żywo",
     "category": "restauracje",
