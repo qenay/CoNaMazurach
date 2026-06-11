@@ -254,12 +254,32 @@ export default function ListingDetailPage() {
                   )}
                 </div>
 
-                <button className="w-full bg-[#1B4F8A] text-white py-3 rounded-xl font-bold text-lg hover:bg-[#163f70] transition-colors mb-3">
-                  {listing.price === 0 ? 'Sprawdź szczegóły' : listing.category === 'noclegi' ? 'Zarezerwuj nocleg' : listing.category === 'koncerty' || listing.category === 'wydarzenia' ? 'Kup bilety' : 'Sprawdź dostępność'}
-                </button>
-                <button className="w-full border-2 border-[#2E9E6E] text-[#2E9E6E] py-2 rounded-xl font-semibold text-sm hover:bg-[#2E9E6E] hover:text-white transition-colors">
-                  📞 Kontakt z organizatorem
-                </button>
+                {listing.website ? (
+                  <a
+                    href={listing.website.startsWith('http') ? listing.website : `https://${listing.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full bg-[#1B4F8A] text-white py-3 rounded-xl font-bold text-lg hover:bg-[#163f70] transition-colors mb-3 text-center"
+                  >
+                    {listing.price === 0 ? 'Sprawdź szczegóły' : listing.category === 'noclegi' ? 'Zarezerwuj nocleg' : listing.category === 'koncerty' || listing.category === 'wydarzenia' ? 'Kup bilety' : 'Sprawdź dostępność'}
+                  </a>
+                ) : (
+                  <button className="w-full bg-[#1B4F8A] text-white py-3 rounded-xl font-bold text-lg hover:bg-[#163f70] transition-colors mb-3 opacity-50 cursor-default">
+                    {listing.price === 0 ? 'Sprawdź szczegóły' : listing.category === 'noclegi' ? 'Zarezerwuj nocleg' : listing.category === 'koncerty' || listing.category === 'wydarzenia' ? 'Kup bilety' : 'Sprawdź dostępność'}
+                  </button>
+                )}
+                {listing.phone ? (
+                  <a
+                    href={`tel:${listing.phone.replace(/\s/g, '')}`}
+                    className="block w-full border-2 border-[#2E9E6E] text-[#2E9E6E] py-2 rounded-xl font-semibold text-sm hover:bg-[#2E9E6E] hover:text-white transition-colors text-center"
+                  >
+                    📞 {listing.phone}
+                  </a>
+                ) : (
+                  <button className="w-full border-2 border-[#2E9E6E] text-[#2E9E6E] py-2 rounded-xl font-semibold text-sm hover:bg-[#2E9E6E] hover:text-white transition-colors">
+                    📞 Kontakt z organizatorem
+                  </button>
+                )}
 
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <ShareButtons title={listing.title} url={`https://conamazurach.pl/events/${listing.id}`} />
