@@ -30,8 +30,9 @@ function compressImage(file, maxW = 900) {
 const step1Schema = z.object({
   title:     z.string().min(1, 'Wpisz tytuł ogłoszenia'),
   category:  z.string().min(1, 'Wybierz kategorię'),
-  city:      z.string().min(2, 'Wpisz nazwę miasta'),
-  address:   z.string().min(5, 'Podaj adres'),
+  city:       z.string().min(2, 'Wpisz nazwę miasta'),
+  postalCode: z.string().optional(),
+  address:    z.string().min(5, 'Podaj adres'),
   dateStart: z.string().optional(),
   dateEnd:   z.string().optional(),
   time:      z.string().optional(),
@@ -123,6 +124,7 @@ export default function AddListingPage() {
         title:       data1.title,
         category:    data1.category,
         city:        data1.city,
+        postalCode:  data1.postalCode || '',
         address:     data1.address,
         date:        data1.dateStart || null,
         time:        data1.time || null,
@@ -196,9 +198,12 @@ export default function AddListingPage() {
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
               </select>
             </Field>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="Miasto *" error={form1.formState.errors.city?.message}>
                 <input {...form1.register('city')} placeholder="np. Giżycko, Ryn..." className={inputCls} />
+              </Field>
+              <Field label="Kod pocztowy">
+                <input {...form1.register('postalCode')} placeholder="np. 11-500" className={inputCls} maxLength={6} />
               </Field>
               <Field label="Adres *" error={form1.formState.errors.address?.message}>
                 <input {...form1.register('address')} placeholder="ul. Przykładowa 1" className={inputCls} />
