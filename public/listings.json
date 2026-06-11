@@ -1,28 +1,5 @@
 [
   {
-    "id": 11,
-    "title": "Nocna obserwacja nieba nad Puszczą Piską",
-    "category": "atrakcje",
-    "city": "Pisz",
-    "address": "Leśniczówka Wiartel, Pisz",
-    "lat": 53.628,
-    "lng": 21.798,
-    "date": "2026-08-10",
-    "time": "21:30",
-    "price": 60,
-    "priceLabel": "od 60 zł / os.",
-    "description": "<p>Mazury to jedno z ostatnich miejsc w Polsce z tak ciemnym niebem nocnym. Dołącz do naszej grupy astronomicznej i odkryj Drogę Mleczną gołym okiem!</p>\n<p>W programie:</p>\n<ul>\n<li>Prelekcja o gwiazdozbiorach i planetach</li>\n<li>Obserwacje przez teleskop 10\"</li>\n<li>Fotografowanie nocnego nieba (wskazówki)</li>\n<li>Gorąca czekolada i przekąski</li>\n</ul>",
-    "image": "https://picsum.photos/seed/astronomia-pisz/800/450",
-    "rating": 4.9,
-    "isNew": true,
-    "tags": [
-      "astronomia",
-      "nocne niebo",
-      "gwiazdy",
-      "Puszcza Piska"
-    ]
-  },
-  {
     "id": 13,
     "title": "Festiwal Smaków Mazurskich",
     "category": "wydarzenia",
