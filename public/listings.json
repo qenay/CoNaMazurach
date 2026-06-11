@@ -1,28 +1,5 @@
 [
   {
-    "id": 5,
-    "title": "Festiwal Country Piknik — Mrągowo 2026",
-    "category": "koncerty",
-    "city": "Mrągowo",
-    "address": "Amfiteatr Mrągowo, ul. Leśna 1",
-    "lat": 53.872,
-    "lng": 21.315,
-    "date": "2026-08-01",
-    "time": "18:00",
-    "price": 120,
-    "priceLabel": "od 120 zł",
-    "description": "<p>Jeden z największych festiwali muzyki country w Europie Środkowej wraca na Mazury! W tym roku na scenie pojawią się gwiazdy z USA, Kanady i Polski.</p>\n<p>Program:</p>\n<ul>\n<li>3 dni koncertów na 2 scenach</li>\n<li>Tańce country i warsztaty line dance</li>\n<li>Jarmark kowbojski</li>\n<li>Food trucks z kuchnią meksykańską i texańską</li>\n</ul>",
-    "image": "https://picsum.photos/seed/country-piknik/800/450",
-    "rating": 4.9,
-    "isNew": true,
-    "tags": [
-      "country",
-      "muzyka",
-      "festiwal",
-      "Mrągowo"
-    ]
-  },
-  {
     "id": 8,
     "title": "Dni Giżycka 2026 — wielkie święto nad Niegocinem",
     "category": "wydarzenia",
