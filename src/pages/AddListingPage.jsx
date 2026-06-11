@@ -189,7 +189,7 @@ export default function AddListingPage() {
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
               </select>
             </Field>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Miasto *" error={form1.formState.errors.city?.message}>
                 <input {...form1.register('city')} placeholder="np. Giżycko, Ryn..." className={inputCls} />
               </Field>
@@ -197,7 +197,7 @@ export default function AddListingPage() {
                 <input {...form1.register('address')} placeholder="ul. Przykładowa 1" className={inputCls} />
               </Field>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="Data rozpoczęcia">
                 <Controller
                   name="dateStart"
@@ -256,7 +256,7 @@ export default function AddListingPage() {
               <input {...form2.register('website')} placeholder="https://..." className={inputCls} />
             </Field>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Telefon kontaktowy">
                 <input {...form2.register('phone')} placeholder="+48 123 456 789" className={inputCls} />
               </Field>

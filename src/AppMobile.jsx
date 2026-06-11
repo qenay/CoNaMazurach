@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback, memo, lazy, Suspense } from 'react';
+import { SplashScreen } from '@capacitor/splash-screen';
 import { mockListings } from './data/mockListings';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -199,8 +200,9 @@ function hasImg(l) { return l.image && l.image.length > 10; }
 function Splash({ onDone }) {
   const [go, setGo] = useState(false);
   useEffect(() => {
-    const t1 = setTimeout(() => setGo(true), 1500); // po 1.5s zacznij animację
-    const t2 = setTimeout(() => onDone(), 2700);     // po 1.5s + 1.1s animacji + 0.1s margines
+    SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => {});
+    const t1 = setTimeout(() => setGo(true), 1500);
+    const t2 = setTimeout(() => onDone(), 2700);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onDone]);
 
@@ -209,27 +211,16 @@ function Splash({ onDone }) {
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:200 }}>
-
-      {/* LEWA POŁÓWKA — background-position:left pokazuje lewą połowę obrazka */}
       <div style={{
         position:'absolute', top:0, left:0, width:'50%', height:'100%',
-        backgroundImage: bg,
-        backgroundSize: '200% 100%',
-        backgroundPosition: 'left center',
-        transform: go ? 'translateX(-100%)' : 'none',
-        transition: tr,
+        backgroundImage: bg, backgroundSize:'200% 100%', backgroundPosition:'left center',
+        transform: go ? 'translateX(-100%)' : 'none', transition: tr,
       }} />
-
-      {/* PRAWA POŁÓWKA — background-position:right pokazuje prawą połowę obrazka */}
       <div style={{
         position:'absolute', top:0, right:0, width:'50%', height:'100%',
-        backgroundImage: bg,
-        backgroundSize: '200% 100%',
-        backgroundPosition: 'right center',
-        transform: go ? 'translateX(100%)' : 'none',
-        transition: tr,
+        backgroundImage: bg, backgroundSize:'200% 100%', backgroundPosition:'right center',
+        transform: go ? 'translateX(100%)' : 'none', transition: tr,
       }} />
-
     </div>
   );
 }
@@ -457,11 +448,11 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
 const DISCOVER_PER_PAGE = 16;
 
 function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
-  const [cat,    setCat]    = useState('all');
-  const [search, setSearch] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
-  const [page, setPage]     = useState(1);
-  const scrollRef           = useRef(null);
+  const [cat,          setCat]         = useState('all');
+  const [search,       setSearch]      = useState('');
+  const [showSearch,   setShowSearch]  = useState(false);
+  const [visibleCount, setVisibleCount] = useState(DISCOVER_PER_PAGE);
+  const scrollRef = useRef(null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -471,19 +462,24 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
     });
   }, [listings, cat, search]);
 
-  // Reset to page 1 when filter/search changes
-  useEffect(() => { setPage(1); }, [filtered]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / DISCOVER_PER_PAGE));
-  const paginated  = filtered.slice((page - 1) * DISCOVER_PER_PAGE, page * DISCOVER_PER_PAGE);
-
-  function goToPage(p) {
-    setPage(p);
+  // Reset on filter/search change
+  useEffect(() => {
+    setVisibleCount(DISCOVER_PER_PAGE);
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [filtered]);
+
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+
+  function handleScroll(e) {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && hasMore) {
+      setVisibleCount(c => Math.min(c + DISCOVER_PER_PAGE, filtered.length));
+    }
   }
 
   return (
-    <div ref={scrollRef} style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
+    <div ref={scrollRef} onScroll={handleScroll} style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ padding: '16px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>Cześć! 👋</p>
@@ -520,84 +516,64 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
         <CategoryChips active={cat} onChange={v => { setCat(v); }} T={T} />
       </div>
 
-      <div style={{ padding: '0 16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '0 16px 8px' }}>
         <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 600 }}>
           {filtered.length} {filtered.length === 1 ? 'oferta' : 'ofert'}{search ? ` dla "${search}"` : ''}
         </p>
-        {totalPages > 1 && (
-          <p style={{ margin: 0, fontSize: 12, color: T.subtle, fontWeight: 600 }}>
-            Strona {page} / {totalPages}
-          </p>
-        )}
       </div>
 
-      {/* Karty — key={page} wywołuje animację przy zmianie strony */}
-      <div key={page} className="page-in" style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         {filtered.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 0', color: T.subtle }}>
             <p style={{ fontSize: 40 }}>😕</p>
             <p style={{ fontWeight: 600 }}>Brak wyników</p>
           </div>
         )}
-        {paginated.map(l => <Card key={l.id} listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} />)}
+        {visible.map(l => <Card key={l.id} listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} />)}
       </div>
 
-      {/* Kontrolki paginacji */}
-      {totalPages > 1 && (
-        <div style={{ padding: '4px 16px 90px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <button
-            onClick={() => goToPage(page - 1)}
-            disabled={page === 1}
-            style={{
-              flex: 1, padding: '14px', borderRadius: 16,
-              background: page === 1 ? T.card2 : T.card,
-              border: `1.5px solid ${T.border}`,
-              color: page === 1 ? T.subtle : T.text,
-              fontWeight: 700, fontSize: 14, cursor: page === 1 ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...FONT,
-              opacity: page === 1 ? 0.4 : 1,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Poprzednia
-          </button>
-
-          <div style={{ display: 'flex', gap: 6 }}>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-              <button
-                key={p}
-                onClick={() => goToPage(p)}
-                style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: p === page ? '#1B4F8A' : T.card,
-                  border: `1.5px solid ${p === page ? '#1B4F8A' : T.border}`,
-                  color: p === page ? '#fff' : T.muted,
-                  fontWeight: 700, fontSize: 13, cursor: 'pointer', ...FONT,
-                }}
-              >{p}</button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => goToPage(page + 1)}
-            disabled={page === totalPages}
-            style={{
-              flex: 1, padding: '14px', borderRadius: 16,
-              background: page === totalPages ? T.card2 : '#1B4F8A',
-              border: `1.5px solid ${page === totalPages ? T.border : '#1B4F8A'}`,
-              color: page === totalPages ? T.subtle : '#fff',
-              fontWeight: 700, fontSize: 14, cursor: page === totalPages ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, ...FONT,
-              opacity: page === totalPages ? 0.4 : 1,
-            }}
-          >
-            Następna
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-      )}
+      {/* Infinite scroll indicator */}
+      <div style={{ padding: '8px 0 100px', textAlign: 'center' }}>
+        {hasMore
+          ? <p style={{ margin: 0, fontSize: 13, color: T.subtle, fontWeight: 500 }}>Przewiń w dół, aby zobaczyć więcej...</p>
+          : filtered.length > DISCOVER_PER_PAGE
+            ? <p style={{ margin: 0, fontSize: 12, color: T.subtle }}>Wszystkie {filtered.length} oferty załadowane</p>
+            : null}
+      </div>
     </div>
   );
+}
+
+// ─── Tile prefetch ────────────────────────────────────────────────────────────
+function prefetchMazuryTiles(tileUrl) {
+  function lat2y(lat, z) {
+    const r = lat * Math.PI / 180;
+    return Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * (1 << z));
+  }
+  function lon2x(lon, z) {
+    return Math.floor((lon + 180) / 360 * (1 << z));
+  }
+  const subs = ['a', 'b', 'c', 'd'];
+  let si = 0;
+  const tiles = [];
+  // Mazury region bounds, zoom 9–11
+  for (let z = 9; z <= 11; z++) {
+    const x0 = lon2x(20.2, z), x1 = lon2x(23.2, z);
+    const y0 = lat2y(54.6, z), y1 = lat2y(53.2, z);
+    for (let x = x0; x <= x1; x++)
+      for (let y = y0; y <= y1; y++)
+        tiles.push({ z, x, y });
+  }
+  let i = 0;
+  function next() {
+    if (i >= tiles.length) return;
+    const { z, x, y } = tiles[i++];
+    const url = tileUrl.replace('{s}', subs[si++ % 4]).replace('{z}', z).replace('{x}', x).replace('{y}', y).replace('{r}', '');
+    const img = new Image();
+    img.onload = img.onerror = next;
+    img.src = url;
+  }
+  for (let j = 0; j < 8; j++) next(); // 8 równoległych pobrań
 }
 
 // ─── Map helpers ──────────────────────────────────────────────────────────────
@@ -639,12 +615,14 @@ function MapScreen({ listings, onSelect, T }) {
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
+  useEffect(() => { prefetchMazuryTiles(tileUrl); }, [tileUrl]);
+
   return (
     <div style={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
 
       {/* Pełnoekranowa mapa */}
       <MapContainer center={[53.87, 21.5]} zoom={9} style={{ height: '100%', width: '100%' }} attributionControl={false} zoomControl={false}>
-        <TileLayer url={tileUrl} maxZoom={19} />
+        <TileLayer url={tileUrl} maxZoom={19} keepBuffer={6} updateWhenIdle={false} updateWhenZooming={false} />
         <MapCapture onReady={m => { mapRef.current = m; }} />
         <MapClickAway onClickAway={() => setSelected(null)} />
         {filtered.map(l => {

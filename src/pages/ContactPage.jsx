@@ -31,7 +31,7 @@ export default function ContactPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-5">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-[#1C2B3A] mb-1">Imię i nazwisko *</label>
                 <input required className={inputCls} placeholder="Jan Kowalski" />

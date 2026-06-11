@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import GlassCategoryTabs from './ui/glass-category-tabs';
 
 const LogoContent = ({ theme, size = 48, showSubtitle = true, onClick }) => (
-  <Link to="/" onClick={onClick} className="flex items-center gap-2 flex-shrink-0 z-10">
+  <Link to="/" onClick={onClick} className="flex items-center gap-2 flex-shrink-0">
     <div style={{
       backgroundColor: theme === 'dark' ? '#1e293b' : 'transparent',
       borderRadius: '50%', overflow: 'hidden',
@@ -24,13 +24,13 @@ const LogoContent = ({ theme, size = 48, showSubtitle = true, onClick }) => (
     </div>
     <div className="flex flex-col leading-tight">
       <span
-        className="font-black text-[#1B4F8A] dark:text-white tracking-tight"
-        style={{ fontFamily: 'Nunito, sans-serif', fontSize: showSubtitle ? '1.25rem' : '1rem' }}
+        className="font-black text-[#1B4F8A] dark:text-white tracking-tight whitespace-nowrap"
+        style={{ fontFamily: 'Nunito, sans-serif', fontSize: showSubtitle ? '1.15rem' : '1rem' }}
       >
         Co na Mazurach?
       </span>
       {showSubtitle && (
-        <span className="text-[10px] font-semibold text-[#2E9E6E] uppercase tracking-widest">
+        <span className="text-[10px] font-semibold text-[#2E9E6E] uppercase tracking-widest hidden lg:block">
           Kraina Wielkich Jezior
         </span>
       )}
@@ -94,34 +94,37 @@ export default function Navbar({ onSearch, onCategoryChange, activeCategory }) {
       </div>
 
       {/* ── DESKTOP ── */}
-      <div className="hidden md:flex relative w-full px-4 py-3 items-center justify-between">
-        <LogoContent theme={theme} size={48} showSubtitle onClick={handleLogoClick} />
+      <div className="hidden md:flex w-full px-4 py-3 items-center gap-3">
+        <LogoContent theme={theme} size={44} showSubtitle onClick={handleLogoClick} />
 
-        <form
-          onSubmit={handleSearch}
-          className="absolute left-1/2 -translate-x-1/2 flex gap-2 w-full max-w-xl"
-        >
-          <input
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Szukaj wydarzeń, noclegów, restauracji na Mazurach..."
-            className="flex-1 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-2 text-sm bg-white dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#1B4F8A] focus:ring-2 focus:ring-[#1B4F8A]/20 transition-colors"
-          />
-          <button
-            type="submit"
-            className="bg-[#1B4F8A] text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#163f70] transition-colors whitespace-nowrap"
+        <div className="flex-1 flex justify-center min-w-0 px-2">
+          <form
+            onSubmit={handleSearch}
+            className="flex gap-2 w-full max-w-xl"
           >
-            Szukaj
-          </button>
-        </form>
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Szukaj wydarzeń, noclegów, restauracji na Mazurach..."
+              className="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 rounded-full px-5 py-2 text-sm bg-white dark:bg-[#0f172a] text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-[#1B4F8A] focus:ring-2 focus:ring-[#1B4F8A]/20 transition-colors"
+            />
+            <button
+              type="submit"
+              className="bg-[#1B4F8A] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#163f70] transition-colors whitespace-nowrap"
+            >
+              Szukaj
+            </button>
+          </form>
+        </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0 z-10">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Link
             to="/dodaj"
-            className="bg-[#F4A825] text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-[#d99020] transition-colors whitespace-nowrap"
+            className="bg-[#F4A825] text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-[#d99020] transition-colors whitespace-nowrap"
           >
-            + Dodaj ogłoszenie
+            <span className="hidden lg:inline">+ Dodaj ogłoszenie</span>
+            <span className="lg:hidden">+ Dodaj</span>
           </Link>
           <ThemeToggle />
         </div>
