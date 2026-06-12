@@ -82,6 +82,70 @@ function buildListing(form, existing) {
   };
 }
 
+/* Jednoklikowa poprawa opisu: czyści odstępy i interpunkcję, dzieli na akapity,
+   a krótkie wyliczenia w osobnych liniach zamienia na listę punktowaną */
+function beautifyDescription(text) {
+  if (!text || !text.trim()) return '';
+
+  // wielka litera tylko gdy tekst zaczyna się od litery (nie zmienia "2 domki")
+  const cap = s => /^[a-ząćęłńóśźż]/i.test(s) ? s[0].toUpperCase() + s.slice(1) : s;
+
+  const cleanLine = l => l
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ ?([,.;:!?]) ?/g, '$1 ')
+    .replace(/ \)/g, ')').replace(/\( /g, '(')
+    .trim();
+
+  const lines = text
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map(l => l.trim());
+
+  // grupuj w bloki rozdzielone pustymi liniami
+  const blocks = [];
+  let cur = [];
+  for (const l of lines) {
+    if (l === '') { if (cur.length) { blocks.push(cur); cur = []; } }
+    else cur.push(l);
+  }
+  if (cur.length) blocks.push(cur);
+
+  const out = blocks.map(block => {
+    // blok-lista: kilka krótkich linii bez kropek na końcu → punktory
+    const shortLines = block.filter(l => l.length < 60 && !/[.!?…]$/.test(l));
+    const isList = block.length >= 2 && shortLines.length / block.length >= 0.6;
+
+    if (isList) {
+      return block
+        .map(l => '• ' + cap(cleanLine(l).replace(/^[-•*–]\s*/, '').replace(/[.,;]$/, '')))
+        .join('\n');
+    }
+
+    // blok-proza: złącz, podziel na zdania, akapity po 2-3 zdania
+    const t = cleanLine(block.join(' '));
+    const sentences = t
+      .split(/(?<=[.!?])\s+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(s => {
+        s = cap(s);
+        if (!/[.!?…]$/.test(s)) s += '.';
+        return s;
+      });
+
+    const paragraphs = [];
+    for (let i = 0; i < sentences.length; ) {
+      const take = sentences.length - i === 4 ? 2 : Math.min(3, sentences.length - i);
+      paragraphs.push(sentences.slice(i, i + take).join(' '));
+      i += take;
+    }
+    return paragraphs.join('\n\n');
+  });
+
+  return out.join('\n\n');
+}
+
 async function saveToGitHub(listings) {
   const r = await fetch('/api/listings', {
     method: 'POST',
@@ -170,6 +234,7 @@ function AdminPanel({ onLogout }) {
   const [pendingLoad,  setPendingLoad] = useState(false);
   const [contactSearch, setContactSearch] = useState('');
   const [contactCat,    setContactCat]    = useState('');
+  const [descProposal,  setDescProposal]  = useState(null);
 
   useEffect(() => {
     setPendingLoad(true);
@@ -630,9 +695,40 @@ function AdminPanel({ onLogout }) {
                     placeholder="np. Domek na Mazurach — widok na jezioro Niegocin" className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1.5">Opis</label>
-                  <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                    placeholder="Klimatyczny opis miejsca lub wydarzenia..." rows={4} className={`${inputCls} resize-none`} />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-gray-500">Opis</label>
+                    <button type="button"
+                      onClick={() => setDescProposal(beautifyDescription(form.description))}
+                      disabled={!form.description?.trim()}
+                      className="text-xs font-bold text-[#1a6fa8] bg-[#1a6fa8]/10 hover:bg-[#1a6fa8]/20 px-3 py-1 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-default">
+                      ✨ Popraw opis
+                    </button>
+                  </div>
+                  <div className={descProposal !== null ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : ''}>
+                    <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                      placeholder="Klimatyczny opis miejsca lub wydarzenia..." rows={8} className={`${inputCls} resize-y`} />
+                    {descProposal !== null && (
+                      <div className="border-2 border-[#2E9E6E]/40 bg-[#2E9E6E]/5 rounded-xl p-3 flex flex-col">
+                        <p className="text-[11px] font-bold text-[#2E9E6E] uppercase tracking-wider mb-2">✨ Proponowany opis</p>
+                        <div className="text-sm text-gray-700 whitespace-pre-line flex-1 overflow-y-auto" style={{ maxHeight: 200 }}>
+                          {descProposal || <span className="text-gray-400 italic">Brak zmian do zaproponowania</span>}
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button type="button"
+                            onClick={() => { setForm(f => ({ ...f, description: descProposal })); setDescProposal(null); }}
+                            className="flex-1 bg-[#2E9E6E] text-white text-xs font-bold py-2 rounded-lg hover:bg-[#247d57] transition-colors">
+                            ✓ Zastosuj
+                          </button>
+                          <button type="button"
+                            onClick={() => setDescProposal(null)}
+                            className="flex-1 border border-gray-300 text-gray-500 text-xs font-bold py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                            ✕ Odrzuć
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1">✨ porządkuje odstępy i interpunkcję, dzieli na akapity, a wyliczenia zamienia na listę punktowaną</p>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>

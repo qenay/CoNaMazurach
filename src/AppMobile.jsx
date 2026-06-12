@@ -392,7 +392,7 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
         {listing.description && (
           <div style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 14 }}>
             <p style={{ margin: '0 0 8px', fontWeight: 700, fontSize: 15, color: T.text }}>Opis</p>
-            <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: listing.description }} />
+            <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7, overflowWrap: 'anywhere', wordBreak: 'break-word', whiteSpace: 'pre-line' }} dangerouslySetInnerHTML={{ __html: listing.description }} />
           </div>
         )}
 

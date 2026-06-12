@@ -105,8 +105,8 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
   const displayError = localError || error;
 
   return (
-    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-      <h3 className="text-lg font-bold text-[#1C2B3A] mb-4 flex items-center gap-2">
+    <div className="bg-gray-50 dark:bg-[#1e293b] rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-bold text-[#1C2B3A] dark:text-white mb-4 flex items-center gap-2">
         🚗 Kalkulator dojazdu
       </h3>
 
@@ -119,10 +119,10 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
             onFocus={() => setShowSugg(true)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleGo(); } }}
             placeholder="Skąd jedziesz? (np. Warszawa)"
-            className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#1B4F8A] focus:ring-2 focus:ring-[#1B4F8A]/20"
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-100 dark:placeholder-gray-500 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#1B4F8A] focus:ring-2 focus:ring-[#1B4F8A]/20"
           />
           {showSugg && suggestions.length > 0 && (
-            <ul className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg z-50 mt-1 overflow-hidden">
+            <ul className="absolute top-full left-0 right-0 bg-white dark:bg-[#1e293b] dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-50 mt-1 overflow-hidden">
               {suggestions.map((c, i) => (
                 <li
                   key={i}
@@ -150,8 +150,8 @@ export default function DistanceCalculator({ toLat, toLng, toName }) {
       )}
 
       {result && (
-        <div className="mb-4 bg-white rounded-xl p-4 border border-gray-200">
-          <p className="text-sm text-gray-500 mb-2">
+        <div className="mb-4 bg-white dark:bg-[#0f172a] rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+          <p className="text-sm text-gray-500 dark:text-gray-300 mb-2">
             Trasa: <strong>{result.fromName}</strong> → <strong>{toName}</strong>
           </p>
           <div className="grid grid-cols-3 gap-3 text-center">

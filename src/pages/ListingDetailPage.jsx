@@ -81,7 +81,7 @@ function ShareButtons({ title, url }) {
   }
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500 font-medium">Udostępnij:</span>
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Udostępnij:</span>
       <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url || window.location.href)}`} target="_blank" rel="noopener noreferrer"
         className="w-8 h-8 bg-[#1877F2] rounded-full flex items-center justify-center text-white text-xs font-bold hover:opacity-90">f</a>
       <a href={`https://www.instagram.com/`} target="_blank" rel="noopener noreferrer"
@@ -171,14 +171,14 @@ export default function ListingDetailPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link to="/" className="hover:text-[#1B4F8A] transition-colors">Strona główna</Link>
+        <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <Link to="/" className="hover:text-[#1B4F8A] dark:hover:text-blue-300 transition-colors">Strona główna</Link>
           <span>›</span>
-          <button onClick={() => navigate(`/?category=${listing.category}`)} className="hover:text-[#1B4F8A] transition-colors">
+          <button onClick={() => navigate(`/?category=${listing.category}`)} className="hover:text-[#1B4F8A] dark:hover:text-blue-300 transition-colors">
             {cat?.icon} {cat?.label}
           </button>
           <span>›</span>
-          <span className="text-[#1C2B3A] font-medium truncate max-w-xs">{listing.title}</span>
+          <span className="text-[#1C2B3A] dark:text-gray-200 font-medium truncate max-w-xs">{listing.title}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -201,7 +201,7 @@ export default function ListingDetailPage() {
               <h1 className="text-2xl md:text-3xl font-black text-[#1C2B3A] dark:text-white leading-tight mb-3">
                 {listing.title}
               </h1>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
                 <span className="flex items-center gap-1">📍 {listing.city}</span>
                 {listing.date && <span>📅 {new Date(listing.date).toLocaleDateString('pl-PL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>}
                 {listing.time && <span>🕐 {listing.time}</span>}
@@ -225,14 +225,15 @@ export default function ListingDetailPage() {
             {listing.tags?.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {listing.tags.map(t => (
-                  <span key={t} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">#{t}</span>
+                  <span key={t} className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full text-xs font-medium">#{t}</span>
                 ))}
               </div>
             )}
 
             {/* Description */}
             <div
-              className="prose prose-lg max-w-none text-[#1C2B3A] leading-relaxed [&_h2]:font-black [&_h2]:text-[#1B4F8A] [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+              className="prose prose-lg max-w-none text-[#1C2B3A] dark:text-gray-200 leading-relaxed [&_h2]:font-black [&_h2]:text-[#1B4F8A] dark:[&_h2]:text-blue-300 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1 [&_p]:mb-4"
+              style={{ overflowWrap: 'anywhere', wordBreak: 'break-word', whiteSpace: 'pre-line' }}
               dangerouslySetInnerHTML={{ __html: listing.description }}
             />
 
@@ -248,14 +249,14 @@ export default function ListingDetailPage() {
             <div className="sticky top-28 space-y-5">
               {/* Booking card */}
               <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
-                <div className="text-3xl font-black text-[#1B4F8A] mb-1">{listing.priceLabel}</div>
+                <div className="text-3xl font-black text-[#1B4F8A] dark:text-blue-300 mb-1">{listing.priceLabel}</div>
                 {listing.date && (
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                     📅 {new Date(listing.date).toLocaleDateString('pl-PL', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
                     {listing.time && ` o ${listing.time}`}
                   </p>
                 )}
-                <div className="space-y-2 text-sm text-gray-600 mb-5">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-5">
                   <p className="flex items-start gap-2">
                     <span className="mt-0.5">📍</span>
                     <span>{listing.address}, {listing.city}</span>
@@ -299,7 +300,7 @@ export default function ListingDetailPage() {
                   )
                 ) : null}
 
-                <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <ShareButtons title={listing.title} url={`https://conamazurach.pl/events/${listing.id}`} />
                 </div>
               </div>
@@ -323,8 +324,8 @@ export default function ListingDetailPage() {
                 <Link key={l.id} to={`/events/${l.id}`} className="group bg-white dark:bg-[#1e293b] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all hover:scale-[1.01] flex gap-3 p-3">
                   <img src={l.image} alt={l.title} loading="lazy" className="w-20 h-16 rounded-xl object-cover flex-shrink-0" />
                   <div className="flex flex-col justify-center">
-                    <p className="font-bold text-sm text-[#1C2B3A] line-clamp-2 leading-tight">{l.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">📍 {l.city}</p>
+                    <p className="font-bold text-sm text-[#1C2B3A] dark:text-gray-100 line-clamp-2 leading-tight">{l.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">📍 {l.city}</p>
                   </div>
                 </Link>
               ))}

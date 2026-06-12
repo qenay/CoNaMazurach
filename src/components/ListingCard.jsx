@@ -16,7 +16,7 @@ function StarRating({ rating }) {
       {'★'.repeat(full)}
       {half ? '½' : ''}
       {'☆'.repeat(empty)}
-      <span className="text-gray-500 ml-1">{rating.toFixed(1)}</span>
+      <span className="text-gray-500 dark:text-gray-400 ml-1">{rating.toFixed(1)}</span>
     </span>
   );
 }
@@ -58,7 +58,7 @@ export default function ListingCard({ listing }) {
       {/* Content */}
       <div className="p-4 flex flex-col flex-1 gap-2">
         {dateStr && listing.time && (
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">
             {dateStr}, {listing.time}
           </p>
         )}
@@ -67,7 +67,7 @@ export default function ListingCard({ listing }) {
           {listing.title}
         </h3>
 
-        <div className="flex items-center gap-1 text-gray-500 text-sm">
+        <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
           <span>📍</span>
           <span className="truncate">{listing.city}</span>
         </div>
