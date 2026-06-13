@@ -1845,6 +1845,12 @@ function BottomNav({ active, onChange, T, isDark }) {
   );
 }
 
+// Zamraża ukryte zakładki: nie re-renderują się (np. przy zmianie motywu),
+// dopóki nie staną się widoczne — wtedy dostają świeże propsy
+const FrozenTab = memo(function FrozenTab({ hidden, children }) {
+  return <div style={{ height: '100%', display: hidden ? 'none' : 'block' }}>{children}</div>;
+}, (prev, next) => next.hidden);
+
 // ─── Main ──────────────────────────────────────────────────────────────────────
 export default function AppMobile() {
   const [splash,    setSplash]    = useState(true);
@@ -1939,28 +1945,30 @@ export default function AppMobile() {
           {/* Mapa: pełny ekran od top:0, pod spodem safe area jest obsługiwane przez własny overlay */}
           {mountedTabs.has('mapa') && (
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', display: tab === 'mapa' ? 'block' : 'none', zIndex: 1 }}>
-              <MapScreen listings={listings} onSelect={setDetail} T={T} />
+              <FrozenTab hidden={tab !== 'mapa'}>
+                <MapScreen listings={listings} onSelect={setDetail} T={T} />
+              </FrozenTab>
             </div>
           )}
 
           <div ref={mainContentRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', overflowY: 'hidden' }}>
-            <div style={{ height: '100%', display: tab === 'odkryj' ? 'block' : 'none' }}>
+            <FrozenTab hidden={tab !== 'odkryj'}>
               <DiscoverScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
-            </div>
+            </FrozenTab>
             {mountedTabs.has('dodaj') && (
-              <div style={{ height: '100%', display: tab === 'dodaj' ? 'block' : 'none' }}>
+              <FrozenTab hidden={tab !== 'dodaj'}>
                 <AddListingScreen T={T} />
-              </div>
+              </FrozenTab>
             )}
             {mountedTabs.has('kalendarz') && (
-              <div style={{ height: '100%', display: tab === 'kalendarz' ? 'block' : 'none' }}>
+              <FrozenTab hidden={tab !== 'kalendarz'}>
                 <CalendarScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
-              </div>
+              </FrozenTab>
             )}
             {mountedTabs.has('profil') && (
-              <div style={{ height: '100%', display: tab === 'profil' ? 'block' : 'none' }}>
+              <FrozenTab hidden={tab !== 'profil'}>
                 <ProfileScreen listings={listings} favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} onShowRegulamin={() => setShowRegulamin(true)} onShowPrivacy={() => setShowPrivacy(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
-              </div>
+              </FrozenTab>
             )}
           </div>
           <BottomNav active={tab} onChange={handleTabChange} T={T} isDark={isDark} />
