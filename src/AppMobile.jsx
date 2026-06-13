@@ -1423,61 +1423,55 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
   const heroImg     = listings.find(l => l.image && l.image.length > 10)?.image;
 
   const C = {
-    bg:     isDark ? '#0d1117' : '#f0f4f8',
-    card:   isDark ? '#161b2e' : '#ffffff',
-    border: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
-    title:  isDark ? '#f1f5f9' : '#0f172a',
-    sub:    isDark ? '#4e5f7a' : '#94a3b8',
-    div:    isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-    shadow: isDark ? '0 8px 32px rgba(0,0,0,0.45)' : '0 4px 24px rgba(0,0,0,0.08)',
+    bg:       isDark ? '#0a0f1f' : '#eef2f8',
+    card:     isDark ? '#111a30' : '#ffffff',
+    iconCirc: isDark ? '#1b2742' : '#eef2f8',
+    border:   isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    title:    isDark ? '#f1f5f9' : '#0f172a',
+    sub:      isDark ? '#5b6b87' : '#94a3b8',
+    shadow:   isDark ? '0 4px 20px rgba(0,0,0,0.35)' : '0 4px 20px rgba(0,0,0,0.07)',
   };
 
   const Chevron = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={isDark ? '#2d3f5a' : '#d1d5db'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={isDark ? '#33415e' : '#d1d5db'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="9 18 15 12 9 6"/>
     </svg>
   );
 
   const menuItems = [
     {
-      iconBg: '#ef4444',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="#ef4444"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
       label: 'Ulubione',
       sub: favsCount > 0 ? `${favsCount} zapisanych ofert` : 'Brak zapisanych ofert',
       badge: favsCount > 0 ? favsCount : null,
       action: onShowFavs,
     },
     {
-      iconBg: '#2563eb',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>,
       label: 'O Co na Mazurach?',
       sub: 'Poznaj nasz portal',
       action: onShowAbout,
     },
     {
-      iconBg: '#475569',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
       label: 'Kontakt',
       sub: 'kontakt@conamazurach.pl',
       action: null,
     },
     {
-      iconBg: '#475569',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
       label: 'Regulamin',
       sub: 'Zasady korzystania',
       action: onShowRegulamin,
     },
     {
-      iconBg: '#475569',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
       label: 'Polityka prywatności',
       sub: 'Ochrona danych osobowych',
       action: onShowPrivacy,
     },
     {
-      iconBg: '#d97706',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="#facc15"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
       label: 'Oceń aplikację',
       sub: 'Zostaw recenzję',
       action: null,
@@ -1487,66 +1481,63 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
   return (
     <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', background: C.bg, ...FONT }}>
 
-      {/* ── Hero card — zaokrąglona wizytówka ── */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top) + 12px) 16px 0' }}>
-        <div style={{
-          borderRadius: 26, overflow: 'hidden', position: 'relative',
-          background: 'linear-gradient(175deg, #12305a 0%, #0c2244 55%, #0a1c38 100%)',
-          border: '1px solid rgba(255,255,255,0.09)',
-          boxShadow: isDark ? '0 16px 40px rgba(0,0,0,0.5)' : '0 12px 32px rgba(13,42,86,0.3)',
-        }}>
-          {/* Zdjęcie — góra karty */}
-          <div style={{ position: 'relative', height: 136 }}>
-            {heroImg
-              ? <img src={heroImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #14365f 0%, #1d4f8a 50%, #0e2748 100%)' }} />
-            }
-            {/* Płynne przejście zdjęcia w granatowy dół karty */}
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(12,34,68,0) 35%, rgba(12,34,68,0.55) 78%, #0c2244 100%)' }} />
-          </div>
+      {/* ── Hero — pełnoekranowe zdjęcie od samej góry ── */}
+      <div style={{ position: 'relative' }}>
+        {/* Zdjęcie tła — full-bleed, pod Dynamic Island */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          {heroImg
+            ? <img src={heroImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #14365f 0%, #1d4f8a 50%, #0e2748 100%)' }} />
+          }
+          {/* Płynne wtopienie zdjęcia w granatowe tło ekranu */}
+          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(10,15,31,0.1) 0%, rgba(10,15,31,0.25) 40%, rgba(10,15,31,0.82) 78%, ${C.bg} 100%)` }} />
+        </div>
 
-          {/* Topographic pattern w dolnej części */}
-          <svg style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', height: 150, opacity: 0.07, pointerEvents: 'none' }} viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice">
-            <path d="M-50,40 Q100,10 200,50 Q300,90 450,30" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
-            <path d="M-50,70 Q100,40 200,80 Q300,120 450,60" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
-            <path d="M-50,100 Q100,70 200,110 Q300,150 450,90" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
-            <path d="M-50,130 Q100,100 200,140 Q300,180 450,120" fill="none" stroke="#7eb3f7" strokeWidth="1"/>
-          </svg>
+        {/* Treść hero */}
+        <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top) + 14px) 18px 16px' }}>
+          {/* Okrągły znaczek-logo jak na referencji */}
+          <div style={{
+            width: 46, height: 46, borderRadius: 999, marginBottom: 44,
+            background: 'rgba(13,34,68,0.55)',
+            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+            border: '1.5px solid rgba(255,255,255,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          }}>🌊</div>
 
-          <div style={{ position: 'relative', padding: '6px 18px 18px' }}>
-            <p style={{ margin: '0 0 3px', fontSize: 26, fontWeight: 900, color: '#fff', letterSpacing: -0.6, textShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>Co na Mazurach?</p>
-            <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(255,255,255,0.68)', fontWeight: 500 }}>Twój przewodnik po Mazurach</p>
+          <p style={{ margin: '0 0 3px', fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: -0.6, textShadow: '0 2px 14px rgba(0,0,0,0.5)' }}>Co na Mazurach?</p>
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 500, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>Twój przewodnik po Mazurach</p>
 
-            {/* Stats — trzy szklane kafelki */}
-            <div style={{ display: 'flex', gap: 8 }}>
-              {[
-                {
-                  val: favsCount, label: 'ulubionych',
-                  icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#fb7185"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
-                },
-                {
-                  val: placesCount, label: 'miejsc',
-                  icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#60a5fa"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>,
-                },
-                {
-                  val: eventsCount, label: 'wydarzeń',
-                  icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#93c5fd" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-                },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  flex: 1, textAlign: 'center', padding: '11px 4px',
-                  background: 'rgba(56,113,224,0.22)',
-                  backdropFilter: 'blur(14px)',
-                  WebkitBackdropFilter: 'blur(14px)',
-                  borderRadius: 16,
-                  border: '1px solid rgba(120,165,255,0.22)',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 5 }}>{s.icon}</div>
-                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{s.val}</p>
-                  <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.62)', fontWeight: 500 }}>{s.label}</p>
-                </div>
-              ))}
-            </div>
+          {/* Stats — trzy niebieskie szklane kafelki */}
+          <div style={{ display: 'flex', gap: 9 }}>
+            {[
+              {
+                val: favsCount, label: 'ulubionych',
+                icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#fb7185"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+              },
+              {
+                val: placesCount, label: 'miejsc',
+                icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#7db5ff"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>,
+              },
+              {
+                val: eventsCount, label: 'wydarzeń',
+                icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a5c8ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+              },
+            ].map((s, i) => (
+              <div key={i} style={{
+                flex: 1, textAlign: 'center', padding: '12px 4px',
+                background: 'linear-gradient(160deg, rgba(43,98,196,0.55) 0%, rgba(26,62,130,0.5) 100%)',
+                backdropFilter: 'blur(14px)',
+                WebkitBackdropFilter: 'blur(14px)',
+                borderRadius: 18,
+                border: '1px solid rgba(125,170,255,0.3)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 5 }}>{s.icon}</div>
+                <p style={{ margin: 0, fontSize: 21, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{s.val}</p>
+                <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1557,13 +1548,13 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
         {/* Motyw toggle */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: C.card, borderRadius: 24, padding: '14px 18px', marginBottom: 12,
+          background: C.card, borderRadius: 22, padding: '13px 16px', marginBottom: 10,
           border: `1px solid ${C.border}`, boxShadow: C.shadow,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
-              width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-              background: isDark ? '#232d45' : '#f1f5f9',
+              width: 44, height: 44, borderRadius: 999, flexShrink: 0,
+              background: C.iconCirc,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {isDark
@@ -1591,51 +1582,48 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
           </div>
         </div>
 
-        {/* Menu items */}
-        <div style={{
-          background: C.card, borderRadius: 24, overflow: 'hidden',
-          border: `1px solid ${C.border}`, boxShadow: C.shadow,
-        }}>
-          {menuItems.map((item, i) => (
-            <div
-              key={i}
-              onClick={item.action || undefined}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '13px 18px',
-                borderBottom: i < menuItems.length - 1 ? `1px solid ${C.div}` : 'none',
-                cursor: item.action ? 'pointer' : 'default',
-                transition: 'background 0.15s',
-              }}
-            >
-              <div style={{
-                width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                background: item.iconBg,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: `0 4px 14px ${item.iconBg}55`,
-              }}>
-                {item.icon}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: C.title }}>{item.label}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 12, color: C.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                {item.badge != null && (
-                  <div style={{
-                    background: '#ef4444', borderRadius: 999,
-                    minWidth: 22, height: 22,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    paddingInline: 6,
-                  }}>
-                    <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>{item.badge}</span>
-                  </div>
-                )}
-                {item.action && <Chevron />}
-              </div>
+        {/* Menu items — każdy jako osobny kafelek */}
+        {menuItems.map((item, i) => (
+          <div
+            key={i}
+            onClick={item.action || undefined}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 14,
+              background: C.card, borderRadius: 22, padding: '13px 16px',
+              marginBottom: 10,
+              border: `1px solid ${C.border}`, boxShadow: C.shadow,
+              cursor: item.action ? 'pointer' : 'default',
+              transition: 'background 0.15s, transform 0.12s',
+            }}
+            onTouchStart={e => { if (item.action) e.currentTarget.style.transform = 'scale(0.98)'; }}
+            onTouchEnd={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: 999, flexShrink: 0,
+              background: C.iconCirc,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {item.icon}
             </div>
-          ))}
-        </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.title }}>{item.label}</p>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: C.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              {item.badge != null && (
+                <div style={{
+                  background: '#ef4444', borderRadius: 999,
+                  minWidth: 22, height: 22,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  paddingInline: 6,
+                }}>
+                  <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>{item.badge}</span>
+                </div>
+              )}
+              {item.action && <Chevron />}
+            </div>
+          </div>
+        ))}
 
         <p style={{ textAlign: 'center', marginTop: 28, fontSize: 11, color: isDark ? '#1e2d45' : '#cbd5e1', fontWeight: 500 }}>
           Co na Mazurach? v1.0.0
@@ -1677,7 +1665,7 @@ const NAV_ICONS = {
 };
 
 function BottomNav({ active, onChange, T, isDark }) {
-  const bg     = isDark ? '#0d1117' : '#ffffff';
+  const bg     = isDark ? '#0a0f1f' : '#ffffff';
   const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
   return (
     <div style={{
