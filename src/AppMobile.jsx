@@ -355,8 +355,28 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
     }
   }
 
+  const isDark = T.bg === THEMES.dark.bg;
+  const glassBtn = {
+    width: 40, height: 40, borderRadius: 999,
+    background: 'rgba(10,18,36,0.55)',
+    backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255,255,255,0.2)',
+    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+  };
+  const cardStyle = {
+    background: T.card, borderRadius: 22, padding: 16, marginBottom: 12,
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
+    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+  };
+  const infoIconCirc = {
+    width: 38, height: 38, borderRadius: 999, flexShrink: 0,
+    background: isDark ? '#1b2742' : '#eef2f8',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  };
+
   return (
-    <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
+    <div style={{ ...FONT, height: '100%', overflowY: 'auto', overflowX: 'hidden', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       <div style={{ position: 'relative' }}>
         <ImageCarousel
           images={listing.images?.length > 0 ? listing.images : (hasImg(listing) ? [listing.image] : [])}
@@ -364,60 +384,84 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
           fallbackIcon={c.icon}
           fallbackBg={c.bg}
         />
-        <button onClick={onBack} style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', left: 16, width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 2 }}>←</button>
-        <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 16px)', right: 16, display: 'flex', gap: 8, zIndex: 2 }}>
-          <button onClick={share} style={{ width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B4F8A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        {/* Płynne przejście zdjęcia w tło */}
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 70, background: `linear-gradient(to bottom, transparent, ${T.bg})`, pointerEvents: 'none' }} />
+        <button onClick={onBack} style={{ ...glassBtn, position: 'absolute', top: 'calc(env(safe-area-inset-top) + 14px)', left: 16, zIndex: 2 }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 14px)', right: 16, display: 'flex', gap: 8, zIndex: 2 }}>
+          <button onClick={share} style={glassBtn}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </button>
-          <button onClick={() => toggleFav && toggleFav(String(listing.id))} style={{ width: 40, height: 40, borderRadius: 999, background: 'rgba(255,255,255,0.92)', border: 'none', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>{isFav ? '❤️' : '🤍'}</button>
+          <button onClick={() => toggleFav && toggleFav(String(listing.id))} style={{ ...glassBtn, fontSize: 18 }}>{isFav ? '❤️' : '🤍'}</button>
         </div>
       </div>
 
-      <div style={{ padding: 20, paddingBottom: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <span style={{ background: c.color, color: '#fff', padding: '4px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>{c.icon} {c.label}</span>
-          {listing.rating ? <span style={{ fontSize: 13, color: '#F4A825', fontWeight: 700 }}>⭐ {listing.rating}/5</span> : null}
-          {listing.isNew && <span style={{ background: '#FEF3C7', color: '#D97706', padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>✨ Nowość</span>}
+      <div style={{ padding: '14px 16px 100px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+          <span style={{ background: c.color, color: '#fff', padding: '4px 12px', borderRadius: 999, fontSize: 12, fontWeight: 800, boxShadow: `0 3px 10px ${c.color}55` }}>{c.icon} {c.label}</span>
+          {listing.rating ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: isDark ? 'rgba(244,168,37,0.15)' : '#FEF3C7', color: '#F4A825', padding: '4px 11px', borderRadius: 999, fontSize: 12, fontWeight: 800 }}>⭐ {listing.rating}/5</span>
+          ) : null}
+          {listing.isNew && <span style={{ background: isDark ? 'rgba(217,119,6,0.18)' : '#FEF3C7', color: '#f59e0b', padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800 }}>✨ Nowość</span>}
         </div>
 
-        <h1 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 800, color: T.text, lineHeight: 1.2 }}>{listing.title}</h1>
+        <h1 style={{ margin: '0 0 14px', fontSize: 24, fontWeight: 900, color: T.heading, lineHeight: 1.2, letterSpacing: -0.4 }}>{listing.title}</h1>
 
-        <div style={{ background: T.card, borderRadius: 16, padding: 14, marginBottom: 14 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>📍 {listing.address}{listing.postalCode ? `, ${listing.postalCode}` : ''} {listing.city}</p>
-            {listing.date && <p style={{ margin: 0, fontSize: 13, color: T.muted }}>📅 {new Date(listing.date).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>}
-            {listing.time && <p style={{ margin: 0, fontSize: 13, color: T.muted }}>🕐 {listing.time}</p>}
+        {/* Karta informacji — wiersze z ikonami w okręgach */}
+        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={infoIconCirc}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="#3b82f6"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+            </div>
+            <p style={{ margin: 0, fontSize: 13.5, color: T.text, fontWeight: 600 }}>{listing.address}{listing.postalCode ? `, ${listing.postalCode}` : ''} {listing.city}</p>
           </div>
+          {listing.date && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={infoIconCirc}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <p style={{ margin: 0, fontSize: 13.5, color: T.text, fontWeight: 600 }}>{new Date(listing.date).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            </div>
+          )}
+          {listing.time && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={infoIconCirc}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <p style={{ margin: 0, fontSize: 13.5, color: T.text, fontWeight: 600 }}>{listing.time}</p>
+            </div>
+          )}
         </div>
 
         {listing.description && (
-          <div style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 14 }}>
-            <p style={{ margin: '0 0 8px', fontWeight: 700, fontSize: 15, color: T.text }}>Opis</p>
+          <div style={cardStyle}>
+            <p style={{ margin: '0 0 8px', fontWeight: 800, fontSize: 16, color: T.heading }}>Opis</p>
             <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7, overflowWrap: 'anywhere', wordBreak: 'break-word', whiteSpace: 'pre-line' }} dangerouslySetInnerHTML={{ __html: listing.description }} />
           </div>
         )}
 
         {listing.features?.length > 0 && (
-          <div style={{ background: T.card, borderRadius: 16, padding: 16, marginBottom: 14 }}>
-            <p style={{ margin: '0 0 10px', fontWeight: 700, fontSize: 15, color: T.text }}>✅ Udogodnienia</p>
+          <div style={cardStyle}>
+            <p style={{ margin: '0 0 10px', fontWeight: 800, fontSize: 16, color: T.heading }}>✅ Udogodnienia</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {listing.features.map((f, i) => (
-                <span key={i} style={{ fontSize: 12, color: '#2E9E6E', background: '#D1FAE5', padding: '5px 12px', borderRadius: 999, fontWeight: 700 }}>{f}</span>
+                <span key={i} style={{ fontSize: 12, fontWeight: 700, padding: '6px 13px', borderRadius: 999, color: isDark ? '#34d399' : '#2E9E6E', background: isDark ? 'rgba(16,185,129,0.13)' : '#D1FAE5', border: isDark ? '1px solid rgba(52,211,153,0.25)' : 'none' }}>{f}</span>
               ))}
             </div>
           </div>
         )}
 
         {(listing.tags || []).length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 }}>
             {listing.tags.map(t => (
-              <span key={t} style={{ fontSize: 12, color: '#1B4F8A', background: '#DBEAFE', padding: '5px 12px', borderRadius: 999, fontWeight: 700 }}>#{t}</span>
+              <span key={t} style={{ fontSize: 12, fontWeight: 700, padding: '6px 13px', borderRadius: 999, color: isDark ? '#60a5fa' : '#1B4F8A', background: isDark ? 'rgba(59,130,246,0.13)' : '#DBEAFE', border: isDark ? '1px solid rgba(96,165,250,0.25)' : 'none' }}>#{t}</span>
             ))}
           </div>
         )}
 
         {listing.lat && listing.lng && (
-          <div style={{ borderRadius: 16, overflow: 'hidden', marginBottom: 14, height: 180 }}>
+          <div style={{ borderRadius: 22, overflow: 'hidden', marginBottom: 12, height: 180, border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`, boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
             <MapContainer center={[listing.lat, listing.lng]} zoom={13} style={{ height: '100%', width: '100%' }} attributionControl={false} zoomControl={false}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
               <Marker position={[listing.lat, listing.lng]} />
@@ -425,16 +469,24 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
           </div>
         )}
 
-        <div style={{ background: T.card, borderRadius: 20, padding: 20 }}>
+        {/* Karta ceny i akcji — granatowy gradient */}
+        <div style={{
+          borderRadius: 24, padding: 20,
+          background: isDark
+            ? 'linear-gradient(170deg, #1e3357 0%, #142648 55%, #0d1830 100%)'
+            : '#ffffff',
+          border: `1px solid ${isDark ? 'rgba(120,165,255,0.18)' : 'rgba(0,0,0,0.06)'}`,
+          boxShadow: '0 8px 28px rgba(0,0,0,0.3)',
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
-              <p style={{ margin: 0, fontSize: 12, color: T.muted }}>Cena</p>
-              <p style={{ margin: 0, fontSize: 26, fontWeight: 800, color: '#1B4F8A' }}>{listing.priceLabel || (listing.price === 0 ? 'Bezpłatne' : `${listing.price} zł`)}</p>
+              <p style={{ margin: 0, fontSize: 12, color: isDark ? 'rgba(255,255,255,0.55)' : T.muted, fontWeight: 500 }}>Cena</p>
+              <p style={{ margin: 0, fontSize: 27, fontWeight: 900, color: isDark ? '#fff' : '#1B4F8A', letterSpacing: -0.5 }}>{listing.priceLabel || (listing.price === 0 ? 'Bezpłatne' : `${listing.price} zł`)}</p>
             </div>
             {listing.rating && (
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#F4A825' }}>⭐ {listing.rating}</p>
-                <p style={{ margin: 0, fontSize: 11, color: T.muted }}>ocena</p>
+              <div style={{ textAlign: 'center', background: isDark ? 'rgba(244,168,37,0.12)' : '#FEF3C7', borderRadius: 16, padding: '8px 14px' }}>
+                <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#F4A825', lineHeight: 1 }}>⭐ {listing.rating}</p>
+                <p style={{ margin: '3px 0 0', fontSize: 10.5, color: isDark ? 'rgba(255,255,255,0.55)' : T.muted }}>ocena</p>
               </div>
             )}
           </div>
@@ -442,12 +494,12 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
           {/* Główny przycisk akcji — link do strony ogłoszeniodawcy lub email */}
           {siteUrl ? (
             <a href={siteUrl} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 10 }}>
+              style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, background: 'linear-gradient(145deg, #1d4ed8, #2563eb)', color: '#fff', fontSize: 16, fontWeight: 800, textAlign: 'center', textDecoration: 'none', marginBottom: 10, boxShadow: '0 6px 20px rgba(37,99,235,0.4)' }}>
               {listing.price === 0 ? '🌐 Sprawdź szczegóły' : listing.category === 'noclegi' || listing.category === 'kempingi' ? '🌐 Zarezerwuj nocleg' : listing.category === 'koncerty' || listing.category === 'wydarzenia' ? '🎫 Kup bilety' : '🌐 Sprawdź dostępność'}
             </a>
           ) : (
             <a href={mailto}
-              style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, background: '#1B4F8A', color: '#fff', fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 10 }}>
+              style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, background: 'linear-gradient(145deg, #1d4ed8, #2563eb)', color: '#fff', fontSize: 16, fontWeight: 800, textAlign: 'center', textDecoration: 'none', marginBottom: 10, boxShadow: '0 6px 20px rgba(37,99,235,0.4)' }}>
               {listing.price === 0 ? '📧 Napisz do nas' : listing.category === 'noclegi' || listing.category === 'kempingi' ? '📧 Zarezerwuj' : listing.category === 'koncerty' || listing.category === 'wydarzenia' ? '📧 Kup bilety' : '📧 Kontakt'}
             </a>
           )}
@@ -456,12 +508,12 @@ function DetailScreen({ listing, onBack, favs, toggleFav, T }) {
           {listing.phone && (
             showPhone ? (
               <a href={`tel:${listing.phone.replace(/\s/g, '')}`}
-                style={{ display: 'block', width: '100%', padding: '13px', borderRadius: 16, background: 'transparent', border: '2px solid #2E9E6E', color: '#2E9E6E', fontSize: 15, fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>
+                style={{ display: 'block', width: '100%', padding: '13px', borderRadius: 16, background: isDark ? 'rgba(52,211,153,0.1)' : 'transparent', border: `2px solid ${isDark ? '#34d399' : '#2E9E6E'}`, color: isDark ? '#34d399' : '#2E9E6E', fontSize: 15, fontWeight: 800, textAlign: 'center', textDecoration: 'none' }}>
                 📞 {listing.phone}
               </a>
             ) : (
               <button onClick={() => setShowPhone(true)}
-                style={{ width: '100%', padding: '13px', borderRadius: 16, background: 'transparent', border: '2px solid #2E9E6E', color: '#2E9E6E', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+                style={{ width: '100%', padding: '13px', borderRadius: 16, background: isDark ? 'rgba(52,211,153,0.1)' : 'transparent', border: `2px solid ${isDark ? '#34d399' : '#2E9E6E'}`, color: isDark ? '#34d399' : '#2E9E6E', fontSize: 15, fontWeight: 800, cursor: 'pointer', ...FONT }}>
                 📞 Pokaż numer kontaktowy
               </button>
             )
