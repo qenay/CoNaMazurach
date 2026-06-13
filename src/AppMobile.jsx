@@ -1792,6 +1792,9 @@ export default function AppMobile() {
     <div style={{ ...FONT, position: 'fixed', inset: 0, background: T.bg, overflow: 'hidden' }}>
       {splash && <Splash onDone={() => setSplash(false)} />}
 
+      {/* Stały pasek statusu — kończy się równo pod Dynamic Island, treść przewija się pod nim */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 'env(safe-area-inset-top)', background: T.bg, zIndex: 100, pointerEvents: 'none' }} />
+
       {loading && !splash && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, background: T.bg }}>
           <span style={{ fontSize: 48 }}>🌊</span>
