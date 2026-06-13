@@ -191,6 +191,7 @@ const NAV = [
 ];
 
 const MONTHS = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+const MONTHS_SHORT = ['STY','LUT','MAR','KWI','MAJ','CZE','LIP','SIE','WRZ','PAŹ','LIS','GRU'];
 const DAYS   = ['Pon','Wt','Śr','Czw','Pt','Sob','Ndz'];
 
 function cat(id) { return CATS.find(c => c.id === id) || CATS[0]; }
@@ -748,8 +749,14 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
     ? listings.filter(l => { if (!l.date) return false; const d = new Date(l.date); return d.getDate() === selDay && d.getMonth() === month && d.getFullYear() === year; })
     : [], [listings, selDay, month, year]);
 
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
+
   const upcomingListings = useMemo(() =>
-    listings.filter(l => l.date && new Date(l.date) >= today).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, 5)
+    listings.filter(l => l.date && new Date(l.date) >= today).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(0, showAllUpcoming ? 50 : 5)
+  , [listings, showAllUpcoming]);
+
+  const recommended = useMemo(() =>
+    [...listings].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 8)
   , [listings]);
 
   const cells = useMemo(() => {
@@ -759,69 +766,178 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
     return c;
   }, [firstWeekday, daysInMonth]);
 
-  return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
-      {/* Calendar header */}
-      <div style={{ margin: '16px', marginTop: 'calc(env(safe-area-inset-top) + 12px)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.1)' }}>
-        <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', padding: '16px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <button onClick={() => { if (month === 0) { setYear(y => y-1); setMonth(11); } else setMonth(m => m-1); }} style={{ width: 36, height: 36, borderRadius: 999, background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }}>‹</button>
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ margin: 0, color: '#fff', fontWeight: 800, fontSize: 18, ...FONT }}>{MONTHS[month]}</p>
-              <p style={{ margin: 0, color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 500 }}>{year}</p>
-            </div>
-            <button onClick={() => { if (month === 11) { setYear(y => y+1); setMonth(0); } else setMonth(m => m+1); }} style={{ width: 36, height: 36, borderRadius: 999, background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }}>›</button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-            {DAYS.map((d, i) => <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: i >= 5 ? 'rgba(147,197,253,0.9)' : 'rgba(255,255,255,0.7)', padding: '4px 0' }}>{d}</div>)}
-          </div>
+  const isDark = T.bg === THEMES.dark.bg;
+
+  const navBtn = {
+    width: 34, height: 34, borderRadius: 12,
+    background: '#2563eb', border: 'none', color: '#fff',
+    fontSize: 17, cursor: 'pointer', fontWeight: 700,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 4px 12px rgba(37,99,235,0.35)',
+  };
+
+  function fmtEventDate(l) {
+    const d = new Date(l.date);
+    const txt = d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+    return l.time ? `${txt} · ${l.time}` : txt;
+  }
+
+  // Karta wydarzenia ze zdjęciem w tle — jak na referencji
+  function EventCard({ l }) {
+    const c = cat(l.category);
+    const d = new Date(l.date);
+    const isFav = favs?.has(String(l.id));
+    return (
+      <div onClick={() => onSelect(l)} style={{
+        position: 'relative', borderRadius: 22, overflow: 'hidden', marginBottom: 12,
+        minHeight: 130, cursor: 'pointer',
+        border: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+      }}>
+        <div style={{ position: 'absolute', inset: 0 }}>
+          {hasImg(l)
+            ? <img src={l.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #14365f, #0e2748)' }} />}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(7,12,24,0.82) 0%, rgba(7,12,24,0.55) 55%, rgba(7,12,24,0.25) 100%)' }} />
         </div>
-        <div style={{ background: T.card, padding: '8px 12px 12px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
-            {cells.map((day, idx) => {
-              if (!day) return <div key={`e-${idx}`} />;
-              const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-              const hasEv  = eventDays.has(day);
-              const isSel  = selDay === day;
-              const isWeekend = ((firstWeekday + day - 1) % 7) >= 5;
-              return (
-                <button key={day} onClick={() => setSelDay(isSel ? null : day)} style={{
-                  width: '100%', aspectRatio: '1', borderRadius: 999, border: 'none', cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 13, fontWeight: isSel || isToday ? 800 : hasEv ? 700 : 500, position: 'relative',
-                  background: isSel ? '#1B4F8A' : isToday ? '#F4A825' : hasEv ? 'rgba(27,79,138,0.1)' : 'transparent',
-                  color: isSel || isToday ? '#fff' : hasEv ? '#1B4F8A' : isWeekend ? '#2E9E6E' : '#374151',
-                }}>
-                  {day}
-                  {hasEv && !isSel && <div style={{ position: 'absolute', bottom: 2, width: 4, height: 4, borderRadius: 999, background: '#F4A825' }} />}
-                </button>
-              );
-            })}
+        <div style={{ position: 'relative', padding: 14, display: 'flex', gap: 12 }}>
+          {/* Plakietka daty */}
+          <div style={{
+            width: 46, height: 52, borderRadius: 13, flexShrink: 0,
+            background: 'rgba(10,18,36,0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{d.getDate()}</p>
+            <p style={{ margin: '2px 0 0', fontSize: 9.5, fontWeight: 700, color: '#7db5ff', letterSpacing: 0.5 }}>{MONTHS_SHORT[d.getMonth()]}</p>
           </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'inline-block', background: '#10b981', color: '#fff', fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 999, marginBottom: 6 }}>{c.label}</span>
+            <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#fff', lineHeight: 1.25, textShadow: '0 1px 6px rgba(0,0,0,0.5)' }}>{l.title}</p>
+            <p style={{ margin: '5px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.78)', fontWeight: 500 }}>📍 {l.city}{l.address ? `, ${l.address}` : ''}</p>
+            <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'rgba(255,255,255,0.6)' }}>{fmtEventDate(l)}</p>
+          </div>
+          <button
+            onClick={e => { e.stopPropagation(); toggleFav && toggleFav(String(l.id)); }}
+            style={{ alignSelf: 'flex-start', width: 34, height: 34, borderRadius: 999, background: 'rgba(10,18,36,0.6)', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            {isFav ? '❤️' : '🤍'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const sectionHeader = (title, onMore) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
+      <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: T.heading }}>{title}</p>
+      {onMore && <button onClick={onMore} style={{ background: 'none', border: 'none', color: '#4d9ef7', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0, ...FONT }}>Zobacz wszystkie</button>}
+    </div>
+  );
+
+  return (
+    <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none', ...FONT }}>
+      {/* Karta kalendarza */}
+      <div style={{
+        margin: '16px', marginTop: 'calc(env(safe-area-inset-top) + 12px)',
+        borderRadius: 24, overflow: 'hidden',
+        background: T.card, border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
+        boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
+        padding: '16px 14px 14px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <button onClick={() => { if (month === 0) { setYear(y => y-1); setMonth(11); } else setMonth(m => m-1); }} style={navBtn}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ margin: 0, color: T.heading, fontWeight: 800, fontSize: 19, ...FONT }}>{MONTHS[month]}</p>
+            <p style={{ margin: 0, color: T.subtle, fontSize: 12.5, fontWeight: 500 }}>{year}</p>
+          </div>
+          <button onClick={() => { if (month === 11) { setYear(y => y+1); setMonth(0); } else setMonth(m => m+1); }} style={navBtn}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
+          {DAYS.map((d, i) => <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: i >= 5 ? '#4d9ef7' : T.subtle, padding: '4px 0' }}>{d}</div>)}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
+          {cells.map((day, idx) => {
+            if (!day) return <div key={`e-${idx}`} />;
+            const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+            const hasEv  = eventDays.has(day);
+            const isSel  = selDay === day;
+            const isWeekend = ((firstWeekday + day - 1) % 7) >= 5;
+            return (
+              <button key={day} onClick={() => setSelDay(isSel ? null : day)} style={{
+                width: '100%', aspectRatio: '1', borderRadius: 999, cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13.5, fontWeight: isSel || isToday ? 800 : hasEv ? 700 : 500, position: 'relative',
+                background: isSel ? '#2563eb' : isToday ? 'rgba(37,99,235,0.18)' : 'transparent',
+                border: isToday && !isSel ? '1.5px solid #2563eb' : 'none',
+                color: isSel ? '#fff' : isToday ? '#4d9ef7' : isWeekend ? '#4d9ef7' : T.text,
+                boxShadow: isSel ? '0 4px 12px rgba(37,99,235,0.4)' : 'none',
+              }}>
+                {day}
+                {hasEv && !isSel && <div style={{ position: 'absolute', bottom: 3, width: 4, height: 4, borderRadius: 999, background: '#4d9ef7' }} />}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div style={{ padding: '0 16px 80px' }}>
+      <div style={{ padding: '0 16px 90px' }}>
         {selDay ? (
           <>
-            <p style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: T.text }}>
-              {selDay} {MONTHS[month]} {year} · {dayListings.length} {dayListings.length === 1 ? 'wydarzenie' : 'wydarzeń'}
-            </p>
+            {sectionHeader(`${selDay} ${MONTHS[month]} ${year} · ${dayListings.length} ${dayListings.length === 1 ? 'wydarzenie' : 'wydarzeń'}`)}
             {dayListings.length === 0
-              ? <div style={{ background: T.card, borderRadius: 16, padding: 20, textAlign: 'center', color: T.subtle }}><p>Brak wydarzeń tego dnia</p></div>
-              : dayListings.map(l => <div key={l.id} style={{ marginBottom: 12 }}><Card listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} /></div>)
+              ? <div style={{ background: T.card, borderRadius: 20, padding: 24, textAlign: 'center', color: T.subtle, border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}><p style={{ margin: 0 }}>Brak wydarzeń tego dnia</p></div>
+              : dayListings.map(l => l.date ? <EventCard key={l.id} l={l} /> : <div key={l.id} style={{ marginBottom: 12 }}><Card listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} /></div>)
             }
           </>
         ) : (
           <>
-            <p style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, color: '#64748b' }}>Najbliższe wydarzenia</p>
-            {upcomingListings.map(l => (
-              <div key={l.id} style={{ marginBottom: 12 }}><Card listing={l} onClick={onSelect} favs={favs} toggleFav={toggleFav} T={T} /></div>
-            ))}
+            {sectionHeader('Najbliższe wydarzenia', upcomingListings.length >= 5 || showAllUpcoming ? () => setShowAllUpcoming(s => !s) : null)}
+            {upcomingListings.map(l => <EventCard key={l.id} l={l} />)}
             {upcomingListings.length === 0 && (
-              <div style={{ background: T.card, borderRadius: 16, padding: 20, textAlign: 'center', color: T.subtle }}>
-                <p style={{ fontSize: 32 }}>📅</p>
-                <p style={{ fontWeight: 600 }}>Brak nadchodzących wydarzeń</p>
+              <div style={{ background: T.card, borderRadius: 20, padding: 24, textAlign: 'center', color: T.subtle, border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}>
+                <p style={{ fontSize: 32, margin: '0 0 6px' }}>📅</p>
+                <p style={{ fontWeight: 600, margin: 0 }}>Brak nadchodzących wydarzeń</p>
+              </div>
+            )}
+
+            {/* Polecane oferty */}
+            {recommended.length > 0 && (
+              <div style={{ marginTop: 22 }}>
+                {sectionHeader('Polecane oferty')}
+                <div style={{ display: 'flex', gap: 11, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 6, WebkitOverflowScrolling: 'touch', margin: '0 -16px', padding: '0 16px 6px' }}>
+                  {recommended.map(l => {
+                    const c = cat(l.category);
+                    const isFav = favs?.has(String(l.id));
+                    return (
+                      <div key={l.id} onClick={() => onSelect(l)} style={{
+                        width: 152, flexShrink: 0, borderRadius: 18, overflow: 'hidden',
+                        background: T.card, border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.2)', cursor: 'pointer',
+                      }}>
+                        <div style={{ position: 'relative', height: 96, background: c.bg }}>
+                          {hasImg(l)
+                            ? <img src={l.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30 }}>{c.icon}</div>}
+                          <span style={{ position: 'absolute', top: 7, left: 7, background: c.color, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 999 }}>{c.label}</span>
+                          <button
+                            onClick={e => { e.stopPropagation(); toggleFav && toggleFav(String(l.id)); }}
+                            style={{ position: 'absolute', top: 5, right: 5, width: 27, height: 27, borderRadius: 999, background: 'rgba(10,18,36,0.55)', border: 'none', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {isFav ? '❤️' : '🤍'}
+                          </button>
+                        </div>
+                        <div style={{ padding: '9px 10px 11px' }}>
+                          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.title}</p>
+                          <p style={{ margin: '3px 0 0', fontSize: 10.5, color: T.subtle }}>📍 {l.city}</p>
+                          <p style={{ margin: '5px 0 0', fontSize: 12, fontWeight: 800, color: '#4d9ef7' }}>{l.priceLabel || (l.price === 0 ? 'Bezpłatne' : `${l.price} zł`)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </>
