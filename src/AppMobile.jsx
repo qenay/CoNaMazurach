@@ -1487,61 +1487,77 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
   return (
     <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', background: C.bg, ...FONT }}>
 
-      {/* ── Hero card ── */}
-      <div style={{ position: 'relative', height: 230, overflow: 'hidden' }}>
-        {heroImg
-          ? <img src={heroImg} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, #0a1628 0%, #0d2f5c 50%, #071529 100%)' }} />
-        }
-        {/* Gradient overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,14,28,0.35) 0%, rgba(8,14,28,0.78) 100%)' }} />
-        {/* Topographic pattern */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.08 }} viewBox="0 0 400 230" preserveAspectRatio="xMidYMid slice">
-          <path d="M-50,80 Q100,40 200,90 Q300,140 450,70" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
-          <path d="M-50,110 Q100,70 200,120 Q300,170 450,100" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
-          <path d="M-50,140 Q100,100 200,150 Q300,200 450,130" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
-          <path d="M-50,170 Q100,130 200,180 Q300,230 450,160" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
-          <path d="M0,50 Q80,20 160,60 Q240,100 320,40 Q360,20 400,50" fill="none" stroke="#7eb3f7" strokeWidth="1"/>
-        </svg>
+      {/* ── Hero card — zaokrąglona wizytówka ── */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top) + 12px) 16px 0' }}>
+        <div style={{
+          borderRadius: 26, overflow: 'hidden', position: 'relative',
+          background: 'linear-gradient(175deg, #12305a 0%, #0c2244 55%, #0a1c38 100%)',
+          border: '1px solid rgba(255,255,255,0.09)',
+          boxShadow: isDark ? '0 16px 40px rgba(0,0,0,0.5)' : '0 12px 32px rgba(13,42,86,0.3)',
+        }}>
+          {/* Zdjęcie — góra karty */}
+          <div style={{ position: 'relative', height: 136 }}>
+            {heroImg
+              ? <img src={heroImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #14365f 0%, #1d4f8a 50%, #0e2748 100%)' }} />
+            }
+            {/* Płynne przejście zdjęcia w granatowy dół karty */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(12,34,68,0) 35%, rgba(12,34,68,0.55) 78%, #0c2244 100%)' }} />
+          </div>
 
-        <div style={{ position: 'relative', zIndex: 1, padding: 'calc(env(safe-area-inset-top) + 24px) 20px 20px' }}>
-          <p style={{ margin: '0 0 4px', fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: -0.8, textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>Co na Mazurach?</p>
-          <p style={{ margin: '0 0 18px', fontSize: 13, color: 'rgba(255,255,255,0.72)', fontWeight: 500 }}>Twój przewodnik po Mazurach</p>
+          {/* Topographic pattern w dolnej części */}
+          <svg style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', height: 150, opacity: 0.07, pointerEvents: 'none' }} viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice">
+            <path d="M-50,40 Q100,10 200,50 Q300,90 450,30" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
+            <path d="M-50,70 Q100,40 200,80 Q300,120 450,60" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
+            <path d="M-50,100 Q100,70 200,110 Q300,150 450,90" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
+            <path d="M-50,130 Q100,100 200,140 Q300,180 450,120" fill="none" stroke="#7eb3f7" strokeWidth="1"/>
+          </svg>
 
-          {/* Stats glassmorphism */}
-          <div style={{
-            display: 'flex',
-            background: 'rgba(255,255,255,0.12)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderRadius: 18,
-            border: '1px solid rgba(255,255,255,0.18)',
-            overflow: 'hidden',
-          }}>
-            {[
-              { val: favsCount,   label: 'ulubionych', emoji: '❤️' },
-              { val: placesCount, label: 'miejsc',      emoji: '📍' },
-              { val: eventsCount, label: 'wydarzeń',    emoji: '📅' },
-            ].map((s, i) => (
-              <div key={i} style={{
-                flex: 1, textAlign: 'center', padding: '12px 4px',
-                borderRight: i < 2 ? '1px solid rgba(255,255,255,0.15)' : 'none',
-              }}>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{s.val}</p>
-                <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 500 }}>{s.label}</p>
-              </div>
-            ))}
+          <div style={{ position: 'relative', padding: '6px 18px 18px' }}>
+            <p style={{ margin: '0 0 3px', fontSize: 26, fontWeight: 900, color: '#fff', letterSpacing: -0.6, textShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>Co na Mazurach?</p>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(255,255,255,0.68)', fontWeight: 500 }}>Twój przewodnik po Mazurach</p>
+
+            {/* Stats — trzy szklane kafelki */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[
+                {
+                  val: favsCount, label: 'ulubionych',
+                  icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#fb7185"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+                },
+                {
+                  val: placesCount, label: 'miejsc',
+                  icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#60a5fa"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>,
+                },
+                {
+                  val: eventsCount, label: 'wydarzeń',
+                  icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#93c5fd" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+                },
+              ].map((s, i) => (
+                <div key={i} style={{
+                  flex: 1, textAlign: 'center', padding: '11px 4px',
+                  background: 'rgba(56,113,224,0.22)',
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  borderRadius: 16,
+                  border: '1px solid rgba(120,165,255,0.22)',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 5 }}>{s.icon}</div>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{s.val}</p>
+                  <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.62)', fontWeight: 500 }}>{s.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── Content ── */}
-      <div style={{ padding: '16px 16px', paddingBottom: 'calc(env(safe-area-inset-bottom) + 100px)' }}>
+      <div style={{ padding: '12px 16px', paddingBottom: 'calc(env(safe-area-inset-bottom) + 100px)' }}>
 
         {/* Motyw toggle */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: C.card, borderRadius: 22, padding: '14px 18px', marginBottom: 10,
+          background: C.card, borderRadius: 24, padding: '14px 18px', marginBottom: 12,
           border: `1px solid ${C.border}`, boxShadow: C.shadow,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -1577,7 +1593,7 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
 
         {/* Menu items */}
         <div style={{
-          background: C.card, borderRadius: 22, overflow: 'hidden',
+          background: C.card, borderRadius: 24, overflow: 'hidden',
           border: `1px solid ${C.border}`, boxShadow: C.shadow,
         }}>
           {menuItems.map((item, i) => (
