@@ -840,8 +840,11 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
       <div style={{
         margin: '16px', marginTop: 'calc(env(safe-area-inset-top) + 12px)',
         borderRadius: 24, overflow: 'hidden',
-        background: T.card, border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
-        boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
+        background: isDark
+          ? 'linear-gradient(170deg, #1e3357 0%, #16264a 35%, #101c38 70%, #0d1830 100%)'
+          : '#ffffff',
+        border: `1px solid ${isDark ? 'rgba(120,165,255,0.16)' : 'rgba(0,0,0,0.06)'}`,
+        boxShadow: '0 8px 28px rgba(0,0,0,0.3)',
         padding: '16px 14px 14px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
