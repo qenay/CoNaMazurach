@@ -1905,11 +1905,20 @@ function BottomNav({ active, onChange, T, isDark }) {
   );
 }
 
-// Zamraża ukryte zakładki: nie re-renderują się (np. przy zmianie motywu),
-// dopóki nie staną się widoczne — wtedy dostają świeże propsy
-const FrozenTab = memo(function FrozenTab({ hidden, children }) {
-  return <div style={{ height: '100%', display: hidden ? 'none' : 'block' }}>{children}</div>;
-}, (prev, next) => next.hidden);
+// Zamraża ukryte zakładki: ich treść nie re-renderuje się (np. przy zmianie motywu),
+// dopóki nie staną się widoczne — wtedy dostają świeże propsy.
+// Uwaga: kontener z display MUSI aktualizować się zawsze — zamrożone są tylko dzieci.
+const FrozenChildren = memo(function FrozenChildren({ children }) {
+  return children;
+}, (prev, next) => next.frozen);
+
+function FrozenTab({ hidden, children }) {
+  return (
+    <div style={{ height: '100%', display: hidden ? 'none' : 'block' }}>
+      <FrozenChildren frozen={hidden}>{children}</FrozenChildren>
+    </div>
+  );
+}
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 export default function AppMobile() {
