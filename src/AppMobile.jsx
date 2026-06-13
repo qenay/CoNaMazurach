@@ -1482,63 +1482,73 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
   return (
     <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', background: C.bg, ...FONT }}>
 
-      {/* ── Hero — pełnoekranowe zdjęcie od samej góry ── */}
-      <div style={{ position: 'relative' }}>
-        {/* Zdjęcie tła — full-bleed, pod Dynamic Island */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-          {heroImg
-            ? <img src={heroImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #14365f 0%, #1d4f8a 50%, #0e2748 100%)' }} />
-          }
-          {/* Płynne wtopienie zdjęcia w granatowe tło ekranu */}
-          <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, rgba(10,15,31,0.1) 0%, rgba(10,15,31,0.25) 40%, rgba(10,15,31,0.82) 78%, ${C.bg} 100%)` }} />
-        </div>
+      {/* ── Hero — zaokrąglona karta ze zdjęciem ── */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top) + 12px) 16px 0' }}>
+        <div style={{
+          position: 'relative', borderRadius: 28, overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: isDark ? '0 16px 40px rgba(0,0,0,0.5)' : '0 12px 32px rgba(13,42,86,0.3)',
+        }}>
+          {/* Zdjęcie wypełnia całą kartę */}
+          <div style={{ position: 'absolute', inset: 0 }}>
+            {heroImg
+              ? <img src={heroImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(160deg, #14365f 0%, #1d4f8a 50%, #0e2748 100%)' }} />
+            }
+            {/* Delikatne przyciemnienie dla czytelności tekstu */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,15,30,0.15) 0%, rgba(8,15,30,0.3) 50%, rgba(8,15,30,0.6) 100%)' }} />
+          </div>
 
-        {/* Treść hero */}
-        <div style={{ position: 'relative', padding: 'calc(env(safe-area-inset-top) + 14px) 18px 16px' }}>
-          {/* Okrągły znaczek-logo jak na referencji */}
-          <div style={{
-            width: 46, height: 46, borderRadius: 999, marginBottom: 44,
-            background: 'rgba(13,34,68,0.55)',
-            backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
-            border: '1.5px solid rgba(255,255,255,0.25)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-          }}>🌊</div>
+          {/* Treść karty */}
+          <div style={{ position: 'relative', padding: 18 }}>
+            {/* Okrągłe logo */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 999, marginBottom: 36,
+              overflow: 'hidden',
+              border: '2px solid rgba(255,255,255,0.35)',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.35)',
+              background: '#fff',
+            }}>
+              <img src="/logo1.png" alt="Co na Mazurach" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
 
-          <p style={{ margin: '0 0 3px', fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: -0.6, textShadow: '0 2px 14px rgba(0,0,0,0.5)' }}>Co na Mazurach?</p>
-          <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 500, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>Twój przewodnik po Mazurach</p>
+            <p style={{ margin: '0 0 4px', fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: -0.7, textShadow: '0 2px 14px rgba(0,0,0,0.5)' }}>Co na Mazurach?</p>
+            <p style={{ margin: '0 0 18px', fontSize: 14, color: 'rgba(255,255,255,0.82)', fontWeight: 500, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>Twój przewodnik po Mazurach</p>
 
-          {/* Stats — trzy niebieskie szklane kafelki */}
-          <div style={{ display: 'flex', gap: 9 }}>
-            {[
-              {
-                val: favsCount, label: 'ulubionych',
-                icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#fb7185"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
-              },
-              {
-                val: placesCount, label: 'miejsc',
-                icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="#7db5ff"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>,
-              },
-              {
-                val: eventsCount, label: 'wydarzeń',
-                icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a5c8ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-              },
-            ].map((s, i) => (
-              <div key={i} style={{
-                flex: 1, textAlign: 'center', padding: '12px 4px',
-                background: 'linear-gradient(160deg, rgba(43,98,196,0.55) 0%, rgba(26,62,130,0.5) 100%)',
-                backdropFilter: 'blur(14px)',
-                WebkitBackdropFilter: 'blur(14px)',
-                borderRadius: 18,
-                border: '1px solid rgba(125,170,255,0.3)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 5 }}>{s.icon}</div>
-                <p style={{ margin: 0, fontSize: 21, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{s.val}</p>
-                <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{s.label}</p>
-              </div>
-            ))}
+            {/* Stats — jeden szklany panel z trzema kolumnami */}
+            <div style={{
+              display: 'flex',
+              background: 'rgba(20,40,80,0.45)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderRadius: 20,
+              border: '1px solid rgba(255,255,255,0.18)',
+              overflow: 'hidden',
+            }}>
+              {[
+                {
+                  val: favsCount, label: 'ulubionych',
+                  icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="#ef4444"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+                },
+                {
+                  val: placesCount, label: 'miejsc',
+                  icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="#3b82f6"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>,
+                },
+                {
+                  val: eventsCount, label: 'wydarzenia',
+                  icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+                },
+              ].map((s, i) => (
+                <div key={i} style={{
+                  flex: 1, textAlign: 'center', padding: '13px 4px',
+                  borderRight: i < 2 ? '1px solid rgba(255,255,255,0.14)' : 'none',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>{s.icon}</div>
+                  <p style={{ margin: 0, fontSize: 19, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{s.val}</p>
+                  <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'rgba(255,255,255,0.78)', fontWeight: 500 }}>{s.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
