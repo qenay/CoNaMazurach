@@ -1417,7 +1417,8 @@ function RegulaminScreen({ onBack, T }) {
 
 // ─── Profile screen ────────────────────────────────────────────────────────────
 function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowRegulamin, onShowPrivacy, isDark, toggleTheme, T }) {
-  const favsCount   = favs?.size ?? 0;
+  // licz tylko polubienia ofert, które nadal istnieją (w localStorage mogą zostać stare ID)
+  const favsCount   = listings.filter(l => favs?.has(String(l.id))).length;
   const placesCount = listings.length;
   const eventsCount = listings.filter(l => ['wydarzenia', 'koncerty', 'atrakcje'].includes(l.category)).length;
   const heroImg     = listings.find(l => l.image && l.image.length > 10)?.image;
@@ -1750,6 +1751,18 @@ export default function AppMobile() {
       return next;
     });
   }, []);
+
+  // usuń z ulubionych ID ofert, które już nie istnieją
+  useEffect(() => {
+    if (!listings.length) return;
+    setFavs(prev => {
+      const ids = new Set(listings.map(l => String(l.id)));
+      const next = new Set([...prev].filter(id => ids.has(id)));
+      if (next.size === prev.size) return prev;
+      saveFavs(next);
+      return next;
+    });
+  }, [listings]);
 
   useEffect(() => {
     const tryLocal = () =>
