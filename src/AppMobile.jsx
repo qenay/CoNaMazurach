@@ -154,19 +154,19 @@ const THEMES = {
     chipText:'#475569',
   },
   dark: {
-    bg:      '#0f172a',
-    card:    '#1e293b',
-    card2:   '#0f172a',
+    bg:      '#0a0f1f',
+    card:    '#111a30',
+    card2:   '#1b2742',
     heading: '#ffffff',
     text:    '#f1f5f9',
     muted:   '#94a3b8',
-    subtle:  '#64748b',
-    border:  '#334155',
-    navBg:   '#1e293b',
-    navBorder: '#334155',
-    input:   '#1e293b',
-    inputBorder: '#334155',
-    chipBg:  '#334155',
+    subtle:  '#5b6b87',
+    border:  '#22304d',
+    navBg:   '#0a0f1f',
+    navBorder: 'rgba(255,255,255,0.07)',
+    input:   '#111a30',
+    inputBorder: '#22304d',
+    chipBg:  '#1b2742',
     chipText:'#cbd5e1',
   },
 };
@@ -507,7 +507,7 @@ function DiscoverScreen({ listings, onSelect, favs, toggleFav, T }) {
 
   return (
     <div ref={scrollRef} onScroll={handleScroll} style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
-      <div style={{ padding: '16px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top) + 12px) 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <p style={{ margin: 0, fontSize: 13, color: T.muted, fontWeight: 500 }}>Cześć! 👋</p>
           <p style={{ margin: 0, fontSize: 30, fontWeight: 800, color: T.heading, fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: -0.3 }}>Co na Mazurach?</p>
@@ -637,7 +637,7 @@ function MapScreen({ listings, onSelect, T }) {
     });
   }, [listings, activeCat, search]);
 
-  const isDark = T.bg === '#0f172a';
+  const isDark = T.bg === THEMES.dark.bg;
   const tileUrl = isDark
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
@@ -762,7 +762,7 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
       {/* Calendar header */}
-      <div style={{ margin: 16, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.1)' }}>
+      <div style={{ margin: '16px', marginTop: 'calc(env(safe-area-inset-top) + 12px)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.1)' }}>
         <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', padding: '16px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <button onClick={() => { if (month === 0) { setYear(y => y-1); setMonth(11); } else setMonth(m => m-1); }} style={{ width: 36, height: 36, borderRadius: 999, background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }}>‹</button>
@@ -914,7 +914,7 @@ function AddListingScreen({ T }) {
   if (done) {
     return (
       <div style={{ ...FONT, height: '100%', overflowY: 'auto', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
-        <div style={{ padding: 20, paddingBottom: 80 }}>
+        <div style={{ padding: 20, paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: 80 }}>
           <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', borderRadius: 24, padding: 28, marginBottom: 20, textAlign: 'center' }}>
             <p style={{ fontSize: 52, margin: '0 0 10px' }}>🎉</p>
             <p style={{ margin: 0, fontWeight: 800, fontSize: 20, color: '#fff' }}>Zgłoszenie wysłane!</p>
@@ -939,7 +939,7 @@ function AddListingScreen({ T }) {
 
   return (
     <div style={{ ...FONT, height: '100%', overflowY: 'auto', overflowX: 'hidden', background: T.bg, WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
-      <div style={{ padding: '16px 16px 0' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top) + 12px) 16px 0' }}>
         <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.text }}>Dodaj ogłoszenie</p>
         <p style={{ margin: '2px 0 16px', fontSize: 13, color: T.muted }}>Krok {step + 1} z 3</p>
         <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
@@ -1795,7 +1795,7 @@ export default function AppMobile() {
             </div>
           )}
 
-          <div ref={mainContentRef} style={{ position: 'absolute', top: 'env(safe-area-inset-top)', left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', overflowY: 'hidden' }}>
+          <div ref={mainContentRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 'calc(65px + env(safe-area-inset-bottom))', overflowY: 'hidden' }}>
             <div style={{ height: '100%', display: tab === 'odkryj' ? 'block' : 'none' }}>
               <DiscoverScreen listings={listings} onSelect={setDetail} favs={favs} toggleFav={toggleFav} T={T} />
             </div>

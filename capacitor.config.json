@@ -2,9 +2,9 @@
   "appId": "pl.conamazurach.app",
   "appName": "Co na Mazurach",
   "webDir": "dist",
-  "backgroundColor": "#0f2744",
+  "backgroundColor": "#0a0f1f",
   "ios": {
-    "backgroundColor": "#0f2744"
+    "backgroundColor": "#0a0f1f"
   },
   "plugins": {
     "CapacitorHttp": {
