@@ -321,13 +321,15 @@ function ImageCarousel({ images, alt, fallbackIcon, fallbackBg }) {
       )}
       {images.length > 1 && (
         <>
-          <div style={{ position: 'absolute', top: 10, right: 12, background: 'rgba(0,0,0,0.45)', color: '#fff', padding: '2px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
+          {/* Licznik zdjęć — na dole po prawej, nad gradientem */}
+          <div style={{ position: 'absolute', bottom: 14, right: 14, zIndex: 2, background: 'rgba(10,18,36,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '3px 11px', borderRadius: 999, fontSize: 11.5, fontWeight: 700 }}>
             {idx + 1} / {images.length}
           </div>
-          <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 5 }}>
+          {/* Kropki — wyśrodkowane, nad gradientem */}
+          <div style={{ position: 'absolute', bottom: 16, left: 0, right: 0, zIndex: 2, display: 'flex', justifyContent: 'center', gap: 6 }}>
             {images.map((_, i) => (
               <div key={i} onClick={() => setIdx(i)}
-                style={{ width: i === idx ? 20 : 6, height: 6, borderRadius: 999, background: i === idx ? '#fff' : 'rgba(255,255,255,0.5)', transition: 'all 0.25s', cursor: 'pointer' }} />
+                style={{ width: i === idx ? 22 : 7, height: 7, borderRadius: 999, background: i === idx ? '#fff' : 'rgba(255,255,255,0.45)', boxShadow: '0 1px 4px rgba(0,0,0,0.4)', transition: 'all 0.25s', cursor: 'pointer' }} />
             ))}
           </div>
         </>

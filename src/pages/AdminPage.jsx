@@ -38,7 +38,7 @@ function listingToForm(l) {
     rating:      l.rating?.toString() || '',
     features:    l.features || [],
     hashtags:    l.tags || l.hashtags || [],
-    images:      l.image ? [l.image] : (l.images || []),
+    images:      l.images?.length ? l.images : (l.image ? [l.image] : []),
     icon:        l.icon || CATS.find(c => c.id === l.category)?.icon || '🎉',
     status:      l.status || 'aktywne',
     lat:         l.lat || null,
