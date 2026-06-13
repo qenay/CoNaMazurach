@@ -1005,17 +1005,23 @@ function CalendarScreen({ listings, onSelect, favs, toggleFav, T }) {
 }
 
 // ─── Kompresja zdjęć ─────────────────────────────────────────────────────────
+// Przycina do proporcji 4:3 (centralny kadr) — format, w jakim oferta wyświetla zdjęcia
 function compressImage(file, maxW = 900) {
   return new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        const scale = Math.min(1, maxW / img.width);
+        const RATIO = 4 / 3;
+        let sw = img.width, sh = img.height, sx = 0, sy = 0;
+        if (sw / sh > RATIO) { sw = Math.round(sh * RATIO); sx = Math.round((img.width - sw) / 2); }
+        else { sh = Math.round(sw / RATIO); sy = Math.round((img.height - sh) / 2); }
+        const w = Math.min(maxW, sw);
+        const h = Math.round(w / RATIO);
         const c = document.createElement('canvas');
-        c.width = img.width * scale;
-        c.height = img.height * scale;
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.width = w;
+        c.height = h;
+        c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
         resolve(c.toDataURL('image/jpeg', 0.78));
       };
       img.src = e.target.result;
