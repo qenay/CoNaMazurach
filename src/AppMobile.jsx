@@ -1421,7 +1421,7 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
   const favsCount   = listings.filter(l => favs?.has(String(l.id))).length;
   const placesCount = listings.length;
   const eventsCount = listings.filter(l => ['wydarzenia', 'koncerty', 'atrakcje'].includes(l.category)).length;
-  const heroImg     = listings.find(l => l.image && l.image.length > 10)?.image;
+  const heroImg     = '/profile-hero.jpg';
 
   const C = {
     bg:       isDark ? '#0a0f1f' : '#eef2f8',
