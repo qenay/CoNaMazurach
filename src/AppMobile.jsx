@@ -1416,104 +1416,292 @@ function RegulaminScreen({ onBack, T }) {
 }
 
 // ─── Profile screen ────────────────────────────────────────────────────────────
-function ProfileScreen({ favs, onShowFavs, onShowAbout, onShowRegulamin, onShowPrivacy, isDark, toggleTheme, T }) {
-  const favsCount = favs?.size ?? 0;
-  const items = [
-    { icon: '❤️', label: 'Ulubione', sub: favsCount > 0 ? `${favsCount} zapisanych ofert` : 'Brak zapisanych ofert', action: onShowFavs, highlight: true },
-    { icon: '🌊', label: 'O Co na Mazurach?', sub: 'Poznaj nasz portal', action: onShowAbout },
-    { icon: '📧', label: 'Kontakt', sub: 'kontakt@conamazurach.pl' },
-    { icon: '📋', label: 'Regulamin', sub: 'Zasady korzystania', action: onShowRegulamin },
-    { icon: '🔒', label: 'Polityka prywatności', sub: 'Ochrona danych osobowych', action: onShowPrivacy },
-    { icon: '⭐', label: 'Oceń aplikację', sub: 'Zostaw recenzję' },
+function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowRegulamin, onShowPrivacy, isDark, toggleTheme, T }) {
+  const favsCount   = favs?.size ?? 0;
+  const placesCount = listings.length;
+  const eventsCount = listings.filter(l => ['wydarzenia', 'koncerty', 'atrakcje'].includes(l.category)).length;
+  const heroImg     = listings.find(l => l.image && l.image.length > 10)?.image;
+
+  const C = {
+    bg:     isDark ? '#0d1117' : '#f0f4f8',
+    card:   isDark ? '#161b2e' : '#ffffff',
+    border: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
+    title:  isDark ? '#f1f5f9' : '#0f172a',
+    sub:    isDark ? '#4e5f7a' : '#94a3b8',
+    div:    isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+    shadow: isDark ? '0 8px 32px rgba(0,0,0,0.45)' : '0 4px 24px rgba(0,0,0,0.08)',
+  };
+
+  const Chevron = () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={isDark ? '#2d3f5a' : '#d1d5db'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  );
+
+  const menuItems = [
+    {
+      iconBg: '#ef4444',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+      label: 'Ulubione',
+      sub: favsCount > 0 ? `${favsCount} zapisanych ofert` : 'Brak zapisanych ofert',
+      badge: favsCount > 0 ? favsCount : null,
+      action: onShowFavs,
+    },
+    {
+      iconBg: '#2563eb',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+      label: 'O Co na Mazurach?',
+      sub: 'Poznaj nasz portal',
+      action: onShowAbout,
+    },
+    {
+      iconBg: '#475569',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+      label: 'Kontakt',
+      sub: 'kontakt@conamazurach.pl',
+      action: null,
+    },
+    {
+      iconBg: '#475569',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+      label: 'Regulamin',
+      sub: 'Zasady korzystania',
+      action: onShowRegulamin,
+    },
+    {
+      iconBg: '#475569',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+      label: 'Polityka prywatności',
+      sub: 'Ochrona danych osobowych',
+      action: onShowPrivacy,
+    },
+    {
+      iconBg: '#d97706',
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+      label: 'Oceń aplikację',
+      sub: 'Zostaw recenzję',
+      action: null,
+    },
   ];
+
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: T.bg }}>
-      <div style={{ padding: 20 }}>
-        <div style={{ background: 'linear-gradient(135deg, #1B4F8A, #2563EB)', borderRadius: 24, padding: 28, marginBottom: 16, textAlign: 'center' }}>
-          <div style={{ width: 72, height: 72, borderRadius: 999, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, margin: '0 auto 12px' }}>🌊</div>
-          <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#fff' }}>Co na Mazurach?</p>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Twój przewodnik po Mazurach</p>
-          {favsCount > 0 && (
-            <div style={{ marginTop: 14, background: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: '8px 16px', display: 'inline-block' }}>
-              <p style={{ margin: 0, fontSize: 13, color: '#fff', fontWeight: 600 }}>❤️ {favsCount} {favsCount === 1 ? 'ulubiona oferta' : 'ulubione oferty'}</p>
-            </div>
-          )}
-        </div>
+    <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', background: C.bg, ...FONT }}>
 
-        {/* Motyw */}
-        <div style={{ background: T.card, borderRadius: 20, padding: '14px 20px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 16px rgba(0,0,0,0.07)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span style={{ fontSize: 24, width: 40, height: 40, borderRadius: 12, background: T.card2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{isDark ? '🌙' : '☀️'}</span>
-            <div>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: T.text }}>Motyw</p>
-              <p style={{ margin: '2px 0 0', fontSize: 12, color: T.subtle }}>{isDark ? 'Ciemny' : 'Jasny'}</p>
-            </div>
-          </div>
-          {/* Toggle — kamper */}
-          <div onClick={toggleTheme} style={{
-            width: 68, height: 34, borderRadius: 999, cursor: 'pointer', position: 'relative', flexShrink: 0,
-            background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' : 'linear-gradient(135deg, #BAE6FD 0%, #FEF9C3 100%)',
-            border: isDark ? '1.5px solid #334155' : '1.5px solid #BFE3F5',
-            boxShadow: isDark ? 'inset 0 2px 8px rgba(0,0,0,0.45)' : 'inset 0 2px 8px rgba(0,0,0,0.08)',
-            transition: 'background 0.4s, border-color 0.4s',
+      {/* ── Hero card ── */}
+      <div style={{ position: 'relative', height: 230, overflow: 'hidden' }}>
+        {heroImg
+          ? <img src={heroImg} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, #0a1628 0%, #0d2f5c 50%, #071529 100%)' }} />
+        }
+        {/* Gradient overlay */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,14,28,0.35) 0%, rgba(8,14,28,0.78) 100%)' }} />
+        {/* Topographic pattern */}
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.08 }} viewBox="0 0 400 230" preserveAspectRatio="xMidYMid slice">
+          <path d="M-50,80 Q100,40 200,90 Q300,140 450,70" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
+          <path d="M-50,110 Q100,70 200,120 Q300,170 450,100" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
+          <path d="M-50,140 Q100,100 200,150 Q300,200 450,130" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
+          <path d="M-50,170 Q100,130 200,180 Q300,230 450,160" fill="none" stroke="#7eb3f7" strokeWidth="1.5"/>
+          <path d="M0,50 Q80,20 160,60 Q240,100 320,40 Q360,20 400,50" fill="none" stroke="#7eb3f7" strokeWidth="1"/>
+        </svg>
+
+        <div style={{ position: 'relative', zIndex: 1, padding: 'calc(env(safe-area-inset-top) + 24px) 20px 20px' }}>
+          <p style={{ margin: '0 0 4px', fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: -0.8, textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}>Co na Mazurach?</p>
+          <p style={{ margin: '0 0 18px', fontSize: 13, color: 'rgba(255,255,255,0.72)', fontWeight: 500 }}>Twój przewodnik po Mazurach</p>
+
+          {/* Stats glassmorphism */}
+          <div style={{
+            display: 'flex',
+            background: 'rgba(255,255,255,0.12)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: 18,
+            border: '1px solid rgba(255,255,255,0.18)',
+            overflow: 'hidden',
           }}>
-            {/* gwiazdki / słońce w tle */}
-            <span style={{ position: 'absolute', top: 5, left: isDark ? 8 : 44, fontSize: 11, opacity: 0.7, transition: 'left 0.4s, opacity 0.4s', pointerEvents: 'none' }}>
-              {isDark ? '✦' : '☀️'}
-            </span>
-            {/* kamper */}
+            {[
+              { val: favsCount,   label: 'ulubionych', emoji: '❤️' },
+              { val: placesCount, label: 'miejsc',      emoji: '📍' },
+              { val: eventsCount, label: 'wydarzeń',    emoji: '📅' },
+            ].map((s, i) => (
+              <div key={i} style={{
+                flex: 1, textAlign: 'center', padding: '12px 4px',
+                borderRight: i < 2 ? '1px solid rgba(255,255,255,0.15)' : 'none',
+              }}>
+                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{s.val}</p>
+                <p style={{ margin: '3px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 500 }}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Content ── */}
+      <div style={{ padding: '16px 16px', paddingBottom: 'calc(env(safe-area-inset-bottom) + 100px)' }}>
+
+        {/* Motyw toggle */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: C.card, borderRadius: 22, padding: '14px 18px', marginBottom: 10,
+          border: `1px solid ${C.border}`, boxShadow: C.shadow,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
-              position: 'absolute', top: 4, left: isDark ? 36 : 4,
-              width: 26, height: 26, borderRadius: 999,
-              background: isDark ? '#1e293b' : '#fff',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.22)',
-              transition: 'left 0.38s cubic-bezier(0.4,0,0.2,1)',
+              width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+              background: isDark ? '#232d45' : '#f1f5f9',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 15,
-            }}>🚐</div>
+            }}>
+              {isDark
+                ? <svg width="20" height="20" viewBox="0 0 24 24" fill="#93c5fd"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              }
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.title }}>Motyw</p>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: C.sub }}>{isDark ? 'Ciemny' : 'Jasny'}</p>
+            </div>
+          </div>
+          <div onClick={toggleTheme} style={{
+            width: 51, height: 31, borderRadius: 999, cursor: 'pointer', position: 'relative', flexShrink: 0,
+            background: isDark ? '#2563eb' : '#d1d5db',
+            transition: 'background 0.3s',
+          }}>
+            <div style={{
+              position: 'absolute', top: 3, left: isDark ? 23 : 3,
+              width: 25, height: 25, borderRadius: 999,
+              background: '#fff',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
+              transition: 'left 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+            }} />
           </div>
         </div>
 
-        <div style={{ background: T.card, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.07)' }}>
-          {items.map((item, i) => (
-            <div key={i} onClick={item.action} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: i < items.length - 1 ? `1px solid ${T.border}` : 'none', cursor: item.action ? 'pointer' : 'default', background: item.highlight ? (isDark ? 'rgba(153,27,27,0.15)' : '#FFF5F5') : 'transparent' }}>
-              <span style={{ fontSize: 24, width: 40, height: 40, borderRadius: 12, background: item.highlight ? (isDark ? 'rgba(153,27,27,0.2)' : '#FEE2E2') : T.card2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.icon}</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: item.highlight ? (isDark ? '#FCA5A5' : '#991B1B') : T.text }}>{item.label}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 12, color: T.subtle }}>{item.sub}</p>
+        {/* Menu items */}
+        <div style={{
+          background: C.card, borderRadius: 22, overflow: 'hidden',
+          border: `1px solid ${C.border}`, boxShadow: C.shadow,
+        }}>
+          {menuItems.map((item, i) => (
+            <div
+              key={i}
+              onClick={item.action || undefined}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '13px 18px',
+                borderBottom: i < menuItems.length - 1 ? `1px solid ${C.div}` : 'none',
+                cursor: item.action ? 'pointer' : 'default',
+                transition: 'background 0.15s',
+              }}
+            >
+              <div style={{
+                width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                background: item.iconBg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 4px 14px ${item.iconBg}55`,
+              }}>
+                {item.icon}
               </div>
-              {item.action && <span style={{ color: T.subtle, fontSize: 18 }}>›</span>}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: C.title }}>{item.label}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: C.sub, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.sub}</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                {item.badge != null && (
+                  <div style={{
+                    background: '#ef4444', borderRadius: 999,
+                    minWidth: 22, height: 22,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    paddingInline: 6,
+                  }}>
+                    <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>{item.badge}</span>
+                  </div>
+                )}
+                {item.action && <Chevron />}
+              </div>
             </div>
           ))}
         </div>
-        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: T.subtle }}>Co na Mazurach? v1.0.0</p>
+
+        <p style={{ textAlign: 'center', marginTop: 28, fontSize: 11, color: isDark ? '#1e2d45' : '#cbd5e1', fontWeight: 500 }}>
+          Co na Mazurach? v1.0.0
+        </p>
       </div>
     </div>
   );
 }
 
 // ─── Bottom navigation ─────────────────────────────────────────────────────────
-function BottomNav({ active, onChange, T }) {
+const NAV_ICONS = {
+  odkryj: (active) => (
+    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? '#4d9ef7' : '#4e5f7a'} strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+  mapa: (active) => (
+    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? '#4d9ef7' : '#4e5f7a'} strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+      <line x1="8" y1="2" x2="8" y2="18"/>
+      <line x1="16" y1="6" x2="16" y2="22"/>
+    </svg>
+  ),
+  kalendarz: (active) => (
+    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? '#4d9ef7' : '#4e5f7a'} strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  profil: (active) => (
+    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke={active ? '#4d9ef7' : '#4e5f7a'} strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+};
+
+function BottomNav({ active, onChange, T, isDark }) {
+  const bg     = isDark ? '#0d1117' : '#ffffff';
+  const border = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
   return (
-    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: T.navBg, borderTop: `1px solid ${T.navBorder}`, display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)', boxShadow: '0 -4px 20px rgba(0,0,0,0.06)', zIndex: 50 }}>
+    <div style={{
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      background: bg,
+      borderTop: `1px solid ${border}`,
+      display: 'flex',
+      paddingBottom: 'env(safe-area-inset-bottom)',
+      boxShadow: isDark ? '0 -8px 32px rgba(0,0,0,0.5)' : '0 -4px 20px rgba(0,0,0,0.06)',
+      zIndex: 50,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+    }}>
       {NAV.map(n => (
         <button key={n.id} onClick={() => onChange(n.id)} style={{
           flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
           padding: n.id === 'dodaj' ? '6px 0 8px' : '10px 0 8px',
-          border: 'none', background: 'transparent', cursor: 'pointer', gap: 2, position: 'relative',
+          border: 'none', background: 'transparent', cursor: 'pointer', gap: 3,
         }}>
           {n.id === 'dodaj' ? (
-            <div style={{ width: 48, height: 48, borderRadius: 999, background: '#1e3a6e', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(14,36,68,0.35)', marginTop: -18 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(200,215,235,0.95)" strokeWidth="2.2" strokeLinecap="round">
+            <div style={{
+              width: 50, height: 50, borderRadius: 999,
+              background: 'linear-gradient(145deg, #1d4ed8, #2563eb)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 6px 20px rgba(37,99,235,0.45)',
+              marginTop: -22,
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </div>
           ) : (
-            <span style={{ fontSize: 22, lineHeight: 1 }}>{n.icon}</span>
+            NAV_ICONS[n.id]?.(active === n.id)
           )}
-          <span style={{ fontSize: 10, fontWeight: active === n.id ? 700 : 500, color: active === n.id ? T.heading : T.muted, ...FONT }}>{n.label}</span>
-          {active === n.id && n.id !== 'dodaj' && <div style={{ width: 4, height: 4, borderRadius: 999, background: '#1B4F8A' }} />}
+          <span style={{
+            fontSize: 10, fontWeight: active === n.id ? 700 : 500,
+            color: active === n.id ? '#4d9ef7' : (isDark ? '#4e5f7a' : '#94a3b8'),
+            ...FONT,
+          }}>{n.label}</span>
         </button>
       ))}
     </div>
@@ -1619,11 +1807,11 @@ export default function AppMobile() {
             )}
             {mountedTabs.has('profil') && (
               <div style={{ height: '100%', display: tab === 'profil' ? 'block' : 'none' }}>
-                <ProfileScreen favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} onShowRegulamin={() => setShowRegulamin(true)} onShowPrivacy={() => setShowPrivacy(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
+                <ProfileScreen listings={listings} favs={favs} onShowFavs={() => setShowFavs(true)} onShowAbout={() => setShowAbout(true)} onShowRegulamin={() => setShowRegulamin(true)} onShowPrivacy={() => setShowPrivacy(true)} isDark={isDark} toggleTheme={toggleTheme} T={T} />
               </div>
             )}
           </div>
-          <BottomNav active={tab} onChange={handleTabChange} T={T} />
+          <BottomNav active={tab} onChange={handleTabChange} T={T} isDark={isDark} />
         </>
       )}
 
