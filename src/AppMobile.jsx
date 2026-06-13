@@ -1501,15 +1501,18 @@ function ProfileScreen({ listings = [], favs, onShowFavs, onShowAbout, onShowReg
 
           {/* Treść karty */}
           <div style={{ position: 'relative', padding: 18 }}>
-            {/* Okrągłe logo */}
+            {/* Okrągłe logo — przezroczyste, szklane */}
             <div style={{
               width: 64, height: 64, borderRadius: 999, marginBottom: 36,
               overflow: 'hidden',
-              border: '2px solid rgba(255,255,255,0.35)',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.35)',
-              background: '#fff',
+              border: '1.5px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+              background: 'rgba(255,255,255,0.12)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <img src="/logo1.png" alt="Co na Mazurach" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <img src="/logo1.png" alt="Co na Mazurach" style={{ width: '88%', height: '88%', objectFit: 'contain', display: 'block' }} />
             </div>
 
             <p style={{ margin: '0 0 4px', fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: -0.7, textShadow: '0 2px 14px rgba(0,0,0,0.5)' }}>Co na Mazurach?</p>
