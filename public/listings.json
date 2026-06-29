@@ -93,5 +93,37 @@
     "email": "okqwqdwok@gmail.com",
     "phone": "",
     "website": "plazakownatki.pl"
+  },
+  {
+    "date": null,
+    "time": null,
+    "isNew": true,
+    "id": 1782751381903,
+    "title": "wefdrpijfwe",
+    "category": "kempingi",
+    "city": "Warsaw",
+    "postalCode": "01-355",
+    "address": "Powstancow Slaskich 89C/203 203",
+    "lat": 53.8,
+    "lng": 21.5,
+    "description": "weqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfweweqdfewfdfwe",
+    "priceLabel": "Bezpłatne",
+    "price": null,
+    "rating": 0,
+    "tags": [
+      "jezioro"
+    ],
+    "features": [
+      "plaża"
+    ],
+    "icon": "⛺",
+    "status": "aktywne",
+    "image": "",
+    "images": [],
+    "createdAt": 1782751381903,
+    "name": "",
+    "email": "janek.bialy2000@gmail.com",
+    "phone": "",
+    "website": "www.plazakownatki.pl"
   }
 ]
